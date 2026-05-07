@@ -1,0 +1,20 @@
+{
+  "lockfileVersion": 1,
+  "version": "0.1.0",
+  "agents": {},
+  "skills": {
+    "ags": {
+      "computedHash": "709c887ca4cfeb1bfe8a8ad32a02e1070ebcf297b52432c6408f37426a80e663"
+    },
+    "ags-extend": {
+      "computedHash": "31842868fa658f702ac75a7d5106e0baa483c09d0cfcd829caf879a3caccb533"
+    }
+  },
+  "mcps": {},
+  "rules": {},
+  "generated": {
+    ".gitignore": "139364e09a0807fb41d15b8eecbd7b898ec5ac31ed1b520845a2eb4a35ecd321",
+    "INSTALL.md": "cb531d6e72d87af2abab402fd76ccec63ed4baff619d317c511caa735a00f6e3",
+    "README.md": "fee6b5b159e270b336c14118ccd7af85fe5707052fab3730ce4439e896b69765"
+  }
+}

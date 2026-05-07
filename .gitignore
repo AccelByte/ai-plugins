@@ -1,0 +1,10 @@
+### macOS ###
+.DS_Store
+
+### Claude ###
+
+# Skill Evals
+.evals/
+evals/
+*-eval-review.html
+**/eval-viewer/

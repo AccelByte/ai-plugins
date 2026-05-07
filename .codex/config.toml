@@ -1,0 +1,8 @@
+# Codex MCP config intentionally starts empty.
+#
+# The AccelByte plugin install makes skills available, but MCP servers are
+# project-scoped and should be configured by the relevant initializer after it
+# detects the project type and required tools.
+#
+# Run `/ags init`, `/ags install-mcp`, `/ags-extend init`, or
+# `/ags-extend install-mcp` to add only the MCP servers this project needs.

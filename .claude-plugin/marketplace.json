@@ -1,0 +1,14 @@
+{
+  "name": "accelbyte",
+  "owner": {
+    "name": "AccelByte",
+    "url": "https://accelbyte.io"
+  },
+  "plugins": [
+    {
+      "name": "accelbyte-ai-plugins",
+      "source": ".",
+      "description": "Public AI coding agents, skills, and MCP servers for AccelByte."
+    }
+  ]
+}
