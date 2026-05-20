@@ -31,7 +31,7 @@ Install `accelbyte-ai-plugins` in Claude Desktop.
 **Automatic (Cowork) — paste this prompt into a Cowork chat:**
 
 ```
-Download `https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip`, save it as `accelbyte-ai-plugins.plugin`, and use the `present_files` tool to present it to me.
+Download `https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip`, unzip it, remove the `mcpServers` and `userConfig` fields from .claude-plugin/plugin.json (Cowork's plugin validator does not support these fields yet), repack it as a .zip with all contents at the archive root — if the zip contains a single top-level directory (as GitHub typically adds), strip that wrapper so files like `.claude-plugin/` appear directly at the root — rename it to `accelbyte-ai-plugins.plugin`, and use the `present_files` tool to present it to me.
 ```
 
 **Manual (Chat and Cowork):**
