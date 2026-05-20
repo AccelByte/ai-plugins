@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -57,7 +57,7 @@ One skill, one entry point. `/ags-extend <subskill>` covers everything from unde
 | `wizard` | Guides you through what you want to build, clones the right templates, applies patches |
 | `install-dep` | Checks language runtimes and installs project-level dependencies |
 | `install-cli` | Installs `extend-helper-cli` |
-| `install-mcp` | Installs the two Extend remote MCP servers for AI IDE integration |
+| `install-mcp` | Installs the two Extend MCP servers (ags-api and ags-extend-sdk) for AI IDE integration |
 | `init` | End-to-end setup: runs wizard → install-dep → install-cli → install-mcp |
 | `proto` | Regenerates proto-derived code (Go/Python/Java/C#) after contract or SDK bumps |
 | `debug` | Runs an Extend app locally and guides you through testing it |
@@ -149,5 +149,5 @@ ags-extend/
 
 - `references/patches/` — structured prompts used by `wizard` to modify templates (e.g. NoSQL setup). Not diff files — written as prompts so they survive template churn.
 - `install-dep` detects runtimes but does not install them. If a runtime is missing it gives you the download link and skips that app.
-- `install-mcp` configures two MCP servers: `ags-api` (AGS API via npx) and `ags-extend-sdk` (Extend SDK context via Docker). Supports Claude Code, Cursor, Windsurf, and Kiro.
-- `install-cli` downloads `extend-helper-cli` as a direct binary from GitHub releases. Supports macOS (amd64/arm64), Linux (amd64/arm64), and Windows (amd64).
+- `install-mcp` configures two MCP servers: `ags-api` (AGS API via Docker) and `ags-extend-sdk` (Extend SDK context via Docker). Supports Claude Code, Cursor, Windsurf, Kiro, and Codex.
+- `install-cli` downloads `extend-helper-cli` as a direct binary from GitHub releases. Supports macOS (amd64/arm64), Linux (amd64/arm64), and Windows (amd64, requires manual PATH setup).

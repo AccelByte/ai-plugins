@@ -5,7 +5,7 @@ description: Read-only symptom → cause diagnosis. Use when something is off bu
   via the diagnosis trees, then hands off to the subskill that owns the fix.
 allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:

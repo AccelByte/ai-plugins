@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-cpu-memory-replicas/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/event-handler/
 - https://github.com/AccelByte/extend-service-extension-go
 see-also:
 - '[resource-defaults.md](../init/resource-defaults.md)'

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://accelbyte.io/pricing
 - https://accelbyte.io/ags-pricing
@@ -22,7 +22,7 @@ AGS pricing is metered on **Peak Concurrent Users (PCCU) per day** — the maxim
 The PCCU pricing curve has the following shape:
 
 - **Multiple bands**, with the per-PCCU/day price stepping down as PCCU climbs.
-- The first band covers the smallest scale (low thousands of PCCU); discounts kick in at progressively higher thresholds.
+- The first 30 PCCU/day are permanently free (included in all Shared Cloud plans). The first paid band begins at 31 PCCU/day; discounts kick in at progressively higher thresholds.
 - **Starter packages** for committed tiers existed at roughly $2,500–$3,500/month range as of source capture.
 - **Above the highest band**, pricing flattens to a long-tail rate.
 - **Real numbers move.** The internal capture in `docs/internal/accelbyte-pricing.md` recorded one snapshot; the live site shows different numbers as of 2026-04-29. Treat the capture as a shape illustrator, not a quote.
@@ -37,17 +37,16 @@ A "PCCU" is the daily peak distinct count of players hitting AGS APIs — login,
 - Studios with **spiky traffic** (event launches, beta tests, weekend bursts) see PCCU spike on event days.
 - The **calculator** at `https://accelbyte.io/pricing-calculator` lets studios model their cost across different DAU/PCCU ratios.
 
-## Starter / free tier
+## Starter / free tier (legacy tier name)
 
 - Up to 25k play hours **or** 90 days free.
-- Then from approximately $100/month, scaling with PCCU.
+- After trial: 30 PCCU/day included permanently. Usage beyond 30 PCCU/day billed at the applicable band rate. No monthly base fee for Shared Cloud.
 - Suitable for development and early-launch.
 
-## Enterprise tier
+## Enterprise tier (legacy tier name)
 
-- Custom pricing, typically not PCCU-banded (instead negotiated as a flat or hybrid contract).
-- Includes Private Cloud or BYOC, dedicated Delivery Manager, Professional Support.
-- Refer customers to AccelByte sales.
+- Custom pricing for Private Cloud and BYOC deployments. Contact AccelByte sales for current commercial structure.
+- Refer customers to AccelByte sales for current terms.
 
 ## What's not included in PCCU pricing
 

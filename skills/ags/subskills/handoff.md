@@ -6,7 +6,7 @@ description: Decide whether `/ags` is the right skill, or whether the user shoul
   or 'is AGS even right for this?'
 allowed-tools: Read Glob
 model: sonnet
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:

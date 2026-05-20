@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -34,15 +34,14 @@ Together: a player can start on Steam (auto-creates an AGS account), later link 
      4. Plays the same game on PS5
      5. PSN credential → AGS attempts auth
      6. PSN identity is NOT yet linked to any AGS account
-        → Player is prompted to either:
-          (a) Link to existing AGS account (proves Steam ownership), or
-          (b) Create a new AGS account on PSN
-     7. Player picks (a). After verification, PSN identity binds to the
-        existing AGS account.
+        → AGS auto-creates a headless PSN account.
+        Player must separately initiate account-link via IAM API or Admin Portal
+        to bind the PSN account to the existing Steam account.
+     7. After account-link, PSN identity binds to the existing AGS account.
      8. Player carries wallet / inventory / friends across platforms.
 ```
 
-The verification in step 7 is studio-configurable — typically a one-time-code flow shown on the PC client and entered on the PS5 client, or an email-based confirmation, depending on the studio's UX preferences.
+The specific verification UX in step 7 is implemented by the studio using IAM linking APIs; typical patterns include showing a one-time code on the PC client for the player to enter on the PS5 client.
 
 ## Implementation pattern
 
@@ -55,10 +54,10 @@ The verification in step 7 is studio-configurable — typically a one-time-code 
 
 | Friction | AGS behavior |
 |---|---|
-| Two players started independently on PC and PS5 with different progress | Player must pick which AGS account to keep; the other becomes orphaned |
-| Player wants to unlink a platform identity | Supported via IAM API; rules around "you can't unlink your last credential" apply |
-| Player's PSN account is a child account / family-linked | Some platform-policy constraints flow through to AGS; check IAM platform-binding docs |
-| Crossplay disabled at platform level (e.g. Sony policy on a particular title) | AGS doesn't override platform crossplay rules; matchmaking respects platform constraints |
+| Two players started independently on PC and PS5 with different progress | AGS has no built-in merge flow; the two accounts remain separate. The player must manually re-link credentials, accepting that one account's progression won't carry over. |
+| Player wants to unlink a platform identity | Supported via IAM API; if the last credential is unlinked from a headless account, the account becomes permanently unreachable — promote to a full account (add email/password) before unlinking the last IdP |
+| Player's PSN account is a child account / family-linked | Platform-policy constraints may apply; check IAM platform-binding docs at https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/account-integration/ |
+| Crossplay disabled at platform level (e.g. Sony policy on a particular title) | AGS doesn't override platform crossplay rules; matchmaking respects platform constraints (platform-level constraint, not AGS-documented — verify with platform requirements) |
 
 ## Where this hands off
 

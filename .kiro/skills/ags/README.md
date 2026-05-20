@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -98,7 +98,7 @@ ags/
     faq.md                       — shared: common questions (pricing shape, EOS coexistence, on-prem, …)
     modules/
       iam.md                     — Identity & Access Management
-      lobby.md                   — Party, presence, chat, invites
+      lobby.md                   — Party, presence, chat, invites (covers what public docs calls 'Chat' + 'Parties & Presence')
       matchmaking.md             — Rule-based matchmaking
       session.md                 — Session lifecycle, server assignment
       statistics.md              — Persistent player stats, cycles, and leaderboard inputs
@@ -106,7 +106,7 @@ ags/
       achievements.md            — Achievement & progression system
       store-entitlements.md      — Catalog, purchase, wallet, DLC
       analytics.md               — Event ingestion & telemetry
-      social.md                  — Friends, blocking, notifications
+      social.md                  — Friends, blocking, notifications (covers what public docs calls 'Friends' + related social features)
     sdks/                        — Game Engine SDKs + TypeScript Web SDK. Extend SDKs (Go/Python/C#/Java) live in /ags-extend.
       game-engine/
         unreal.md                — Unreal Engine SDK setup & idioms
@@ -165,6 +165,7 @@ ags/
 - This skill is the **default entry point** for AccelByte questions. Four peer skills cover deep areas: `/ags-extend`, `/ags-ams`, `/ags-matchmaking`, `/adt`. If the question lands squarely in one of those, route there; `/ags` answers conceptual / "should I?" framing for all four but defers operational work.
 - Architecture clarification: Extend, AMS, and Matchmaking are *part of* AGS; they get peer skills because of lifecycle depth, not because they're separate products. ADT is the only true sibling product. Access is the standalone packaging of AGS IAM (a strict subset).
 - Subskills are kept small. When a topic has multiple sub-areas (modules, SDKs, deployment, ecosystem), the subskill points into the right `references/` subdirectory rather than inlining everything.
+- `references/modules/` covers the most common integration modules (IAM, Lobby, Matchmaking, Session, Statistics, Leaderboards, Achievements, Store/Entitlements, Analytics, Social). AGS has many additional modules (Cloud Save, Inventory, Rewards, Season Pass, Challenges, UGC, Chat, Guilds & Clans, Peer-to-Peer, Multiplayer Notifications, Legal & Privacy, and more) that are not covered by dedicated reference files here — point users to `https://docs.accelbyte.io/gaming-services/modules/` for the full list.
 - `references/ecosystem/` is intentionally light — those files tell you *when* to bring in another peer skill / product, not *how* to use it. The actual usage docs live in the peer skill or AccelByte's docs.
 - `connect-portal` does not create production namespaces autonomously. It produces the IAM client and `.env` configuration; namespace creation and tier upgrades stay in the Admin Portal flow with an authorized human in the loop.
 - Pricing references (PCCU bands, tier descriptions) are illustrative and grounded in AccelByte's published pricing. They go stale; subskills always point users at `https://accelbyte.io/pricing` for the current numbers rather than quoting them as authoritative.

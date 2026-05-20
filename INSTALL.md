@@ -14,18 +14,33 @@ Recommended local use for this compiled target:
 claude --plugin-dir /path/to/accelbyte-ai-plugins
 ```
 
-This loads the plugin directly from the target root for the current Claude Code session. Agents and skills are discovered from the plugin bundle. MCP configs are intentionally left empty until an init subskill configures the current project.
+This loads the plugin directly from the target root for the current Claude Code session. Agents and skills are discovered from the plugin bundle. Some MCP servers in this bundle are intended to be installed via a skill included in this plugin.
 
 If you want standalone Claude Code files instead of plugin mode, copy or merge them explicitly:
 
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/skills/` | `~/.claude/skills/` or `<project>/.claude/skills/` | Copy the directory contents. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/.mcp.json` | configured later by init subskills | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/.claude-plugin/plugin.json` | no pre-configured MCP entries | Plugin manifest has no pre-configured MCP servers. Some MCP servers in this bundle are intended to be installed via a skill included in this plugin. |
 
 If you publish this target through the Anthropic marketplace or an independent marketplace later, install it through Claude Code's marketplace flows rather than `--plugin-dir`.
 
-## 2. Cursor
+## 2. Claude Desktop
+Install `accelbyte-ai-plugins` in Claude Desktop.
+
+**Automatic (Cowork) — paste this prompt into a Cowork chat:**
+
+```
+Download `https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip`, save it as `accelbyte-ai-plugins.plugin`, and use the `present_files` tool to present it to me.
+```
+
+**Manual (Chat and Cowork):**
+
+1. Download the repo archive: [AccelByte/ai-plugins/archive/refs/heads/main.zip](https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip)
+2. In Claude Desktop, open **Customize → Upload plugin** and select the downloaded file.
+3. Confirm the install.
+
+## 3. Cursor
 Plugin root: `/path/to/accelbyte-ai-plugins`
 
 Choose one of these local setup paths:
@@ -42,9 +57,9 @@ Additional manual config from this compiled target:
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/skills/` | `~/.cursor/skills/` or `<project>/.cursor/skills/` | Optional standalone install. Cursor also supports compatible project skills under `<project>/.agents/skills/`. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/.cursor/mcp.json` | configured later by init subskills | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/.cursor/mcp.json` | installed via an included skill | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
 
-## 3. Codex
+## 4. Codex
 Plugin root: `/path/to/accelbyte-ai-plugins`
 
 Recommended local install flow for AI-assisted setup:
@@ -115,14 +130,14 @@ This local marketplace registration makes the plugin discoverable to Codex. Do n
 
 Additional manual Codex config from this compiled target:
 
-Codex plugin activation intentionally does not auto-start bundled MCP servers. The generated `/path/to/accelbyte-ai-plugins/.codex/config.toml` is empty by design. Install the plugin first, then let `/ags init`, `/ags install-mcp`, `/ags-extend init`, or `/ags-extend install-mcp` create project-scoped `<project>/.codex/config.toml` entries only for the MCP servers the current project needs. This avoids plugin activation failures when Docker, `uvx`, credentials, or local MCP checkouts are missing.
+Codex plugin activation intentionally does not auto-start bundled MCP servers. The generated `/path/to/accelbyte-ai-plugins/.codex/config.toml` is empty by design. Install the plugin first, then use an included skill to create project-scoped `<project>/.codex/config.toml` entries only for the MCP servers the current project needs. This avoids plugin activation failures when Docker, `uvx`, credentials, or local MCP checkouts are missing.
 
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `left-alone` | `/path/to/accelbyte-ai-plugins/skills/` | covered by the marketplace-installed plugin | No extra copy required for bundled skills once the plugin is discoverable through `marketplace.json`. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/.codex/config.toml` | configured later by init subskills | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/.codex/config.toml` | installed via an included skill | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
 
-## 4. Kiro
+## 5. Kiro
 Plugin root: `/path/to/accelbyte-ai-plugins`
 
 Kiro does not have a plugin system. Nothing is installed automatically from the target root.
@@ -130,9 +145,9 @@ Kiro does not have a plugin system. Nothing is installed automatically from the 
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/.kiro/skills/` | `~/.kiro/skills/` or `<project>/.kiro/skills/` | Copy the directory contents. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/.kiro/settings/mcp.json` | configured later by init subskills | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/.kiro/settings/mcp.json` | installed via an included skill | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
 
-## 5. OpenCode
+## 6. OpenCode
 Plugin root: `/path/to/accelbyte-ai-plugins`
 
 OpenCode does not have a manifest-based plugin system for these compiled artifacts. Nothing is installed automatically from the target root.
@@ -140,9 +155,9 @@ OpenCode does not have a manifest-based plugin system for these compiled artifac
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/skills/` | `~/.config/opencode/skills/` or `<project>/.opencode/skills/` | Copy the directory contents. OpenCode also supports compatibility loading from Claude and Agent Skills directories. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/opencode.json` | configured later by init subskills | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/opencode.json` | installed via an included skill | Empty placeholder. Do not merge it during plugin install; project-scoped MCP entries are created after project detection. |
 
-## 6. Agent Skills
+## 7. Agent Skills
 Plugin root: `/path/to/accelbyte-ai-plugins`
 
 The Agent Skills spec (skills.sh) distributes skills as published packages. If this target is published, install with:
@@ -157,9 +172,9 @@ For local use, the compiled `skills/` directory follows the Agent Skills frontma
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/skills/` | `~/.agents/skills/` or `<project>/.agents/skills/` | Copy the directory contents. Skills follow the Agent Skills spec. |
 
-## Optional MCP Servers
+## MCP Servers
 
-Bundled MCP server definitions are available for the AGS and AGS Extend skills to install on demand. They are not auto-configured during plugin install. Run `/ags init`, `/ags install-mcp`, `/ags-extend init`, or `/ags-extend install-mcp` from the target project so the assistant can add only the MCP entries that project needs.
+These MCP servers are intended to be installed via a skill included in this plugin. Use an included skill from the target project to add only the MCP entries that project needs.
 
 ### AGS API MCP Server
 

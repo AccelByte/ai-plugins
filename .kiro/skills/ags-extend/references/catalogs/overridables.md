@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 authoritative-source: AGS Admin Portal → your namespace → Extend → Override points
 note: The authoritative list of override points lives in the Admin Portal for the
   target namespace and changes with AGS releases. This file is a STARTER TABLE, not
@@ -35,13 +35,13 @@ This file is a **starter** — it lists widely-used override points to help a de
 
 | AGS Service | Common override points | What you typically customize |
 |---|---|---|
-| Matchmaking | Priority / weighting during queue evaluation | Who gets matched sooner (VIP tiers, regional bias) |
-| Matchmaking | Eligibility / ticket validity | Whether a ticket is even considered for a match |
+| Matchmaking | Enrichment (EnrichTicket) and Make Matches | Who gets matched sooner (VIP tiers, regional bias); custom match-making logic |
+| Matchmaking | Validation (ValidateTicket) — returns whether a ticket is eligible | Whether a ticket is even considered for a match |
 | Session / Lobby | Party formation rules | How players are grouped before matchmaking |
-| Entitlements | Grant evaluation | Whether a specific entitlement applies to a user |
-| Inventory | Item visibility / listing | Filtering what a player sees in their inventory |
-| IAM / Identity | Post-login hook | Custom checks or metadata attachment after AGS authenticates a user |
-| Rewards | Distribution rules | Which rewards apply under custom conditions |
+| Entitlements | Grant evaluation _(not confirmed in public docs)_ | Whether a specific entitlement applies to a user |
+| Inventory | Item visibility / listing _(not confirmed in public docs)_ | Filtering what a player sees in their inventory |
+| IAM / Identity | Post-login hook _(not confirmed in public docs)_ | Custom checks or metadata attachment after AGS authenticates a user |
+| Rewards | Distribution rules _(not confirmed in public docs; reward reactions may belong under Event Handler)_ | Which rewards apply under custom conditions |
 
 Every row is "generally exposed as an override point" — but confirm in the Admin Portal before committing to an implementation.
 

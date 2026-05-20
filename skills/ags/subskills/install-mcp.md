@@ -6,7 +6,7 @@ description: Customize the URL for the AGS API MCP server after installing the p
   per-studio Shared Cloud, or Private Cloud / BYOC.
 allowed-tools: Read Edit Bash Glob
 model: sonnet
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 - https://prod.gamingservices.accelbyte.io/mcp
@@ -44,8 +44,8 @@ Don't invent other URL shapes. If the user's environment doesn't fit one of thos
   - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) / `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
   - Cursor: `.cursor/mcp.json` (project) or user settings
   - VS Code: `.vscode/mcp.json` or user settings
-  - Kiro: `.kiro/settings/mcp.json`
-  - Codex: `.codex/config.toml` (under `mcp_servers.*`)
+  - Kiro: `.kiro/settings/mcp.json` (based on Kiro IDE conventions; not documented in AccelByte-published references)
+  - Codex: `.codex/config.toml` (under `mcp_servers.*`) (based on Codex IDE conventions; not documented in AccelByte-published references)
 - `Read` the user's IDE config to confirm the AGS API MCP entry is present (it will be if the plugin was installed correctly).
 - `Edit` to change the `url` field for the `AGS API MCP Server` entry only — never touch other MCP entries.
 - `Bash` to confirm the chosen URL is reachable (`curl -sIL <url>` returns 200 / a sane status).

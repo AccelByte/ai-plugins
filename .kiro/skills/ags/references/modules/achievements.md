@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -17,12 +17,11 @@ Configurable achievement and progression systems. Defines achievements in the Ad
 
 ## What it covers
 
-- **Achievement definitions** — admin-configured. Each achievement has criteria (event-driven, score-driven, time-driven), a tier (bronze / silver / gold / legendary or custom), and an unlock effect.
+- **Achievement definitions** — admin-configured. Each achievement has criteria (non-incremental/completion-based or incremental/statistic-backed) and an unlock effect. Time-based criteria belong to the Challenges module; multi-tier progressions are handled by Season Pass.
 - **Progress tracking** — per-player progress across multiple achievements simultaneously.
 - **Statistic-backed progression** — achievements can use a Statistics stat code as the progression source. For counter-style achievements, configure the stat as an incrementing counter, then update that statistic from gameplay; achievement progress advances from the stat value instead of requiring a separate custom achievement counter.
-- **Unlock events** — when criteria are met, AGS emits an `Achievement.Unlocked` event. Clients can listen; Extend Event Handlers can react (e.g. post to Discord).
-- **Reward grant** — unlocks can be wired to Store / Entitlements grants automatically (give the player an entitlement when they hit gold tier).
-- **Seasonal / progression systems** — battle-pass-style progression layered on top.
+- **Unlock events** — when criteria are met, AGS emits an achievement unlock event (verify the exact topic name in the AGS event catalog). Clients can listen; Extend Event Handlers can react (e.g. post to Discord).
+- **Reward grant** — entitlement grants on unlock require configuring the Rewards module to listen to achievement events. The Rewards module manages the reward conditions and grant logic.
 
 ## Statistic-backed achievement setup
 
@@ -42,14 +41,15 @@ Do not assume Achievements needs a separate custom counter when a Statistics inc
 | **Statistics** | Common progression source; increment stat counters for actions such as kills, wins, matches played, item use, or XP, then let achievement criteria evaluate the stat threshold |
 | **Leaderboards** | Score-based achievements often use leaderboard placements as criteria |
 | **Analytics** | Achievement unlocks emit events into Analytics |
-| **Store / Entitlements** | Unlocks can grant entitlements (cosmetics, currency, items) |
+| **Store / Entitlements** | Unlocks can grant entitlements (cosmetics, currency, items) via the Rewards module |
 | **Extend** | Event Handlers for achievement events are a common Extend pattern (Discord posts, external CRM updates) |
+| **Season Pass** | Battle-pass-style tier progression; integrates with Commerce for XP-based tier progression. Not part of Achievements. |
 
 ## When custom achievement logic is needed
 
 If the achievement criteria can't be expressed in the Admin Portal's native definition (e.g. it requires aggregating across multiple events with custom weighting), the answer is **Extend Service Extension** for the criteria evaluator + **Event Handler** for AGS-emitted events. Route to `/ags-extend ask`.
 
-`Challenge Suite` in the Extend Apps Directory is a worked example: daily missions, quests, achievements, seasonal events with JSON-configurable rules.
+For worked examples (e.g. daily missions, quests, achievements, seasonal events), check the current Extend Apps Directory — verify the app name and URL at https://docs.accelbyte.io/ as names may change.
 
 ## Where to look in the docs
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -9,7 +9,7 @@ see-also:
 
 # Observe — Event Catalog
 
-**Pointer reference.** AGS emits a set of well-typed events from each module. The authoritative catalog of events is on `https://docs.accelbyte.io/` and in the Admin Portal's event browser. **Don't try to mirror the catalog in this repo** — it'll go stale instantly.
+**Pointer reference.** AGS emits a set of well-typed events from each module. The authoritative catalog is in the AccelByte docs API Events section and the AccelByte API proto GitHub repo (`https://github.com/AccelByte/accelbyte-api-proto/tree/main/asyncapi/accelbyte`). Verify the current Admin Portal feature name for event browsing. **Don't try to mirror the catalog in this repo** — it'll go stale instantly.
 
 ---
 
@@ -20,7 +20,7 @@ Tells you where to look. Does not enumerate the events.
 | Event family | Source module | Examples (illustrative) |
 |---|---|---|
 | Identity | IAM | `User.LoggedIn`, `User.Banned`, `User.Linked` |
-| Lobby / Social | Lobby, Social | `Party.Created`, `Friend.Added`, `Presence.Updated` |
+| Lobby / Social | Parties & Presence, Friends, Presence, Chat | `Party.Created`, `Friend.Added`, `Presence.Updated` |
 | Matchmaking | Matchmaking | `Ticket.Created`, `Match.Formed`, `Ticket.Expired` |
 | Session | Session Management | `Session.Created`, `Session.Joined`, `Session.Ended` |
 | Achievements | Achievements | `Achievement.Unlocked`, `Progression.Updated` |
@@ -41,5 +41,6 @@ Specific event names, payload shapes, and required scopes change over time. **Al
 
 ## Where to look
 
-- `https://docs.accelbyte.io/` — authoritative event catalog.
-- Admin Portal → events browser — live source-of-truth, namespace-specific.
+- `https://github.com/AccelByte/accelbyte-api-proto/tree/main/asyncapi/accelbyte` — authoritative proto event descriptors (topic names, payload schemas).
+- AccelByte docs API Events section — Knowledge Base location for browsable event catalog.
+- Admin Portal — live source-of-truth, namespace-specific (verify current feature name).

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -40,7 +40,9 @@ End-to-end shape for going from "two players in a party" to "two players connect
    ┌── Session Management ─────────────┐
    │                                   │
    │   Game session created            │
-   │   Triggers server allocation      │
+   │   Players join session            │
+   │   Server allocation triggered     │
+   │   when min player count reached   │
    │                                   │
    └──────────────┬────────────────────┘
                   │ Allocation request
@@ -53,7 +55,7 @@ End-to-end shape for going from "two players in a party" to "two players connect
    └──────────────┬────────────────────┘
                   │ Server endpoint
                   ▼
-   ┌── Lobby / Session Management ─────┐
+   ┌── Session Management ─────────────┐
    │                                   │
    │   Players notified                │
    │   Game clients connect to server  │
@@ -73,8 +75,8 @@ For matchmaking depth (rule design, MMR, ticket lifecycle), hand off to `/ags-ma
 ## Common gotchas
 
 - **Reconnection windows** — Session has a configurable window for a dropped player to rejoin. Set this carefully; too short and you punish flaky networks, too long and you tie up server capacity.
-- **Stale party → match transitions** — if a party member leaves between matchmaking submission and match confirmation, the rule set may stop being satisfied. Decide whether to fail the match (re-queue) or proceed with smaller team.
-- **Server endpoint propagation** — game clients need the server endpoint promptly after allocation. Lobby is the channel that pushes it; ensure the WebSocket is healthy at this moment.
+- **Stale party → match transitions** — if a party member leaves between matchmaking submission and match confirmation, the rule set may stop being satisfied. Exact behavior (re-queue, match failure, or proceed) varies — test against your AGS version to confirm.
+- **Server endpoint propagation** — game clients need the server endpoint promptly after allocation. Session Management notifies players of the server endpoint; ensure the session notification channel is healthy at this moment.
 - **Crossplay matchmaking** — region routing must respect platform-policy constraints (e.g. PSN ↔ Xbox crossplay rules apply at platform-level, not AGS-level).
 
 ## When custom logic is needed

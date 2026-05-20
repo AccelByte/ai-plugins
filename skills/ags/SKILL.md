@@ -1,6 +1,6 @@
 ---
 name: ags
-description: "AccelByte Gaming Services (AGS) — managed game backend. Covers player auth (IAM), lobby, sessions, matchmaking, leaderboards, achievements, store, wallet, entitlements, and namespace setup. Default landing skill for any AccelByte question not pinned to ags-extend. Use whenever the user mentions AccelByte, AGS, IAM, OAuth clients, PCCU, namespaces, or any AGS module — even without saying 'AGS' explicitly."
+description: "AccelByte Gaming Services (AGS) — managed game backend. Covers player auth (IAM), lobby, sessions, matchmaking, leaderboards, achievements, store, wallet, entitlements, analytics, social, and more. Default landing skill for any AccelByte question not pinned to ags-extend. Use whenever the user mentions AccelByte, AGS, IAM, OAuth clients, PCCU, namespaces, or any AGS module — even without saying 'AGS' explicitly."
 allowed-tools: Bash Read Write Edit Glob
 model: sonnet
 ---

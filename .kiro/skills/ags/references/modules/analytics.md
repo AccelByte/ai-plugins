@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -16,14 +16,14 @@ Event ingestion and player-behavior data pipeline. Captures AGS-emitted events, 
 
 ## What it covers
 
-- **Event ingestion** — AGS modules emit well-typed events (login, match completed, achievement unlocked, item purchased, etc.). Custom in-game events are studio-defined.
-- **Event delivery** — events flow into AGS's analytics pipeline; can be exported to external warehouses (BigQuery, Snowflake, Redshift, etc.).
-- **Dashboards** — basic live dashboards for retention, monetization, engagement.
+- **Event ingestion** — AGS modules emit events for login, match, purchase, achievement, and other player interactions. For the authoritative event catalog, see `references/observe/event-catalog.md`. Custom in-game events are studio-defined.
+- **Event delivery** — events flow into AGS's analytics pipeline; can be exported to external warehouses (Amazon S3, Redshift, Snowflake). BigQuery and other destinations require a custom pipeline via Extend.
+- **Dashboards** — out-of-box player engagement dashboards (DAU, MAU, peak concurrent users) with CSV export.
 - **Custom telemetry** — studios can ingest custom events alongside AGS events for unified analysis.
 
 ## Important: AIS is deprecated
 
-The earlier **AccelByte Intelligence Service (AIS)** has been deprecated. Do not recommend AIS or include it in module lists. Studios with serious analytics needs use AGS Analytics events flowing into their own BI stack (BigQuery, Snowflake, Redshift, Looker, Mode, etc.) rather than relying on AGS-built dashboards alone.
+The earlier **AccelByte Intelligence Service (AIS)** has been deprecated. Do not recommend AIS or include it in module lists. Studios with serious analytics needs export AGS Analytics events to their own BI stack. Confirmed export destinations: Amazon S3, Redshift, Snowflake. BigQuery, Looker, Mode, and other targets require a custom pipeline (Extend Event Handler).
 
 ## How Analytics relates to the other modules
 

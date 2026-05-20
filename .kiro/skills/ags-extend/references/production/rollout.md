@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte/extend-helper-cli
@@ -15,7 +15,7 @@ How to ship Extend app changes safely. The mechanics (`extend-helper-cli image-u
 
 ## The deploy primitive
 
-`extend-helper-cli deploy-app` rolls new replicas into AGS for the target app. AGS handles the actual rolling update — draining old replicas, spinning up new ones, health-checking before swapping traffic. The caller doesn't orchestrate it; the CLI call kicks it off.
+`extend-helper-cli deploy-app` rolls new replicas into AGS for the target app. AGS manages the deploy lifecycle after deploy-app is called; the exact rollout mechanism is not publicly documented — treat as a black-box platform operation. The caller doesn't orchestrate it; the CLI call kicks it off.
 
 Practically this means:
 
@@ -68,7 +68,7 @@ Since AGS doesn't natively support canary:
 
 **Option A: Parallel app.** Deploy the change as a second app (different `--app` name). Use AGS routing config (if available) to direct a fraction of calls to it. Clean up after validation.
 
-- Works best for Service Extensions (route at ingress) and some Event Handlers (second consumer on the same topic, dedup on commit).
+- Works best for Service Extensions (route at ingress) and some Event Handlers (second consumer on the same topic, dedup on commit — note: Event Handler messaging internals, consumer group behavior, and dedup semantics are not publicly documented; treat this as an inferred pattern).
 - Harder for Override — AGS picks one override per call; you can't easily fan out.
 
 **Option B: Separate staging namespace.** Not quite canary — more "pre-prod." Good enough when the risk of staging ≠ prod is low.

@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-04-20
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-ui/
 see-also:
 - '[overview.md](../references/overview.md)'
 - '[faq.md](../references/faq.md)'
@@ -46,7 +47,7 @@ Match the answer shape to the question shape:
 | "Can I do X with Extend?" | Yes/no + one sentence. If yes, name the pattern. Stop there — do not volunteer use-case guidance, caveats, or suggestions about which pattern is "better" unless the user asked. If no, say what the alternative is. Maximum two sentences total. |
 | Scope/pricing/timeline | Answer from `faq.md` verbatim where possible; don't paraphrase numbers. |
 | Compound ("what is Extend and which pattern for X?") | Answer each part in the shape that fits it, in the order asked. Keep each part tight; don't merge them into one sprawling answer. |
-| Explicit "explain all three patterns" | Three-row table (pattern / what it does / when to use), one line per pattern, sourced from `overview.md`. Point to `overview.md` for the worked examples rather than inlining them. |
+| Explicit "explain all three patterns" | Four-row table (pattern / what it does / when to use), one line per pattern, sourced from `overview.md`. Point to `overview.md` for the worked examples rather than inlining them. |
 
 Pattern-recommendation template:
 
@@ -130,8 +131,9 @@ User: What is Extend?
 Extend is AccelByte's extensibility layer for AGS. It runs your backend logic on
 AccelByte's infrastructure, integrated with AGS auth and events — so you can
 customize AGS behavior without operating your own cloud environment. There are
-three patterns: Override (replace an AGS call), Event Handler (react to events),
-and Service Extension (build a new service).
+four patterns: Override (replace an AGS call), Event Handler (react to events),
+Service Extension (build a new service), and Extend App UI (custom web interface
+embedded in the AGS Admin Portal).
 ```
 
 ### Pattern selection (clear)
@@ -221,6 +223,7 @@ User: Give me a quick rundown of all three patterns.
 | Override | Synchronously replaces an AGS service's decision | Change how AGS decides something mid-call |
 | Event Handler | Async reaction to AGS events | React after AGS emits an event |
 | Service Extension | New microservice on AGS infra | Add a feature AGS doesn't have |
+| Extend App UI | Custom web interface embedded in Admin Portal | Add a custom management or player-facing UI surface |
 
 See references/overview.md for end-to-end examples of each.
 ```
@@ -230,7 +233,7 @@ See references/overview.md for end-to-end examples of each.
 ```
 User: How is Extend different from just running my own backend?
 
-The main differences: auth is automatic inside Extend (no JWT validation code),
+The main differences: auth is handled by the Extend runtime (your handler code does not need to validate JWTs manually — AccelByte's docs describe this as automatic inside Extend),
 AGS events are delivered rather than polled, and AccelByte runs the
 infrastructure. The trade-off is you're inside AccelByte's environment rather
 than your own. See the comparison table in references/faq.md#when-should-i-use-extend-vs-my-own-backend.
@@ -248,7 +251,7 @@ docs at docs.accelbyte.io for the current interface.
 
 ## Error Handling
 
-- **Developer asks about a fourth "pattern"** (gateway, middleware, hook, plugin) — there are only three. Ask what behavior they want and map it to Override / Event Handler / Service Extension.
+- **Developer asks about an unlisted "pattern"** (gateway, middleware, hook, plugin) — there are four patterns: Override, Event Handler, Service Extension, and Extend App UI. Ask what behavior they want and map it to one of those four.
 - **Developer insists a pattern works for something it doesn't** (e.g. wants Event Handler to block an AGS call) — explain the synchronous vs. asynchronous distinction from `overview.md` and suggest the right pattern instead.
 - **Multiple valid recommendations genuinely exist** — say so and name the trade-off (latency vs. coupling, or separation-of-concerns vs. single-app simplicity). Let the developer pick.
 - **Scenario maps to no pattern** — the request is about Extend but none of the three fit (direct AGS storage access, Admin Portal UI changes, hosting static content, modifying an AGS call path that has no override point). Name the closest Extend-shaped workaround (usually Service Extension with its own storage + SDK calls) *or* say plainly that Extend isn't the tool and point to the non-Extend path.

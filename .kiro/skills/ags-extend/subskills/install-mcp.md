@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -19,7 +19,7 @@ Wire the two AGS Extend MCP servers (`ags-api` and `ags-extend-sdk`) into the us
 <grounding_rules>
 
 - Each supported IDE has a specific config path and JSON structure — use exactly the structure given in this file. Do not blend Cursor's shape into Claude Code's file or vice versa.
-- The two server commands (`npx -y @accelbyte/ags-mcp-server` and the Docker image) are fixed. Do not substitute alternate packages, versions, or images without user direction.
+- The two server commands (both Docker images) are fixed. Do not substitute alternate packages, versions, or images without user direction.
 - Do not invent env var names. Each server reads a specific set of env vars listed below.
 
 </grounding_rules>
@@ -39,12 +39,9 @@ Before merging the config, check:
 
 | Dependency | Required for | Detection |
 |---|---|---|
-| `npx` (Node.js) | `ags-api` server | `npx --version` |
-| Docker daemon running | `ags-extend-sdk` server | `docker info` |
+| Docker daemon running | Both servers | `docker info` |
 
-If `npx` is missing, warn and offer to install only `ags-extend-sdk`.
-If Docker isn't running, warn and offer to install only `ags-api`.
-If both are missing, stop and tell the user to install at least one.
+If Docker isn't running, stop and tell the user to start Docker before continuing.
 
 </dependency_checks>
 
@@ -79,15 +76,16 @@ If the user previously copied an older plugin-generated MCP config into their ID
 
 Exposes AccelByte Gaming Services API operations — query players, namespaces, entitlements, events, and other AGS resources from the IDE.
 
-- **Command:** `npx -y @accelbyte/ags-mcp-server`
-- **Requires:** Node.js / npx (LTS 18+)
-- **Env vars:** `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET`
+- **Command:** `docker run -d -e AB_BASE_URL=<url> -p 3000:3000 ghcr.io/accelbyte/ags-api-mcp-server:2026.2.0`
+- **Requires:** Docker daemon running
+- **Transport:** HTTP — connect the IDE to `http://localhost:3000/mcp`
+- **Auth:** OAuth handled via discovery — no `AB_CLIENT_ID` or `AB_CLIENT_SECRET` needed in IDE config
 
 ### ags-extend-sdk
 
 Exposes AccelByte Extend SDK functions and models as context for AI code generation. Per-language — the `CONFIG_DIR` env var selects which SDK surface is loaded.
 
-- **Command:** `docker run -i --rm -e CONFIG_DIR ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.1.0`
+- **Command:** `docker run -i --rm -e CONFIG_DIR ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.2.0`
 - **Requires:** Docker daemon running, image pullable from ghcr.io
 - **Env vars:** `CONFIG_DIR` (one of `config/go`, `config/java`, `config/python`, `config/csharp`)
 
@@ -101,15 +99,20 @@ For Codex, add or update only the needed MCP server tables:
 
 ```toml
 [mcp_servers.ags_api]
-command = "npx"
-args = ["-y", "@accelbyte/ags-mcp-server"]
+url = "http://localhost:3000/mcp"
 
 [mcp_servers.ags_extend_sdk]
 command = "docker"
-args = ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.1.0"]
+args = ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.2.0"]
 ```
 
-Tell the user to provide `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `CONFIG_DIR` through the environment Codex runs in. After writing config, tell the user to restart Codex or reload MCP servers. The setup is not verified until Codex shows tools for the configured servers or the underlying commands start without immediate configuration errors.
+Before writing config, tell the user to start the ags-api container first:
+
+```bash
+docker run -d -e AB_BASE_URL=<url> -p 3000:3000 ghcr.io/accelbyte/ags-api-mcp-server:2026.2.0
+```
+
+Tell the user to provide `CONFIG_DIR` for ags-extend-sdk through the environment Codex runs in. After writing config, tell the user to restart Codex or reload MCP servers. The setup is not verified until Codex shows tools for the configured servers or the underlying commands start without immediate configuration errors.
 
 If the user is not running Codex, skip this section and use the IDE-specific JSON workflow below.
 
@@ -123,16 +126,19 @@ If "other," show the generic `ags-api` + `ags-extend-sdk` JSON and tell the user
 
 ### Step 2 — Check dependencies
 
-Run `npx --version` and `docker info` in parallel. Report:
+Run `docker info`. Report:
 
 ```
-  ✓ npx    10.2.4
-  ✗ docker daemon not running
-
-You can install ags-api only (Docker is required for ags-extend-sdk). Continue? (yes/no)
+  ✓ docker daemon running
 ```
 
-Let the user decide. If they decline, stop here without writing anything.
+or
+
+```
+  ✗ docker daemon not running — both servers require Docker. Start Docker and retry.
+```
+
+If Docker isn't running, stop here without writing anything.
 
 ### Step 3 — Pick SDK language
 
@@ -185,21 +191,26 @@ Merge by reading the existing JSON, inserting the new entries under `mcpServers`
 
 #### Claude Code (`.mcp.json` or `~/.claude.json`)
 
+Start the ags-api container before configuring the IDE:
+
+```bash
+docker run -d -e AB_BASE_URL="${AB_BASE_URL:-https://demo.accelbyte.io}" -p 3000:3000 ghcr.io/accelbyte/ags-api-mcp-server:2026.2.0
+```
+
+Then add via CLI: `claude mcp add --transport http ags-api http://localhost:3000/mcp`
+
+Or write directly to the config file:
+
 ```json
 {
   "mcpServers": {
     "ags-api": {
-      "command": "npx",
-      "args": ["-y", "@accelbyte/ags-mcp-server"],
-      "env": {
-        "AB_BASE_URL": "${AB_BASE_URL:-https://demo.accelbyte.io}",
-        "AB_CLIENT_ID": "${AB_CLIENT_ID}",
-        "AB_CLIENT_SECRET": "${AB_CLIENT_SECRET}"
-      }
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
     },
     "ags-extend-sdk": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.1.0"],
+      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.2.0"],
       "env": {
         "CONFIG_DIR": "${CONFIG_DIR:-{config-dir}}"
       }
@@ -210,21 +221,18 @@ Merge by reading the existing JSON, inserting the new entries under `mcpServers`
 
 #### Cursor (`~/.cursor/mcp.json` or `<project>/.cursor/mcp.json`)
 
+Start the ags-api container first (see Claude Code section above). Then:
+
 ```json
 {
   "mcpServers": {
     "ags-api": {
-      "command": "npx",
-      "args": ["-y", "@accelbyte/ags-mcp-server"],
-      "env": {
-        "AB_BASE_URL": "https://demo.accelbyte.io",
-        "AB_CLIENT_ID": "",
-        "AB_CLIENT_SECRET": ""
-      }
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
     },
     "ags-extend-sdk": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.1.0"],
+      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.2.0"],
       "env": {
         "CONFIG_DIR": "{config-dir}"
       }
@@ -233,25 +241,20 @@ Merge by reading the existing JSON, inserting the new entries under `mcpServers`
 }
 ```
 
-Cursor doesn't expand `${VAR}` in env values — tell the user to fill in `AB_CLIENT_ID` / `AB_CLIENT_SECRET` literally, or use the IDE's secrets panel if available.
-
 #### Windsurf (`~/.codeium/windsurf/mcp_config.json`)
+
+Start the ags-api container first (see Claude Code section above). Then:
 
 ```json
 {
   "mcpServers": {
     "ags-api": {
-      "command": "npx",
-      "args": ["-y", "@accelbyte/ags-mcp-server"],
-      "env": {
-        "AB_BASE_URL": "${env:AB_BASE_URL}",
-        "AB_CLIENT_ID": "${env:AB_CLIENT_ID}",
-        "AB_CLIENT_SECRET": "${env:AB_CLIENT_SECRET}"
-      }
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
     },
     "ags-extend-sdk": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.1.0"],
+      "args": ["run", "-i", "--rm", "-e", "CONFIG_DIR", "ghcr.io/accelbyte/ags-extend-sdk-mcp-server:2026.2.0"],
       "env": {
         "CONFIG_DIR": "${env:CONFIG_DIR}"
       }
@@ -274,16 +277,12 @@ Added:
   ✓ ags-api
   ✓ ags-extend-sdk (CONFIG_DIR = {config-dir})
 
-Before using, set these environment variables in your shell (or the IDE's
-environment settings):
+The ags-api container must be running before starting your IDE. Start it with:
 
-  AB_BASE_URL        — your AGS base URL (e.g. https://my-studio.accelbyte.io)
-  AB_CLIENT_ID       — OAuth client ID (create an IAM client in the Admin Portal
-                       with the permissions the MCP will use)
-  AB_CLIENT_SECRET   — OAuth client secret (do not commit)
+  docker run -d -e AB_BASE_URL=<your-ags-url> -p 3000:3000 ghcr.io/accelbyte/ags-api-mcp-server:2026.2.0
 
-CONFIG_DIR is already embedded. If you change languages later, update it
-in {config-file-path} or set CONFIG_DIR in your environment.
+For ags-extend-sdk, set CONFIG_DIR in your environment. It is already embedded in
+the config — update {config-file-path} if you change languages later.
 
 Restart {IDE} for the new MCP connections to activate.
 ```
@@ -297,7 +296,7 @@ Restart {IDE} for the new MCP connections to activate.
 | `ags-api` already present, different command | Show both entries, ask which to keep. Don't auto-pick either. |
 | `ags-extend-sdk` present with a different image tag | Treat as above; mention that newer tags exist (the one in this file) but let the user decide. |
 | User picks a language not in the table | Stop — the SDK MCP supports only the four listed. Ask again. |
-| Docker is installed but daemon not running | Offer: install `ags-api` only now, or start Docker and retry. |
+| Docker is installed but daemon not running | Both servers require Docker. Tell the user to start Docker and retry. |
 | Windsurf path doesn't exist yet | Create it (and the `~/.codeium/windsurf/` directory). Don't fall back to a different file. |
 | User wants both project and global configs | Pick one for this run. Say: "I'll write one at a time — re-run `/ags-extend install-mcp` and choose the other scope if you want both." |
 | "other" IDE | Print the generic JSON block and the required env vars. Stop without writing. |
@@ -313,8 +312,7 @@ Skill: Which AI IDE are you setting up? (Claude Code / Cursor / Windsurf / Kiro 
 
 User: Claude Code
 
-Skill: ✓ npx 10.2.4
-       ✓ docker daemon running
+Skill: ✓ docker daemon running
 
        Which language is your Extend app in? (Go / Java / Python / C#)
 
@@ -347,23 +345,26 @@ Skill: [writes ./.mcp.json]
        Restart Claude Code for the new MCP connections to activate.
 ```
 
-### ags-api only (Docker unavailable)
+### ags-api only (user requests it)
 
 ```
-Skill: ✓ npx 10.2.4
-       ✗ docker daemon not running
+User: I only need ags-api
 
-       You can install ags-api only. Continue? (yes/no)
+Skill: ✓ docker daemon running
 
-User: yes
+       Which language is your Extend app in? (Go / Java / Python / C#)
+       (Skip if only installing ags-api)
 
-Skill: [proceeds, skipping ags-extend-sdk]
+User: skip
+
+Skill: [proceeds with ags-api only]
        …
        Added:
          ✓ ags-api
-         ✗ ags-extend-sdk (skipped — Docker daemon not running)
+         — ags-extend-sdk (skipped)
 
-       Start Docker and re-run /ags-extend install-mcp to add ags-extend-sdk later.
+       Start the ags-api container before restarting your IDE:
+         docker run -d -e AB_BASE_URL=<url> -p 3000:3000 ghcr.io/accelbyte/ags-api-mcp-server:2026.2.0
 ```
 
 ### Conflict — ags-api already present
@@ -379,13 +380,8 @@ Skill: Reading ./.mcp.json…
 
        Proposed replacement:
          {
-           "command": "npx",
-           "args": ["-y", "@accelbyte/ags-mcp-server"],
-           "env": {
-             "AB_BASE_URL": "${AB_BASE_URL:-https://demo.accelbyte.io}",
-             "AB_CLIENT_ID": "${AB_CLIENT_ID}",
-             "AB_CLIENT_SECRET": "${AB_CLIENT_SECRET}"
-           }
+           "type": "http",
+           "url": "http://localhost:3000/mcp"
          }
 
        Which to keep? (existing / replace / skip this server but add ags-extend-sdk)

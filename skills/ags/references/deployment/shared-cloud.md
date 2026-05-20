@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -21,7 +21,7 @@ A multi-tenant, AccelByte-operated cloud deployment that hosts namespaces for ma
 ## When it's the right answer
 
 - **Indie / mid-market studios** building their first online title or expanding a single title.
-- **Pre-launch and early-launch** phases when the player base is small.
+- **Pre-launch and early-launch** phases when the player base is small (note: default CCU quota is 25,000 concurrent players per game — see CCU quota note below).
 - Studios that **don't have data-residency constraints** and aren't bound by enterprise compliance requirements.
 - Studios that **want minimal ops involvement** — the whole point is that someone else runs the platform.
 
@@ -37,8 +37,12 @@ The next step is **Private Cloud** (`references/deployment/private-cloud.md`) or
 ## Operational shape
 
 - **Upgrades** — AccelByte's release cadence; managed maintenance windows. Studios don't control when upgrades happen but get advance notice.
-- **Support tier** — community / standard depending on the contract.
+- **Support tier** — Discord Community for self-serve; higher-tier support is contract-dependent.
 - **Region choices** — limited to the regions AGS already operates in. Adding a region is an AccelByte-side decision, not a customer-side one.
+
+## CCU quota
+
+Default 25,000 concurrent players per game. New logins above the quota return HTTP 403 unless Login Queue is enabled (Admin Portal → Login Queue). Contact AccelByte support to raise the cap.
 
 ## Pricing implications
 

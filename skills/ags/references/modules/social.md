@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -16,10 +16,9 @@ Friends, blocking, notifications. The relationship-graph layer of AGS — durabl
 ## What it covers
 
 - **Friends** — bidirectional relationship between two players. Scoped per namespace.
-- **Blocking** — one-way block. Blocked players can't message, invite, or see each other's presence.
+- **Blocking** — bidirectional. Once blocked, neither player can send friend requests, party invitations, or be matched together. Effect on presence visibility — verify against Presence module docs.
 - **Friend requests** — request, accept, reject, cancel.
-- **Notifications** — in-platform notifications for friend events (friend online, request received, etc.).
-- **Search / suggestion** — find players by display name; surface suggested friends based on co-played sessions.
+- **Notifications** — friend request received and accepted events. Online/availability notifications come from the Presence module.
 
 ## How Social relates to the other modules
 
@@ -32,7 +31,7 @@ Friends, blocking, notifications. The relationship-graph layer of AGS — durabl
 
 ## Where Social ends
 
-- **Voice chat** — not in Social. AccelByte ships a Vivox integration as an Extend Service Extension.
+- **Voice chat** — not in Social. Studios typically integrate a third-party voice SDK (e.g. Vivox, Agora) as an Extend Service Extension.
 - **Clan / guild systems** — beyond friends graph. Stand up a Service Extension via Extend; route to `/ags-extend ask`.
 - **Cross-platform friends** — works because AGS identity is cross-platform. Players linked across PC + console + mobile share one friends graph.
 

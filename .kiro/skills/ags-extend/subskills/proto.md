@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte/accelbyte-api-proto
@@ -317,10 +317,14 @@ Skill: pkg/proto/ contains only:
        IAM account example. Before regen will help you, copy the proto from
        github.com/AccelByte/accelbyte-api-proto:
 
-         1. Find Match.Completed in accelbyte-api-proto
-            (likely under accelbyte-asyncapi/match/v1/ or similar)
-         2. Copy that .proto preserving its directory structure into
-            ./match-event-handler/pkg/proto/
+         1. Find the event proto in accelbyte-api-proto under
+            `asyncapi/accelbyte/<service>/` (e.g.
+            `asyncapi/accelbyte/matchmaking/matchmaking/v1/matchmaking.proto`
+            for Match events)
+         2. Copy `asyncapi/accelbyte/{path}` into
+            `./match-event-handler/pkg/proto/accelbyte-asyncapi/{path}` —
+            strip the repo's `asyncapi/accelbyte/` prefix and use
+            `accelbyte-asyncapi/` as the target prefix so `make proto` finds it
          3. Re-run /ags-extend proto
 
        I won't write the proto schema myself — the canonical contract lives

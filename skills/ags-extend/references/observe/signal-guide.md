@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -15,11 +15,11 @@ How to interpret app statuses and log patterns from deployed Extend apps.
 
 | Status | Meaning | Typical Cause |
 |---|---|---|
-| `Running` | App is healthy and serving traffic | Normal |
-| `Deploying` | A new version is being rolled out | Recent deploy in progress |
-| `Degraded` | App is running but unhealthy — errors or failed health checks | App crashes, bad config, or unhandled panics |
-| `Stopped` | App is not running | Manual stop, failed deploy, or resource limit hit |
-| `Failed` | Deploy attempt failed | Build error, image push failure, or AGS-side error |
+| `running` | App is healthy and serving traffic | Normal |
+| `starting` | A new version is being rolled out (Portal UI: "Deploying") | Recent deploy in progress |
+| `error` | App running but unhealthy (Portal UI: "Degraded") | App crashes, bad config, or unhandled panics |
+| `stopped` | App is not running | Manual stop, failed deploy, or resource limit hit |
+| `deployment failed` | Deploy attempt failed (Portal UI: "Failed") | Build error, image push failure, or AGS-side error |
 
 ## Healthy Log Signals
 
@@ -65,11 +65,11 @@ main.yourFunction(...)         ← your code — this is the entry point to fix
 
 Ignore `runtime/` and `google.golang.org/grpc/` lines — focus on your own package paths.
 
-## Degraded but No Errors in Logs
+## error / Degraded but No Errors in Logs
 
-If the app is `Degraded` but logs look clean:
+If the app shows `error` (Portal: "Degraded") but logs look clean:
 
-1. Fetch more lines: `--tail 200`
+1. Open Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud) and expand the time range or increase the line limit in Explore to see more log output
 2. Check if the health check endpoint is failing — the app may be alive but not responding on the expected port
 3. Check the app's status and recent state with `extend-helper-cli get-app-info --namespace {ns} --app {app}` — `OOMKilled` may not always appear in app logs (see `references/observe/cli-commands.md`)
 4. If still unclear, redeploy with `/ags-extend deploy` and monitor the fresh startup

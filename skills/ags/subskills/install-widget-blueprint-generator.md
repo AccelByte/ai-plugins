@@ -7,7 +7,7 @@ description: Install the WidgetBlueprintGenerator Unreal editor plugin supplied 
   directory.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://github.com/AccelByte/unreal-sdk-mcp-server
 see-also:
@@ -30,8 +30,8 @@ The plugin folder is the complete reusable package: `WidgetBlueprintGenerator.up
 
 - The Widget Blueprint Generator package comes from the AccelByte Unreal SDK MCP server declared in `content/mcps/unreal-sdk.yaml`.
 - Do not assume a user-specific MCP install path. Discover the MCP server checkout/cache location, then use its `data/WidgetBlueprintGenerator` directory.
-- For Codex, first check the preferred local clone path from `/ags init`: `.codex/mcp/unreal-sdk-mcp-server/data/WidgetBlueprintGenerator`.
-- For non-Codex IDEs where the server is managed by the published MCP declaration, discover the checkout/cache location through the IDE's MCP status, the configured command, or a targeted cache search. The published declaration may run `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main accelbyte-unreal-sdk-mcp-server`, but Codex should prefer the local clone path unless the user explicitly chose the `uvx` fallback.
+- For Codex, first check the preferred local clone path from `/ags init`: `.codex/mcp/unreal-sdk-mcp-server/data/WidgetBlueprintGenerator`. (This path is an internal convention established by `/ags init` — not documented in the upstream repo. The convention is valid only when the user cloned via `/ags init` or followed the same `.codex/mcp/` layout manually.)
+- For non-Codex IDEs where the server is managed by the published MCP declaration, discover the checkout/cache location through the IDE's MCP status, the configured command, or a targeted cache search. The published declaration may run `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main accelbyte-unreal-sdk-mcp-server` (uvx entrypoint not confirmed against repo — verify a `[project.scripts]` entry exists before relying on this; if absent, use the pip+python startup path instead), but Codex should prefer the local clone path unless the user explicitly chose the `uvx` fallback.
 - If the Unreal SDK MCP server or `data/WidgetBlueprintGenerator` package is missing, route the user to the plugin MCP install/setup flow first (`/ags install-mcp` or the plugin `INSTALL.md`) so the `AccelByte Unreal SDK MCP Server` entry is installed and started. Do not invent a download source.
 - Read the discovered package `README.md` and `Tools/README.md` before installing if present.
 - Install by copying the package into an Unreal project as `Plugins/WidgetBlueprintGenerator`.

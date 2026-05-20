@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -21,7 +21,7 @@ Common auth-error signatures and what they usually mean. Used by `subskills/debu
 
 Check:
 
-1. Is the SDK's token refresh logic firing? Look for the SDK refreshing tokens before expiry — typically 1 minute pre-expiry.
+1. Is the SDK's token refresh logic firing? Check your SDK version's refresh window in the SDK docs — the pre-expiry interval varies by version.
 2. Did the player explicitly log out? Logout revokes the refresh token AGS-side; subsequent calls fail.
 3. Is the token's `exp` claim sane? Decode the JWT (middle segment, base64) and check.
 
@@ -113,7 +113,7 @@ ags describe iam platform-credentials create
 
 Use `--skeleton` if available. Do not reuse the Device body for every platform; other platforms usually require their own fields, such as client ID, client secret, app ID, environment, or issuer values.
 
-Device minimal body example:
+Device minimal body example (verify required fields first via `ags describe iam platform-credentials create --platform-id device --skeleton` — the Device ID provider docs don't list `RedirectUri` as a required field, so this body may differ from what your AGS version expects):
 
 ```json
 {
@@ -149,7 +149,7 @@ Fix: enable the missing scope on the IAM client (Admin Portal). Re-authenticate 
 Check:
 
 1. Is the platform-side login itself succeeding? Try the platform's own SDK independently of AGS.
-2. Is the credential being passed to AGS in the form AGS expects? (Steam wants the encrypted ticket; PSN wants the auth code; etc.)
+2. Is the credential being passed to AGS in the form AGS expects? (Steam wants the auth ticket obtained via GetAuthTicketForWebApi; PSN wants the auth code; etc.)
 3. Time skew on the device — Steam tickets are time-sensitive.
 
 Fix: depends on which side is broken. Platform-side failures are platform-side fixes; AGS-side failures usually mean credential format mismatch.

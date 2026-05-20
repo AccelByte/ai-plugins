@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/
 see-also:
@@ -21,7 +21,7 @@ Rule-based matchmaking. Consumes **tickets** (player or party requests with attr
 - **Tickets** — a player's or party's request to be placed in a match, with attributes.
 - **Rule sets** — a configured expression that decides when a set of tickets should form a match (e.g. "two parties of equal MMR within 200 points, in the same region").
 - **Match formation** — the matchmaking service produces a match when the rule set is satisfied; the match carries the player roster and triggers session creation.
-- **Region routing** — picks a region for the match based on player latency, cost rules, or capacity.
+- **Region routing** — picks a deployment region for the match; configurable per match pool (see Configure region-based matchmaking in AGS docs).
 - **Backfill** — slot-filling strategies for matches in progress.
 - **Custom attributes** — per-game data on tickets (loadout, preferred mode, skill bands, etc.) that rule sets can reference.
 
@@ -57,5 +57,5 @@ Each step is a separate AGS module / product. Native rule sets cover most matchm
 
 ## Where to look in the docs
 
-- AccelByte matchmaking docs: `https://docs.accelbyte.io/`
+- AccelByte matchmaking docs: `https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/`
 - For depth: `/ags-matchmaking` (peer skill).

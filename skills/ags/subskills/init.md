@@ -5,9 +5,10 @@ description: 'Checklist-driven AGS initializer: project check, SDK/plugin instal
   ID, optional AGS API MCP URL setup, and final summary.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-06
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
 see-also:
 - '[connect-portal.md](connect-portal.md)'
 - '[install-sdk.md](install-sdk.md)'
@@ -208,7 +209,10 @@ For Codex Unreal projects, prefer this local-clone setup:
 ```powershell
 git clone https://github.com/AccelByte/unreal-sdk-mcp-server.git .codex/mcp/unreal-sdk-mcp-server
 python -m pip install -r .codex/mcp/unreal-sdk-mcp-server/requirements.txt
+python .codex/mcp/unreal-sdk-mcp-server/generate_cache.py
 ```
+
+The `generate_cache.py` step is mandatory — without it the server starts but has no symbol cache and provides no useful tool responses. It requires Doxygen XML files in `data/unreal-sdk/` and `data/oss-sdk/` inside the cloned server directory.
 
 Then write this project-scoped config entry:
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -20,9 +20,9 @@ Common Lobby disconnect symptoms and their usual root causes. Used by `subskills
 
 Check:
 
-1. Lobby ping/heartbeat — most SDKs ping the WebSocket on a fixed interval. Confirm the SDK is sending heartbeats and not blocked on the main thread.
+1. Lobby ping/heartbeat — AGS SDK auto-reconnect handles reconnection automatically (60s window; error 4042 when exhausted). Confirm the SDK reconnection loop is not blocked on the main thread.
 2. NAT / firewall idle timeouts — corporate networks and some mobile carriers reap idle TCP connections aggressively. Increase heartbeat frequency or accept brief reconnects.
-3. The token's `exp` claim — when the access token expires, some Lobby implementations drop the connection. Refresh proactively.
+3. The token's `exp` claim — token expiry behavior varies by SDK version; check SDK release notes or test manually to confirm whether token expiry triggers a disconnect in your version.
 
 ## Symptom: Disconnects only on poor-network clients
 
@@ -41,7 +41,7 @@ Fix: ensure the SDK's reconnect logic is enabled, log the reconnect events, and 
 
 Check:
 
-1. Does the Lobby connection re-bind the new access token? Some SDK versions do this automatically, others require an explicit call.
+1. Does the Lobby connection re-bind the new access token? Check your SDK version's token refresh handling — behavior after a mid-session token refresh varies and may require reconnecting to Lobby.
 2. Test: trigger a token refresh manually mid-Lobby-session and watch for disconnect.
 
 Fix: ensure post-refresh, the Lobby connection's auth header is updated. SDK version may have a known fix.

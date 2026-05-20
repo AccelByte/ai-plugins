@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://accelbyte.io/ags-eos
@@ -18,7 +18,7 @@ How AGS bridges to a third-party identity provider (most notably **EOS**, but th
 
 ## What "headless" means
 
-A **headless account** is an AGS player account that has no AccelByte-native credentials of its own (no email/password) and exists solely as a binding between AGS internals (player ID, namespace scope, entitlements, etc.) and a third-party platform identity. The player authenticates via the third-party identity; AGS attaches its own player ID and state to that identity transparently.
+A **headless account** is an AGS player account created when a user signs in via an external identity provider or custom device ID. It carries full AGS internals (player ID, namespace scope, entitlements, etc.) but has no AccelByte-native email/password credential. The player authenticates via the third-party identity; AGS attaches its own player ID and state to that identity transparently.
 
 The player can **upgrade** a headless account later by adding an AccelByte-native credential (email + password), or by linking additional platform identities (e.g. a Steam-headless account links PSN as well, becoming crossplay-ready).
 
@@ -58,7 +58,7 @@ In practice, "headless account linking" is the *default* AGS auth pattern for pl
 
 ## Configuration knobs
 
-- **Auto-create vs. require explicit opt-in** — some namespaces require the player to consent to AGS account creation. Default is auto-create; check Admin Portal IAM config for the namespace's policy.
+- **Auto-create vs. require explicit opt-in** — check Admin Portal IAM config for namespace-level headless account creation policies; default behavior may be auto-create.
 - **Default permissions / role** for headless accounts — configurable per namespace.
 - **Upgrade path** — whether players can later add email/password, link other platforms, etc., is controlled by namespace policy.
 

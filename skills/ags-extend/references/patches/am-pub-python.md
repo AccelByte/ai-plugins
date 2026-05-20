@@ -4,7 +4,7 @@ language: python
 app-types:
 - service-extension
 docs: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
 see-also:
@@ -14,7 +14,7 @@ see-also:
 
 # Async Messaging Publisher — Python
 
-Adds an Async Messaging publisher to a cloned Python Service Extension template. Your app calls the sidecar's gRPC publisher service to push messages to a topic — the sidecar handles routing to the actual SNS/SQS infrastructure.
+Adds an Async Messaging publisher to a cloned Python Service Extension template. Your app calls the sidecar's gRPC publisher service to push messages to a topic — the sidecar handles routing to the configured messaging backend.
 
 ## Compatibility
 
@@ -32,6 +32,8 @@ Adds an Async Messaging publisher to a cloned Python Service Extension template.
 Apply these steps in the app directory after cloning the template.
 
 ### 1. Create the proto file
+
+Copy `publisher_service.proto` from the canonical proto repository at `github.com/AccelByte/accelbyte-api-proto` (check the `asyncapi/` or `extend/` subtree) into `proto/async_messaging/publisher_service.proto`. The version below is a reference — always prefer the canonical repo to avoid drift.
 
 Create `proto/async_messaging/publisher_service.proto`:
 
@@ -53,7 +55,7 @@ option java_package = "net.accelbyte.extend.asyncMessaging";
 
 message PublishMessageRequest {
   string body = 1;
-  string topic = 2;  // together with MANAGED_QUEUE_SNS_TOPIC_ARN_BASE to construct the actual SNS ARN
+  string topic = 2;  // topic name to publish to
 
   // TraceId
   map<string, string> metadata = 3;
@@ -136,9 +138,9 @@ from async_messaging.publisher_service_pb2_grpc import AsyncMessagingPublisherSe
 **b. Add default constants:**
 
 ```python
-DEFAULT_ASYNC_MESSAGING_PUBLISHER_GRPC_HOST: str = "localhost"
+DEFAULT_ASYNC_MESSAGING_PUBLISHER_GRPC_HOST: str = "localhost"  # not in official docs; may be subject to change
 DEFAULT_ASYNC_MESSAGING_PUBLISHER_GRPC_PORT: int = 7474
-DEFAULT_ASYNC_MESSAGING_PUBLISHER_ENABLED: bool = True
+DEFAULT_ASYNC_MESSAGING_PUBLISHER_ENABLED: bool = True  # not in official docs; may be subject to change
 ```
 
 **c. In `main()`, read publisher config and create the stub.** Add before the service is constructed:

@@ -1,7 +1,10 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
+- https://github.com/AccelByte/extend-service-extension-go
+- https://github.com/AccelByte/extend-service-extension-java
+- https://github.com/AccelByte/extend-service-extension-csharp
 see-also:
 - '[init.md](init.md)'
 ---
@@ -17,7 +20,7 @@ Detect the language runtime for each Extend app on disk, then run the per-langua
 - Identify Extend app directories by the presence of `Makefile` + `Dockerfile` together (in the current directory or, for multi-app projects, as `*/Makefile` + `*/Dockerfile` siblings one level down). There is no project-level manifest — each app is its own directory.
 - Detect language per app from on-disk files: `go.mod` → Go, `requirements.txt` or `pyproject.toml` → Python, `*.csproj` → C#, `build.gradle` / `pom.xml` → Java.
 - Do not run a dependency command for a language whose runtime isn't detected. Report and skip instead.
-- Runtime minimums: Go 1.21, Python 3.10, .NET 8, JDK 17. A version below the minimum is a failure, not a warning.
+- Runtime minimums: Go 1.21 (platform floor; official AccelByte sample repos require 1.24 — recommend 1.24+), Python 3.10, .NET 8, JDK 17. A version below the minimum is a failure, not a warning.
 
 </grounding_rules>
 
@@ -99,7 +102,7 @@ For each distinct language across the apps, check in parallel:
 
 | Language | Command | Minimum |
 |---|---|---|
-| Go | `go version` | 1.21 |
+| Go | `go version` | 1.21 (1.24 recommended) |
 | Python | `python3 --version` | 3.10 |
 | C# | `dotnet --version` | 8.0 |
 | Java | `java --version` | 17 |

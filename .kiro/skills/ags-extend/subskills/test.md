@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 see-also:
 - '[unit-go.md](../references/test/unit-go.md)'
 - '[unit-python.md](../references/test/unit-python.md)'

@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 see-also:
 - '[resources.md](resources.md)'
 - '[rate-limiting.md](../cookbook/rate-limiting.md)'
@@ -52,9 +52,9 @@ If you're designing for >60 replicas' worth of load, rethink:
 
 ## Autoscaling
 
-AGS scales Extend replicas between a min and max configured per-app in the AGS Admin Portal (app detail → resource configuration). The `extend-helper-cli` does not accept `--min-replicas` or `--max-replicas` on any subcommand — see `references/deploy/cli-commands.md` for the full replica-related notes. Adjust `Min Replicas` and `Max Replicas` in the Portal (or via the CSM API) and redeploy to pick up the new bounds.
+AGS scales Extend replicas between a min and max configured per-app in the AGS Admin Portal (Extend → [app] → Settings → Auto Scaling Policy). The `extend-helper-cli` does not accept `--min-replicas` or `--max-replicas` on any subcommand — see `references/deploy/cli-commands.md` for the full replica-related notes. Adjust `Min Replicas` and `Max Replicas` in the Portal (or via the CSM API) and redeploy to pick up the new bounds.
 
-Setting `min == max` disables autoscale (fixed size). The actual autoscale triggers (what thresholds AGS uses to scale up/down) are AGS infra; not configurable per-app as of this reference.
+Setting `min == max` disables autoscale (fixed size). The autoscale trigger is CPU utilization, configurable per-app (30–90%, default 50%) via Admin Portal → [app] → Settings → Auto Scaling Policy.
 
 For workloads that need more scaling control than AGS exposes:
 
@@ -65,7 +65,7 @@ For workloads that need more scaling control than AGS exposes:
 
 For Override, cold-start matters because AGS is blocked. If you need burst capacity:
 
-- Raise the min-replica floor in the Admin Portal (app detail → resource configuration) above steady-state demand. Warm replicas serve immediately.
+- Raise the min-replica floor in the Admin Portal (Extend → [app] → Settings → Auto Scaling Policy) above steady-state demand. Warm replicas serve immediately.
 - Keep handler code small. A 10 MB binary starts faster than a 100 MB one.
 - Minimize init-time work (no "load 1 GB of model into memory at startup").
 

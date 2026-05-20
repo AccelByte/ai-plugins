@@ -1,11 +1,11 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 note: SDK package names are per AccelByte's observed repo naming. The current latest
   version per package is NOT tracked here — pull from the SDK's GitHub releases page
   at bump time.
 sources:
 - https://github.com/AccelByte
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 see-also:
 - '[breaking-changes.md](breaking-changes.md)'
 - '[security.md](../production/security.md)'
@@ -21,8 +21,8 @@ Consumed by `subskills/upgrade.md`. Gives the canonical command shape per langua
 |---|---|---|
 | Go | `github.com/AccelByte/accelbyte-go-sdk` | `https://github.com/AccelByte/accelbyte-go-sdk/releases` |
 | Python | `accelbyte-py-sdk` (on PyPI) | `https://github.com/AccelByte/accelbyte-python-sdk/releases` |
-| Java | `net.accelbyte.sdk:accelbyte-java-sdk` | `https://github.com/AccelByte/accelbyte-java-sdk/releases` |
-| C# | `AccelByte.Sdk.Api` / `AccelByte.Sdk.Core` (NuGet) | `https://github.com/AccelByte/accelbyte-csharp-sdk/releases` |
+| Java | `net.accelbyte.sdk:sdk` | `https://github.com/AccelByte/accelbyte-java-sdk/releases` |
+| C# | `AccelByte.Sdk` (NuGet) | `https://github.com/AccelByte/accelbyte-csharp-sdk/releases` |
 
 Package names are per AccelByte's observed conventions. If an install fails with "package not found," the name has drifted — check the release page URL.
 
@@ -82,7 +82,7 @@ Edit `build.gradle` (Groovy) or `build.gradle.kts` (Kotlin):
 
 ```groovy
 dependencies {
-    implementation 'net.accelbyte.sdk:accelbyte-java-sdk:<target-version>'
+    implementation 'net.accelbyte.sdk:sdk:<target-version>'
 }
 ```
 
@@ -100,7 +100,7 @@ Maven equivalent (if the project uses Maven instead of Gradle):
 ```xml
 <dependency>
   <groupId>net.accelbyte.sdk</groupId>
-  <artifactId>accelbyte-java-sdk</artifactId>
+  <artifactId>sdk</artifactId>
   <version>{target-version}</version>
 </dependency>
 ```
@@ -110,23 +110,22 @@ Then `mvn clean install`.
 ### C#
 
 ```bash
-dotnet add package AccelByte.Sdk.Api --version <target-version>
-dotnet add package AccelByte.Sdk.Core --version <target-version>
+dotnet add package AccelByte.Sdk --version <target-version>
 dotnet restore
 dotnet build
 dotnet test
 ```
 
-The SDK is split across a few NuGet packages; bump all AccelByte-prefixed packages together to avoid mixing major versions.
-
 ## Picking the target version
 
-For a clean bump, pick the most recent non-major version. For example, if current is `v1.44.0`:
+For a clean bump, pick the most recent non-major version. All AccelByte SDKs are currently pre-v1.0 (e.g. Go: v0.87.x, Python: v0.83.x, Java: v0.80.x, C#: v0.79.x). Under pre-v1.0 SemVer, **minor bumps may include breaking changes** — review the release notes before applying.
 
-- Good default: latest `v1.x.y` — e.g. `v1.47.0`. Non-breaking by SemVer.
-- Risky: latest `v2.0.0+`. Major bump — breaking changes are expected.
+For example, if current is `v0.87.0`:
 
-**Don't cross a major version unintentionally.** The `subskills/upgrade.md` workflow warns explicitly when the target crosses a major boundary.
+- Good default: latest `v0.x.y` — e.g. `v0.87.2`. Likely stable but review the changelog.
+- Risky: any bump that jumps multiple minor versions. Breaking API changes can land in any minor release before v1.0.
+
+**Don't cross a minor version unintentionally on pre-v1.0 SDKs.** The `subskills/upgrade.md` workflow warns explicitly when the target may include breaking changes.
 
 ## Transitive dependencies
 

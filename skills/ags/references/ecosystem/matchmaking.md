@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/
+- https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/match-ticket-lifecycle/
 see-also:
 - '[matchmaking.md](../modules/matchmaking.md)'
 - '[session.md](../modules/session.md)'
@@ -24,10 +25,10 @@ A rule-based matchmaking service that consumes tickets (player or party requests
 
 The "match" concept sounds simple but the surface area is large:
 
-- **Rule expressions** are their own DSL. Studios spend real time writing, testing, and tuning them.
-- **MMR / skill modeling** has multiple supported approaches (Elo, TrueSkill-like). Choosing and tuning one is non-trivial.
+- **Rule expressions** follow a structured ruleset configuration. Studios spend real time writing, testing, and tuning them.
+- **MMR / skill modeling** — AGS stores MMR as a custom player attribute; studios populate and update it using their own formula (no built-in Elo or TrueSkill implementation). Choosing and tuning the formula is non-trivial.
 - **Ticket lifecycle** has timeout, expansion, backfill, and partial-match behaviors that all interact.
-- **Region routing** picks regions based on player latency, cost, or custom rules — and matters a lot at scale.
+- **Region routing** — region preferences can be specified as ticket attributes; at scale, region selection strategy matters a lot for player experience.
 - **Debugging** ("why aren't matches forming?", "why are matches lopsided?", "why is wait time spiking?") is a discipline of its own.
 
 Trying to inline all of this into `/ags` would either bury the rest of the AGS conversation or stay too shallow to be useful. `/ags-matchmaking` exists to give matchmaking the depth it needs.

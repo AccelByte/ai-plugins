@@ -5,7 +5,7 @@ description: 'Checklist-driven AGS feature planner: verifies init prerequisites,
   slice, iterates on an implementation plan, and writes an approved plan document.'
 allowed-tools: Read Write Glob Bash
 model: sonnet
-last-verified: 2026-05-06
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -55,7 +55,7 @@ For non-Codex agents, mirror the checklist using the agent's native task-trackin
 - Suggest one or two small implementation slices first. Do not present a full product roadmap unless the user asks for roadmap planning.
 - If a request belongs to a peer skill, flag it instead of pretending this wizard owns it:
   - Deep matchmaking rules/MMR -> `/ags-matchmaking`.
-  - Dedicated server fleet work -> `/ags-ams`.
+  - Dedicated server fleet work (AMS / Multiplayer Servers / Dedicated Server Hub) -> `/ags-ams`.
   - Custom backend behavior or service override -> `/ags-extend`.
   - Build distribution/crash/playtest -> `/adt`.
 
@@ -248,6 +248,8 @@ Examples:
 - Simple Statistics write/read for a score or match result already visible in code.
 - A simple leaderboard around an existing score value.
 - Achievements only if the project already has clear milestones.
+- Challenges if the project has quest-style milestones or daily/weekly goals.
+- Cloud Save for any single-player project that already has saveable state.
 - Lobby/session only if multiplayer flow exists or the user confirmed multiplayer.
 
 Ask the user to approve one suggestion or name another feature they want instead.

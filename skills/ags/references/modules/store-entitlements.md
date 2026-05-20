@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -17,9 +17,9 @@ Item catalog, purchase flows, wallet, DLC management. The economy layer of AGS. 
 ## What it covers
 
 - **Catalog** — items (skins, bundles, loot boxes, season passes, DLC), per-currency pricing, per-platform variants, categorization.
-- **Currencies** — real (USD via Stripe / platform IAP) and virtual (gold coins, gems, in-game currencies).
-- **Wallet** — per-player, per-namespace currency balances.
-- **Orders** — transactional records with states (init, pending, fulfilled, refunded). One order can yield multiple entitlements.
+- **Currencies** — real (via platform IAP — PlayStation, Xbox, Steam, etc.) and virtual (gold coins, gems, in-game currencies).
+- **Wallet** — each virtual currency is its own per-player wallet with publisher-namespace or game-namespace scope. Platform IAP credits are tracked in platform-specific sub-wallets (Steam, PSN, Xbox); overall balance = sum of sub-wallets.
+- **Orders** — transactional records. States: Unpaid → Paid → Fulfilled (success); Refunding → Refunded; Chargeback → Chargeback Reversed; Fulfill Failed; Closed (unpaid orders expire after 10 min). One order can yield multiple entitlements.
 - **Entitlements** — what the player owns. Granted by purchase, by promotion, by achievement unlock, etc. Checked at use-time (e.g. before equipping a cosmetic).
 - **DLC reconciliation** — platform DLC (Steam DLC, PSN DLC, Xbox DLC) is reconciled with the AGS entitlement model so players don't lose ownership across platforms.
 - **Promotions / coupons** — time-limited or condition-gated grants of items, currency, or discounts.
@@ -42,7 +42,7 @@ Common Extend patterns:
 - **Service Extension** — custom storefront features AGS doesn't natively support (custom bundles, gacha mechanics, dynamic loot boxes).
 - **Event Handler** — react to purchase events (CRM updates, external fulfillment, fraud monitoring).
 
-`Gacha Suite` in the Extend Apps Directory is a worked example: idle-gacha game backend integrating with AGS wallet, stats, cloud save.
+For a worked example (e.g. idle-gacha backend integrating with AGS wallet, stats, cloud save), check the current Extend Apps Directory — verify the app name and URL at https://docs.accelbyte.io/ as names may change.
 
 ## Where to look in the docs
 

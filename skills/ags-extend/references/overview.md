@@ -1,9 +1,14 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 source: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-event-handler/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-override/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-service-extension/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-cpu-memory-replicas/
+- https://docs.accelbyte.io/gaming-services/services/utilities/grafana-cloud-observability/access-grafana-cloud/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-in-depth-topics/extend-app-dev-containers/
 see-also:
 - '[glossary.md](glossary.md)'
 - '[faq.md](faq.md)'

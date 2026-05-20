@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -16,8 +16,8 @@ AGS has **three SDK families**. Don't conflate them — they target different ru
 
 | Family | Members | Used for | Owned by |
 |---|---|---|---|
-| **Game Engine SDKs** | Unreal, Unity, Godot, Roblox | Game clients and dedicated game servers | `/ags` (this skill) |
-| **TypeScript Web SDK** | TypeScript (npm) | Web apps talking to AGS — admin / live-ops dashboards, web companions, browser-based Extend App UIs | `/ags` (this skill) |
+| **Game Engine SDKs** | Unreal, Unity, Godot, Roblox (note: Godot and Roblox are not yet surfaced in the main docs portal — confirm GitHub status before recommending) | Game clients and dedicated game servers | `/ags` (this skill) |
+| **TypeScript Web SDK** | TypeScript (npm) | Web apps talking to AGS — admin / live-ops dashboards, web companions, browser-based Extend App UIs (verify Extend App UI toolchain against internal docs) | `/ags` (this skill) |
 | **Extend SDKs** | Go, Python, C#, Java | Extend apps talking back to AGS from inside AccelByte's infrastructure | `/ags-extend` (peer skill) |
 
 All three families wrap the same underlying **AGS REST + OpenAPI surface**. Custom engines (anything outside Unreal / Unity / Godot / Roblox) integrate via REST directly.

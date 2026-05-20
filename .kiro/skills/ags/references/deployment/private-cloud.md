@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -30,21 +30,21 @@ AGS deployed on dedicated infra for a single customer. AccelByte still runs ops,
 
 - Dedicated infrastructure, single-tenant.
 - AccelByte-managed (operations, upgrades, security).
-- **Delivery Manager** — a named AccelByte-side contact owning the relationship.
+- **Delivery Manager** — a named AccelByte contact for escalations, upgrade scheduling, and relationship management.
 - **Professional Support** tier with stricter response SLAs.
 - Custom contract terms negotiated for SLA, data handling, region selection.
 
 ## Operational shape
 
-- **Upgrades** — scheduled with the Delivery Manager rather than on AccelByte's general release cadence. Customers can negotiate maintenance windows.
-- **Region** — single region by default, dictated by data-residency need. Multi-region setups exist but require contract-level agreement.
+- **Upgrades** — coordinated with the Delivery Manager rather than on AccelByte's general release cadence. Confirm upgrade scheduling and maintenance window options with AccelByte sales.
+- **Region** — typically single region, dictated by data-residency need. Multi-region setups may be available; confirm region requirements with AccelByte sales.
 - **Support** — Professional Support with stricter SLAs.
 
 ## How it differs from BYOC
 
 | | Private Cloud | BYOC |
 |---|---|---|
-| Infrastructure ownership | AccelByte | Customer's own AWS account |
+| Infrastructure ownership | AccelByte | Customer's own cloud account (AWS) |
 | Operated by | AccelByte | AccelByte (using customer's cloud commitments) |
 | Best for | Data-residency / SLA / compliance needs | Existing cloud commitments to consume |
 

@@ -1,5 +1,7 @@
 # accelbyte-ai-plugins
 
+![version](https://img.shields.io/badge/version-0.2.0-blue)
+
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
 ## How it works
@@ -50,6 +52,47 @@ The full AGS platform: player authentication (IAM), real-time lobby and presence
 5. **Something broken?** `/ags doctor` narrows the symptom to a cause, then `/ags debug` traces the failure in your running game.
 6. **Checking live state** — `/ags observe` pulls logs and signals from a deployed namespace. Pair it with the AGS API MCP server for real-time data.
 
+### ags-ams
+
+AccelByte Multiplayer Servers (AMS) lets you run dedicated game servers close to your players — AMS handles fleet provisioning, regional scaling, server health, and crash recovery. You upload the binary; AccelByte runs the fleet.
+
+#### What it covers
+
+Integrating your dedicated server with the AMS watchdog, uploading builds, configuring fleets and session templates, testing locally with the AMS Simulator, monitoring with Grafana, and rolling out new DS versions with zero downtime.
+
+#### Examples
+
+```
+/ags-ams What instance type should I use for a physics-heavy dedicated server?
+```
+```
+/ags-ams sdk — integrate my Unreal DS with the AMS watchdog
+```
+```
+/ags-ams My sessions keep failing to claim a server — help me debug it
+```
+
+#### What you can do
+
+- **Understand AMS** — `/ags-ams ask` explains how AMS works, how it fits AGS Matchmaking, and how to size a fleet for your player load.
+- **Set up AMS** — `/ags-ams init` guides you from a blank namespace to an active fleet end-to-end.
+- **Integrate your DS** — `/ags-ams sdk` walks through the watchdog ready signal, heartbeat, and drain handler for Unreal, Unity, or raw WebSocket.
+- **Upload a build** — `/ags-ams upload` runs the AMS CLI upload with the right flags and IAM setup.
+- **Configure fleets** — `/ags-ams fleet` helps you choose instance types, set scaling parameters, and assign claim keys.
+- **Connect matchmaking** — `/ags-ams session` configures session templates to claim DS from AMS.
+- **Test locally** — `/ags-ams debug` runs the AMS Simulator so you can verify watchdog integration without uploading.
+- **Monitor production** — `/ags-ams observe` pulls fleet metrics, server logs, and crash artifacts.
+- **Diagnose problems** — `/ags-ams doctor` maps symptoms (claim failures, crashes, missing logs) to likely causes.
+- **Roll out new versions** — `/ags-ams rollout` guides DS version migration, blue/green, canary, and fallback fleet strategies.
+
+#### Intended workflow
+
+1. **Not sure where to start?** `/ags-ams ask` explains AMS and when to use it.
+2. **Starting fresh** — `/ags-ams init` does the full setup: account, SDK integration, upload, fleet, and session config.
+3. **Iterating** — `/ags-ams sdk` after engine changes, `/ags-ams debug` to test locally, `/ags-ams upload` to push a new build.
+4. **Managing fleets** — `/ags-ams fleet` to tune scaling and `/ags-ams session` to adjust claim routing.
+5. **In production** — `/ags-ams observe` for metrics and logs, `/ags-ams doctor` when something's wrong, `/ags-ams rollout` for new DS versions.
+
 ### ags-extend
 
 AGS Extend lets you run custom server-side game logic — matchmaking filters, leaderboard tiebreakers, anti-cheat hooks, custom statistics, and more — as lightweight services deployed on AccelByte's infrastructure, without managing your own servers.
@@ -89,6 +132,47 @@ Picking the right Extend pattern, scaffolding a new service, defining its API, r
 5. **Ready to ship** — `/ags-extend deploy` builds, pushes, and deploys to AGS. `/ags-extend ci` wires it into GitHub Actions or GitLab CI.
 6. **In production** — `/ags-extend observe` for logs and health, `/ags-extend doctor` if something's off, `/ags-extend upgrade` for SDK or proto version bumps.
 
+### ags-matchmaking
+
+AGS Matchmaking gives you deep, grounded assistance for the full matchmaking lifecycle — from authoring alliance rules and MMR criteria to debugging stuck tickets in X-Ray — without leaving your editor.
+
+#### What it covers
+
+Rule design (alliance, matching_rule, flexing_rule, MMR, role-based composition, rebalance methods), match pool configuration, Unreal and Unity SDK integration with QoS measurement, region routing (latency expansion, preferred-region restriction), backfill design (auto vs manual, proposal lifecycle, partial acceptance), X-Ray debugging, and symptom-driven diagnosis.
+
+#### Examples
+
+```
+/ags-matchmaking ruleset  I need a 5v5 ruleset with role composition (tank/healer/dps) and MMR flexing
+```
+```
+/ags-matchmaking debug  Tickets were matching in 30 s yesterday; today everyone waits 3+ minutes
+```
+```
+/ags-matchmaking integrate  How do I submit a Unity ticket with the player's latency map?
+```
+```
+/ags-matchmaking doctor  Teams are lopsided even though MMR matching is on
+```
+
+#### What you can do
+
+- **Author a ruleset** — `/ags-matchmaking ruleset` writes the alliance definition, matching_rule criteria, flexing_rule staircase, and rebalance method; includes ready-to-use patterns for 1v1 ranked, team deathmatch, and role-based composition.
+- **Configure a pool** — `/ags-matchmaking pool` sets session template, ticket expiration, latency method (average vs P95), backfill flags, cross-play mode, and `match_options_referred_for_backfill`.
+- **Integrate the SDK** — `/ags-matchmaking integrate` produces Unreal and Unity snippets for QoS measurement, ticket submission, match notification, cancellation, and session join — including reserved attribute keys and the session exclusion system.
+- **Set up region routing** — `/ags-matchmaking region` recommends the latency method, generates QoS integration code, and guides latency expansion tuning on the ruleset.
+- **Design backfill** — `/ags-matchmaking backfill` covers auto vs manual mode, partial proposal acceptance, `StopBackfilling`, server permissions, and per-ticket `new_session_only` override.
+- **Debug with X-Ray** — `/ags-matchmaking debug` walks through X-Ray Overview and Timeline to find the blocking criterion behind stuck tickets, wait-time spikes, or lopsided matches.
+- **Diagnose problems** — `/ags-matchmaking doctor` maps symptoms (no matches forming, unfair teams, backfill not working) to documented causes and points to the right fix subskill.
+
+#### Intended workflow
+
+1. **New to matchmaking?** `/ags-matchmaking ask` explains the ticket lifecycle, how rulesets relate to pools, and when to use native rules vs an Extend Override.
+2. **Designing the rules** — `/ags-matchmaking ruleset` produces the ruleset JSON; `/ags-matchmaking pool` links it to a session template and sets timing and backfill parameters.
+3. **Wiring the SDK** — `/ags-matchmaking integrate` for Unreal/Unity, `/ags-matchmaking region` for latency configuration, `/ags-matchmaking backfill` for session backfill.
+4. **Debugging** — `/ags-matchmaking debug` for X-Ray investigation, `/ags-matchmaking doctor` when the symptom isn't obvious.
+5. **Custom logic needed?** If native rules can't express what you need, `/ags-matchmaking ask` will say so; then `/ags-extend` owns the Override deployment lifecycle.
+
 
 ## MCP Servers
 
@@ -123,6 +207,20 @@ Your assistant can search real SDK symbols and examples instead of guessing, mak
 /plugin install accelbyte-ai-plugins@accelbyte
 ```
 
+### Claude Desktop
+
+**Automatic (Cowork) — paste this prompt into a Cowork chat:**
+
+```
+Download `https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip`, save it as `accelbyte-ai-plugins.plugin`, and use the `present_files` tool to present it to me.
+```
+
+**Manual (Chat and Cowork):**
+
+1. Download the repo archive: [AccelByte/ai-plugins/archive/refs/heads/main.zip](https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip)
+2. In Claude Desktop, open **Customize → Upload plugin** and select the downloaded file.
+3. Confirm the install.
+
 ### Any agent (Agent Skills)
 
 ```
@@ -139,4 +237,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler v0.1.0.
+Built with AccelByte External Marketplace compiler `v0.2.0`.

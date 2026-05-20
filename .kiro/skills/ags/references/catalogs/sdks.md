@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -19,8 +19,8 @@ Three SDK families, what they target, where they live. Don't conflate them.
 
 | Family | Member | Targets | Owned by | Full reference |
 |---|---|---|---|---|
-| **Game Engine** | Unreal | Unreal Engine 4.27 – 5.x | `/ags` | `references/sdks/game-engine/unreal.md` |
-| **Game Engine** | Unity | Current Unity LTS | `/ags` | `references/sdks/game-engine/unity.md` |
+| **Game Engine** | Unreal | Unreal Engine 4.27 – 5.6 | `/ags` | `references/sdks/game-engine/unreal.md` |
+| **Game Engine** | Unity | Unity 2020+ | `/ags` | `references/sdks/game-engine/unity.md` |
 | **Game Engine** | Godot | Godot Engine | `/ags` | `references/sdks/game-engine/godot.md` |
 | **Game Engine** | Roblox | Roblox runtime | `/ags` | `references/sdks/game-engine/roblox.md` |
 | **TypeScript Web** | TypeScript | Browser / Node web apps | `/ags` | `references/sdks/web/typescript.md` |

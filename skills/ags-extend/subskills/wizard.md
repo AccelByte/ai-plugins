@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte
@@ -38,14 +38,14 @@ Patch-slug / pattern compatibility:
 |---|---|---|---|
 | Async Messaging — consumer (receive) | `am` | Event Handler | Override, Service Extension |
 | Async Messaging — publisher (send) | `am-pub` | Service Extension | Override, Event Handler |
-| NoSQL Database | `nosql` | Override, Service Extension | Event Handler (no patch exists yet — see note below) |
-| SQL Database | `sql` | Override, Event Handler, Service Extension | — |
-| Key-Value Store | `kvs` | Override, Event Handler, Service Extension | — |
+| NoSQL Database | `nosql` | Service Extension | Override, Event Handler |
+| SQL Database | `sql` | Service Extension | Override, Event Handler |
+| Key-Value Store | `kvs` | Override, Event Handler, Service Extension | — _(coming soon — no patch files exist yet; offer will fail if selected)_ |
 | Task Scheduler | `ts` | Service Extension | Override, Event Handler |
 
 Never offer an integration whose slug isn't compatible with the chosen pattern. Never offer a `{slug}-{language}` patch that doesn't exist on disk — check `references/patches/` first.
 
-**NoSQL + Event Handler note:** The `nosql-go` patch targets the Service Extension template (replaces a CloudSave backend that doesn't exist in Event Handler templates). There is no `nosql-event-handler-*` patch yet. If an Event Handler developer asks for NoSQL, tell them the patch doesn't exist for that pattern, describe what they'd need to wire manually (MongoDB driver + storage layer + connection in main.go + docker-compose service), and point them to the AccelByte docs or `references/patches/nosql-go.md` as a reference for what the wiring looks like in Go.
+**NoSQL + Override / Event Handler note:** The `nosql-go` patch targets the Service Extension template only — it replaces a CloudSave storage layer that does not exist in Override or Event Handler templates. Applying it to those patterns would fail or corrupt the project. If a developer on those patterns asks for NoSQL, tell them no patch exists for their pattern, describe what they'd need to wire manually (MongoDB driver + storage layer + connection in main.go + docker-compose service), and point them to `references/patches/nosql-go.md` as a reference for what the wiring looks like in Go.
 
 </grounding_rules>
 
@@ -135,21 +135,20 @@ Does {app-name} need any of these integrations?
 
 {For Event Handler:}
   • Async Messaging (consumer) — receive pub/sub events via onMessage
-  • NoSQL Database — MongoDB / DocumentDB
   • SQL Database — PostgreSQL
-  • Key-Value Store — Redis
+  • Key-Value Store — Redis _(coming soon — no patch available yet)_
 
 {For Service Extension:}
   • Async Messaging (publisher) — push events to a topic
   • NoSQL Database — MongoDB / DocumentDB
   • SQL Database — PostgreSQL
-  • Key-Value Store — Redis
+  • Key-Value Store — Redis _(coming soon — no patch available yet)_
   • Task Scheduler — scheduled background jobs
 
 {For Override:}
   • NoSQL Database — MongoDB / DocumentDB
   • SQL Database — PostgreSQL
-  • Key-Value Store — Redis
+  • Key-Value Store — Redis _(coming soon — no patch available yet)_ _(coming soon — no patch available yet)_
 
 Reply with the ones you want, or "none".
 ```
@@ -403,7 +402,10 @@ Skill: OK, no patches. Now drafting the implementation plan.
          but the exact event name and field shape MUST be confirmed in
          `github.com/AccelByte/accelbyte-api-proto` before coding.
        - If a separate userLoggedIn proto exists in accelbyte-api-proto,
-         copy that file into `pkg/proto/` preserving its directory layout,
+         copy `asyncapi/accelbyte/{path}` from the repo into
+         `pkg/proto/accelbyte-asyncapi/{path}` in this template
+         (strip the repo's `asyncapi/accelbyte/` prefix; use
+         `accelbyte-asyncapi/` as the target prefix so `make proto` finds it),
          then run `/ags-extend proto` to regenerate.
 
        ## Files to create

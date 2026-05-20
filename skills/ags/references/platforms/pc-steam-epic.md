@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://accelbyte.io/ags-eos
@@ -18,21 +18,21 @@ Reference notes for AGS integrations targeting **Steam** and **Epic Games Store*
 ## Steam
 
 - **Identity binding** — Steam is one of the AGS-supported platform identity providers. Players auth via Steam ticket; AGS exchanges the Steam ticket for an AGS token.
-- **Steam DLC** — DLC purchased through Steam can be reconciled into the AGS entitlement model so players have a unified ownership view on AGS even when the purchase happened on Steam.
+- **Steam DLC** — DLC purchased through Steam can be reconciled into the AGS entitlement model via the Third-party IAP component — verify Steam is listed among supported platforms in the Store & Catalog module docs.
 - **Workshop / UGC** — out of AGS scope; live in the Steam ecosystem. Studios bridge via Extend Service Extensions if they need cross-system coordination.
-- **Common gotcha** — Steam tickets have short validity windows; refresh logic must respect Steam's expectations or auth flows fail intermittently.
+- **Common gotcha** — Steam Session Tickets have short validity windows (see Valve developer docs for current limits); ensure token refresh logic is in place before the ticket expires.
 
 ## Epic Games Store
 
-- **Identity binding** — Epic Games Store is one of the AGS-supported platform identity providers. Note: this is *not* the same thing as Epic Online Services (EOS) — they're separate Epic products that often appear together.
-- **DLC reconciliation** — same shape as Steam: Epic-platform DLC reconciled into AGS entitlements.
+- **Identity binding** — Epic Games Store is one of the AGS-supported platform identity providers (listed as "Epic" in AGS auth docs — not the same thing as Epic Online Services (EOS), which is a separate Epic product; they often appear together in studio stacks).
+- **DLC reconciliation** — verify Epic Games Store is listed among Third-party IAP supported platforms in the Store & Catalog module docs.
 
 ## EOS (Epic Online Services) coexistence
 
 EOS is Epic's free game-services platform. Many studios start on EOS and outgrow it. AccelByte has a documented coexistence story (`https://accelbyte.io/ags-eos`):
 
 - Players continue authenticating via EOS for friends, lobbies, sessions, P2P.
-- AGS overlays via **headless account linking** — when a player auths via EOS, AGS auto-creates a linked AGS account.
+- AGS overlays via **headless account syncing** — this requires configuration; after setup, AGS automatically creates and links an AGS account to the EOS identity.
 - No EOS data migration required.
 - AGS adds custom backend logic (Extend), Multiplayer Servers (AMS), and Matchmaking on top of the EOS base.
 

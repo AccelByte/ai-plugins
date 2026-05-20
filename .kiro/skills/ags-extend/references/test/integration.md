@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://github.com/AccelByte/extend-helper-cli
 see-also:
 - '[contract.md](contract.md)'

@@ -6,7 +6,7 @@ description: 'Run a game / app locally against AGS and trace integration failure
   whether it''s their code, the SDK, or AGS-side.'
 allowed-tools: Read Bash Glob Edit Write
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -138,7 +138,7 @@ For auth/login failures after SDK install and code integration are complete, cla
 
 Common testing patterns:
 
-- **Decode the JWT** — `echo "<token>" | cut -d. -f2 | base64 -d` to see the namespace, scope, exp claims.
+- **Decode the JWT** — `echo "<token>" | cut -d. -f2 | base64 -d` (Linux) or `base64 -D` (macOS) to see the namespace, scope, exp claims.
 - **Hit an AGS endpoint with curl** — bypass the SDK to confirm whether the failure is SDK-side or AGS-side.
 - **Tail logs** during a reproducer run.
 - **Use the CLI** to confirm namespace / IAM client state matches what the SDK is sending.
@@ -244,5 +244,5 @@ Skill: Evidence:    No background-foreground reconnect logic.
 
 - **Symptom is intermittent / can't reproduce** — route to `subskills/observe.md` to look at namespace-level events; without a reproducer, debugging is observation rather than fix-and-verify.
 - **Fix exceeds local debug scope** (e.g. an IAM client kind or login method needs to change) — route to `/ags connect-portal`.
-- **AccelByte-side incident suspected** — check `https://docs.accelbyte.io/` status / Admin Portal incident notifications; open a support ticket if confirmed.
+- **AccelByte-side incident suspected** — check AccelByte support channels or the Admin Portal for incident notifications; open a support ticket if confirmed.
 - **User insists the cause is something the diagnosis doesn't support** — surface the inconsistency. Don't apply a fix you can't justify.

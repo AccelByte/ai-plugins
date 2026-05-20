@@ -6,7 +6,7 @@ description: Install the AGS CLI for namespace and IAM management. Required by `
   installed via /ags-extend.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/tag/v0.1.0
@@ -133,7 +133,7 @@ If installed, capture the version and path. Then run:
 
 ```bash
 ags auth status
-ags doctor --offline
+ags doctor
 ```
 
 If authenticated and diagnostics are healthy enough for the user's task, skip the install.
@@ -167,7 +167,7 @@ Map the platform to the release asset name pattern. Select the actual matching a
 | macOS | Apple Silicon / `arm64` / `aarch64` | `ags-aarch64-apple-darwin.tar.gz` |
 | macOS | Intel / `x86_64` | `ags-x86_64-apple-darwin.tar.gz` |
 | Linux glibc | `x86_64` | `ags-x86_64-unknown-linux-gnu.tar.gz` |
-| Linux glibc | `arm64` / `aarch64` | `ags-aarch64-unknown-linux-gnu.tar.gz` |
+| Linux glibc | `arm64` / `aarch64` | `ags-aarch64-unknown-linux-gnu.tar.gz` (verify this asset exists in the latest release with `curl https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest \| jq '.assets[].name'`) |
 | Linux musl / Alpine | `x86_64` | `ags-x86_64-unknown-linux-musl.tar.gz` |
 | Linux musl / Alpine | `arm64` / `aarch64` | `ags-aarch64-unknown-linux-musl.tar.gz` |
 | Windows | `x86_64` / AMD64 | `ags-x86_64-pc-windows-msvc.zip` |
@@ -207,6 +207,9 @@ tar -xzf "$tmpdir/<asset>" -C "$tmpdir"
 install -m 0755 "$tmpdir/ags" "<install-path>"
 ags --version
 ```
+
+On macOS, the first run of `ags` may be blocked by Gatekeeper. Go to System Settings → Privacy & Security and click Allow Anyway, then re-run `ags --version`.
+
 
 If `shasum` is unavailable and `sha256sum` is available, use `sha256sum -c` instead.
 

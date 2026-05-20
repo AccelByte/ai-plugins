@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -24,14 +24,15 @@ The platform is **modular** — studios adopt the modules they need and pay for 
 | Module | What it does |
 |---|---|
 | **IAM** (Identity & Access Management) | Player accounts, authentication, OAuth 2.0, SSO, ban management, role-based access |
-| **Lobby** | Party system, presence, chat, invitations |
+| **Parties & Presence** | Party management, platform presence, invitations |
+| **Chat** | Party chat, personal DMs, session chat |
 | **Matchmaking** | Rule-based matchmaking with custom attributes (MMR, region, party size, …) |
 | **Session Management** | Game session lifecycle, server assignment, reconnection |
 | **Leaderboards** | Global and seasonal leaderboards, score ingestion |
 | **Achievements** | Configurable achievement and progression systems |
 | **Entitlements & Store** | Item catalog, purchase flows, wallet, DLC management |
-| **Analytics** | Event ingestion and player-behavior data pipeline |
-| **Social** | Friends, blocking, notifications |
+| **Game Analytics** | Event ingestion and player-behavior data pipeline |
+| **Friends** | Friends, blocking, notifications |
 
 Each module exposes both REST APIs (with OpenAPI specs) and SDK methods. Game clients typically use the SDK; web portals and admin tools use REST directly via OAuth.
 
@@ -61,7 +62,7 @@ AGS ships three SDK families:
 Underneath all three families:
 
 - **REST + OpenAPI** — every AGS service has a REST surface with OpenAPI specs. Custom engines (anything outside the four supported game engines) integrate via REST directly. The SDKs are thin wrappers over this surface.
-- **OAuth 2.0** — all client and server access is OAuth-mediated. Game clients use one IAM client type; game servers use another. Admin tools and web apps use a third.
+- **OAuth 2.0** — all client and server access is OAuth-mediated. Game clients use Public IAM clients; game servers and backend services use Confidential IAM clients. Admin tools and web apps also use Public clients with appropriate redirect URIs.
 - **Crossplay-ready** — single persistent player identity across PC, console, and mobile. Players keep one account regardless of where they log in.
 
 See `references/sdks/game-engine/` for per-engine specifics, `references/sdks/web/typescript.md` for the Web SDK, and `/ags-extend` for Extend SDK material.

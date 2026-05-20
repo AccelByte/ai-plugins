@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -25,15 +25,15 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | Module | One-line | Full reference |
 |---|---|---|
 | **IAM** | Player accounts, OAuth 2.0, platform identity binding, ban management | `references/modules/iam.md` |
-| **Lobby** | WebSocket-based party, presence, chat, invites | `references/modules/lobby.md` |
+| **Lobby** | WebSocket-based party, presence, chat, invites (SDK service name; public docs now surfaces this as 'Chat' + 'Parties & Presence') | `references/modules/lobby.md` |
 | **Matchmaking** | Rule-based matchmaking; deep work in `/ags-matchmaking` | `references/modules/matchmaking.md` |
 | **Session Management** | Game session lifecycle, server allocation, reconnection | `references/modules/session.md` |
 | **Statistics** | Persistent player stats for progression, MMR, leaderboard inputs, and achievement criteria | `references/modules/statistics.md` |
 | **Leaderboards** | Global / seasonal leaderboards, score ingestion | `references/modules/leaderboards.md` |
 | **Achievements** | Configurable achievements & progression systems | `references/modules/achievements.md` |
 | **Store / Entitlements** | Catalog, purchase flows, wallet, DLC reconciliation | `references/modules/store-entitlements.md` |
-| **Analytics** | Event ingestion, telemetry pipeline (AIS is deprecated) | `references/modules/analytics.md` |
-| **Social** | Friends, blocking, notifications | `references/modules/social.md` |
+| **Analytics** | Event ingestion, telemetry pipeline | `references/modules/analytics.md` |
+| **Social** | Friends, blocking, notifications (internal grouping; public docs surfaces 'Friends' under Online, 'Multiplayer Notifications' separately) | `references/modules/social.md` |
 
 ## Marketing names ↔ service names
 
@@ -55,6 +55,6 @@ The customer-facing AGS docs use marketing names (Foundations / Online / Multipl
 
 - **ADT** (build distribution / crash reporting / playtest) — separate AccelByte product. See `references/ecosystem/adt.md` and `/adt`.
 
-## Deprecated
+## Potentially Deprecated
 
-- **AIS (AccelByte Intelligence Service)** — deprecated. Don't recommend; don't include in module lists. Studios with serious analytics needs use AGS Analytics + their own BI stack.
+- **AIS (AccelByte Intelligence Service)** — listed as active in current docs (as of 2026-05-08 audit); deprecation status unconfirmed. Verify with the AccelByte product team before advising customers. Studios with serious analytics needs typically use AGS Analytics + their own BI stack regardless.

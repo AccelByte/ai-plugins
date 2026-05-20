@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -17,15 +17,15 @@ Reference notes for AGS integrations on iOS and Android. The mobile-specific var
 
 ## iOS
 
-- **Identity providers** — Apple Sign-In, Google Sign-In, Facebook Login are AGS-supported. Apple Sign-In is required by App Store policy if other social sign-ins are offered.
-- **IAP** — Apple IAP transactions are reconciled with the AGS Store / Entitlements model. Receipts validate against Apple's servers, and the entitlement is granted on AGS side.
-- **Common gotcha** — Apple's anonymous-ID-on-Apple-Sign-In needs careful handling for cross-device account binding. Make sure the AGS account links to the stable Apple ID, not the per-app token.
+- **Identity providers** — Apple Sign-In, Google Sign-In, Facebook Login are AGS-supported. Apple Sign-In is required by App Store policy if other social sign-ins are offered (verify against current Apple Developer guidelines).
+- **IAP** — Apple IAP can be synchronized via the AGS Third-party IAP component. See the Store & Catalog module docs for receipt handling details.
+- **Common gotcha** — Apple's anonymous-ID-on-Apple-Sign-In needs careful handling for cross-device account binding (verify against Apple developer documentation for current behavior). Make sure the AGS account links to the stable Apple ID, not the per-app token.
 
 ## Android
 
 - **Identity providers** — Google Sign-In, Facebook Login, Google Play Games. AGS-supported.
-- **IAP** — Google Play Billing transactions reconciled with AGS Store / Entitlements.
-- **Common gotcha** — Google Play Games sign-in is a separate flow from Google Sign-In; some studios bind both. Decide which is the primary identity for crossplay.
+- **IAP** — Google Play Billing can be synchronized via the AGS Third-party IAP component. See the Store & Catalog module docs for details.
+- **Common gotcha** — Google Play Games sign-in is a separate flow from Google Sign-In. Decide which is the primary identity for crossplay.
 
 ## Crossplay with PC and console
 

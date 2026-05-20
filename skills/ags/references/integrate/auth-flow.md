@@ -1,7 +1,9 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/accounts/how-account-works/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authorization/manage-access-control-for-applications/
 see-also:
 - '[iam.md](../modules/iam.md)'
 - '[headless-account-linking.md](../cookbook/headless-account-linking.md)'
@@ -31,7 +33,7 @@ End-to-end auth flow shape for an AGS integration. Same pattern across all Game 
           AGS auto-creates a HEADLESS ACCOUNT linked to the platform identity
    4. SDK stores tokens
         - Access token: in memory, attached to subsequent API calls
-        - Refresh token: secure storage (Keychain / Android Keystore / HttpOnly cookie / etc.)
+        - Refresh token: secure storage appropriate to the platform (follow SDK and platform-specific security recommendations)
    5. Subsequent calls
         - Access token attached automatically by SDK
         - When access token nears expiry: SDK swaps refresh token for a new pair

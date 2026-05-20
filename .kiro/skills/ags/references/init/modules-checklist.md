@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -19,7 +19,7 @@ Decision aid for picking which AGS modules to enable for a new project. Used by 
 Start with the game shape:
 
 1. **Single-player with cloud saves and entitlements?**
-   - Yes → IAM + Store/Entitlements (Cloud Save piece is part of IAM in AGS terms).
+   - Yes → IAM + Store/Entitlements + Cloud Save. (Cloud Save is a separate module under Online — enable it alongside IAM, not as part of it.)
 
 2. **Online with friends and chat?**
    - Yes → IAM + Lobby + Social.
@@ -57,6 +57,8 @@ Start with the game shape:
 | IAM, multi-platform, with crossplay | weeks (driven by per-platform cert) |
 | IAM + Lobby + simple matchmaking | weeks |
 | Full live-service stack | one to several months |
+
+_(Community estimates — confirm with AccelByte PS team for project-specific timelines.)_
 
 The biggest variable across all sizes is **platform certification** — that's mostly independent of AGS and interleaves with IAM platform binding work.
 

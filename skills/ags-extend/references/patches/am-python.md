@@ -4,7 +4,7 @@ language: python
 app-types:
 - event-handler
 docs: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
 see-also:
@@ -14,7 +14,9 @@ see-also:
 
 # Async Messaging — Python
 
-Adds an Async Messaging consumer to a cloned Python Event Handler template. AccelByte delivers messages to your app via gRPC — you define which topics to subscribe to in the proto file and implement `onMessage` to process them.
+> **Alpha feature** — verify availability with your AccelByte account team before using in production.
+
+Adds an Async Messaging consumer to a cloned Python Event Handler template. AccelByte delivers messages to your app via gRPC — you define which topics to subscribe to in the proto file and implement `OnMessage` to process them.
 
 ## Compatibility
 
@@ -24,7 +26,7 @@ Adds an Async Messaging consumer to a cloned Python Event Handler template. Acce
 
 - `proto/async_messaging/consumer_service.proto` — service definition; customer edits the topics list
 - `src/async_messaging/consumer_service_pb2.py` and `consumer_service_pb2_grpc.py` — generated Python gRPC bindings (from `make proto`)
-- `src/app/services/async_messaging_handler.py` — handler stub implementing `onMessage`
+- `src/app/services/async_messaging_handler.py` — handler stub implementing `OnMessage`
 - `src/app/__main__.py` — handler import added, example handlers replaced with AM handler registration
 
 ## Steps
@@ -43,8 +45,6 @@ package accelbyte.extend.async_messaging;
 import "google/protobuf/empty.proto";
 import "google/protobuf/descriptor.proto";
 
-option go_package = "accelbyte.net/extend/asyncMessaging";
-
 extend google.protobuf.MethodOptions {
   string topics_subscription = 50001;
 }
@@ -56,13 +56,15 @@ message ReceivedMessage {
 }
 
 service AsyncMessagingConsumerService {
-  rpc onMessage(ReceivedMessage) returns (google.protobuf.Empty) {
+  rpc OnMessage(ReceivedMessage) returns (google.protobuf.Empty) {
     option (topics_subscription) = "TopicA, TopicB"; // replace with actual topic names
   };
 }
 ```
 
 Tell the user to replace `TopicA, TopicB` with their actual topic names before proceeding.
+
+> **Note:** Changing topic subscriptions in the proto requires redeploying the app to take effect.
 
 ### 2. Generate the Python gRPC bindings
 
@@ -102,7 +104,7 @@ class AsyncMessagingHandlerService(AsyncMessagingConsumerServiceServicer):
     ) -> None:
         self.logger = logger or logging.getLogger(__name__)
 
-    async def onMessage(self, request: ReceivedMessage, context) -> Empty:
+    async def OnMessage(self, request: ReceivedMessage, context) -> Empty:
         self.logger.info(
             "received message",
             extra={"topic": request.topic, "body": request.body, "metadata": dict(request.metadata)},

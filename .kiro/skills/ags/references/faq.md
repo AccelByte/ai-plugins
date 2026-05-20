@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://accelbyte.io/gaming-services
@@ -20,7 +20,7 @@ The questions developers and technical evaluators ask most. Short answers ground
 
 ## What is AGS, in one paragraph?
 
-AccelByte Gaming Services is a managed cloud-hosted game backend platform — modular services for identity, matchmaking, lobby, sessions, leaderboards, achievements, store/economy, analytics, and social, plus dedicated game-server hosting (AMS) and an extensibility layer (Extend) all under the AGS umbrella. Studios integrate AGS instead of building these systems themselves. Pricing scales with Peak Concurrent Users (PCCU); deployment options span shared cloud, private cloud, BYOC, and hybrid.
+AccelByte Gaming Services is a managed cloud-hosted game backend platform — modular services for identity, matchmaking, parties and presence, sessions, leaderboards, achievements, store/economy, analytics, social, and more (Cloud Save, Inventory, Challenges, Season Pass, Chat, UGC, and others), plus dedicated game-server hosting (AMS) and an extensibility layer (Extend) all under the AGS umbrella. Studios integrate AGS instead of building these systems themselves. Pricing scales with Peak Concurrent Users (PCCU); deployment options span shared cloud, private cloud, BYOC, and hybrid.
 
 ADT (build distribution + crash reporting + playtest tooling) is a *separate* AccelByte product — not part of AGS — and lives in its own peer skill `/adt`.
 
@@ -30,7 +30,7 @@ Depends on the game shape. Roughly:
 
 | Game shape | Minimum modules |
 |---|---|
-| Single-player with cloud saves and entitlements | IAM + Store/Entitlements + Cloud Save (part of IAM in AGS terms) |
+| Single-player with cloud saves and entitlements | IAM + Store/Entitlements + Cloud Save |
 | Online co-op or competitive multiplayer | IAM + Lobby + Matchmaking + Sessions |
 | Live-service with seasons and progression | IAM + Lobby + Matchmaking + Sessions + Leaderboards + Achievements + Store |
 | Crossplay across PC/console/mobile | All of the above + Social + careful IAM platform-binding setup |
@@ -39,9 +39,9 @@ Depends on the game shape. Roughly:
 
 ## How does AGS pricing work?
 
-PCCU-based — billed per peak concurrent user per day, with tier discounts at higher volumes. Starter / free tiers cover early development. Enterprise (private cloud) is custom pricing with a Delivery Manager and Professional Support included.
+PCCU-based — billed per peak concurrent user per day, with tier discounts at higher volumes. Starter / free tiers cover early development. Private Cloud starts at $2,500/month per environment. Enterprise tier (source code access, BYOC, co-development) is custom pricing.
 
-The illustrative bands are in `references/pricing/pccu-bands.md`. **For current numbers, point users at `https://accelbyte.io/pricing`** — the in-repo bands may go stale.
+The illustrative bands are in `references/pricing/pccu-bands.md`. **For current numbers, point users at `https://accelbyte.io/ags-pricing`** — the in-repo bands may go stale.
 
 ## What's a namespace and how many do I need?
 
@@ -55,9 +55,9 @@ Some studios add a **publisher** parent namespace if they have multiple titles s
 
 ## Is AGS the right tool if we're already on EOS / PlayFab?
 
-**On EOS:** AccelByte has a documented coexistence story (`accelbyte.io/ags-eos`). Players keep authenticating via EOS; AGS overlays on top via headless account linking. Use AGS for anything EOS can't do — custom economy, advanced matchmaking, custom progression, custom backend logic (via Extend). No EOS data migration required.
+**On EOS:** AccelByte has a documented coexistence story (`accelbyte.io/ags-eos`). Players keep authenticating via EOS; AGS overlays on top via headless account linking. Use Extend for custom backend logic, AMS for dedicated servers, and AGS Matchmaking for advanced skill-based matching. No EOS data migration required.
 
-**On PlayFab:** Migration is bigger because PlayFab covers more of the same ground as AGS. Studios usually move to AGS when PlayFab's extensibility, support quality, or enterprise pricing becomes a problem. There's no equivalent of headless-account-linking for PlayFab; identity has to be migrated.
+**On PlayFab:** Migration is bigger because PlayFab covers more of the same ground as AGS. Studios usually move to AGS when PlayFab's extensibility, support quality, or enterprise pricing becomes a problem. There's no equivalent of headless-account-linking for PlayFab; identity has to be migrated (as of last check — verify with AccelByte if migrating from PlayFab).
 
 **Building in-house:** TCO argument. AGS replaces backend engineers operating their own identity, lobby, matchmaking, etc. The 3–5-year cost comparison usually favors AGS for studios that aren't trying to differentiate on backend.
 

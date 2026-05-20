@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -17,16 +17,16 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 ## PlayStation (PS4, PS5)
 
 - **Identity binding** — PSN is one of the AGS-supported platform identity providers. Players auth via PSN ID; AGS issues an AGS token.
-- **PSN DLC** — reconciled into AGS entitlements. Player-owned DLC stays consistent across PSN ↔ AGS view.
+- **PSN DLC** — DLC reconciliation via the AGS Third-party IAP component. See the Store & Catalog module docs for current details.
 - **Crossplay** — supported via account linking on a single AGS player. Sony's crossplay rules apply at the platform-policy level.
-- **Cert-related AGS surface** — IAM platform-binding flows are typically what console-cert reviewers test for identity. Get the IAM flow right early.
+- **Cert-related AGS surface** — In practice, IAM platform-binding flows are often scrutinized during certification — confirm requirements with your PlayStation certification contact.
 
 ## Xbox (Xbox One, Xbox Series X|S)
 
 - **Identity binding** — Xbox Live is one of the AGS-supported platform identity providers. Players auth via Xbox Live token; AGS issues an AGS token.
-- **Xbox DLC** — reconciled into AGS entitlements.
+- **Xbox DLC** — DLC reconciliation via the AGS Third-party IAP component. See the Store & Catalog module docs for current details.
 - **Crossplay** — supported.
-- **Cert-related AGS surface** — same shape as PlayStation; IAM platform-binding is the primary surface cert reviewers exercise.
+- **Cert-related AGS surface** — same shape as PlayStation; in practice, IAM platform-binding is often scrutinized — confirm requirements with your Xbox certification contact.
 
 ## Nintendo Switch
 
@@ -36,7 +36,7 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 ## DevKit considerations
 
 - Console DevKits are often the *first* place AGS integration is exercised end-to-end. ADT's console DevKit support is a meaningful coordinator here for build delivery — see `references/ecosystem/adt.md`.
-- Network access from DevKits often requires explicit allow-listing; AGS endpoints need to be on the allow-list.
+- AGS endpoints may need to be on the DevKit allow-list — check with AccelByte support for the current endpoint list.
 
 ## Crossplay across console + PC + mobile
 

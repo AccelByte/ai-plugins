@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -41,8 +41,8 @@ Pattern for rolling out an AGS-backed feature (a new Store item, a new Achieveme
 AGS doesn't ship a built-in "rollout to 5% of players" mechanism. Studios use these patterns:
 
 - **Per-namespace gating** — keep a "production-canary" namespace for early-access features, promote to the main prod namespace once validated.
-- **Custom-attribute gating** — tag players with a cohort attribute via IAM; Store items / Achievements check the attribute in their criteria expression where the attribute model supports it.
-- **Extend Override gating** — for finer control, an Override on the relevant AGS service can read a feature-flag service and gate behavior. That's an Extend conversation; route to `/ags-extend ask`.
+- **Custom-attribute gating** — tag players with a cohort attribute via IAM; gate Store item visibility or access where the attribute model supports it. Achievement criteria don't support attribute expressions — use an Extend Override to intercept the unlock trigger for attribute-based achievement gating.
+- **Extend Override gating** — for finer control, an Override on the relevant AGS service can read a feature-flag service and gate behavior. Keep external flag lookups fast (cache locally); Override calls are synchronous and their latency adds directly to the AGS API response time. That's an Extend conversation; route to `/ags-extend ask`.
 
 ## Observability during rollout
 

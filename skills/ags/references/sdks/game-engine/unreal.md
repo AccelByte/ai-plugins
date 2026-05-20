@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
@@ -18,7 +18,7 @@ see-also:
 
 # SDK — Unreal Engine
 
-The AGS **Unreal Engine SDK** for game clients and dedicated game servers. Supports Unreal Engine 4.27 through 5.x. Wraps the AGS REST + OpenAPI surface; same module shape as the Unity, Godot, and Roblox SDKs.
+The AGS **Unreal Engine SDK** for game clients and dedicated game servers. Supports Unreal Engine 4.27+ (4.25+ per GitHub SDK plugin repos); UE 5.0–5.6.x stable, 5.7.x Beta. Wraps the AGS REST + OpenAPI surface; same module shape as the Unity, Godot, and Roblox SDKs.
 
 For normal Unreal game-client work, prefer the AGS Unreal Online Subsystem (`OnlineSubsystemAccelByte`) as the integration surface. It implements Unreal's Online Subsystem interfaces and should be the default path for identity/auth, sessions, lobby, and gameplay-facing AGS flows. Use direct `AccelByteUe4Sdk` / `FRegistry::User.*` calls only when the user explicitly asks for raw SDK integration, is building a low-level wrapper, or the project is intentionally not using OSS.
 
@@ -34,8 +34,8 @@ For normal Unreal game-client work, prefer the AGS Unreal Online Subsystem (`Onl
   - `AccelByteUe4Sdk` from `https://github.com/AccelByte/accelbyte-unreal-sdk-plugin.git`
   - `AccelByteNetworkUtilities` from `https://github.com/AccelByte/accelbyte-unreal-network-utilities.git`
 - Recommended project layout: `Plugins/AccelByte/OnlineSubsystemAccelByte`, `Plugins/AccelByte/AccelByteUe4Sdk`, and `Plugins/AccelByte/AccelByteNetworkUtilities`.
-- Module structure: `OnlineSubsystemAccelByte` is the preferred high-level Unreal integration API; `AccelByteUe4Sdk` exposes lower-level AGS module services; `AccelByteNetworkUtilities` supports the Unreal networking integration.
-- Convention: Unreal-friendly delegate-based async — request → success delegate / error delegate.
+- Module structure: `OnlineSubsystemAccelByte` is the preferred high-level Unreal integration API; `AccelByteUe4Sdk` exposes lower-level AGS module services; `AccelByteNetworkUtilities` provides ICE-based P2P NAT punchthrough and is a required companion to `OnlineSubsystemAccelByte` for peer-to-peer session connectivity.
+- Convention: Unreal-friendly delegate-based async — request → success delegate / error delegate. (Inferred convention based on Unreal idioms — verify against SDK README.)
 - Build target shape: client builds use a public IAM client; dedicated server builds use a confidential IAM client with a server secret.
 
 `subskills/install-unreal-sdk.md` is the operational guide for actually installing and scaffolding into an Unreal project. This file is the conceptual "what is the Unreal SDK?" reference.
@@ -60,7 +60,7 @@ Enable all three plugins in the `.uproject`, add the modules to the relevant tar
 
 Installing the plugin set does not require `.env` or namespace/client values. If AGS config is missing, install and enable the plugins first, then route to `/ags connect-portal` before config and login verification. Do not add empty placeholder config values; `connect-portal` owns using the AGS CLI to create/select IAM clients, enable login methods such as Device ID when exposed by the CLI, and write real project config.
 
-Configure AGS through `Config/DefaultEngine.ini`, especially `[OnlineSubsystemAccelByte]` and related OSS identity/session settings, once namespace and IAM client values exist. For device ID login in an OSS project, verify through the OSS identity login path rather than direct `FRegistry::User.LoginWithDeviceId(...)`.
+Configure AGS through `Config/DefaultEngine.ini`: SDK base settings go under `[/Script/AccelByteUe4Sdk.AccelByteSettings]` (client credentials, base URL, namespace) and `[/Script/AccelByteUe4Sdk.AccelByteServerSettings]` (dedicated server settings). `[OnlineSubsystemAccelByte]` is the OSS-layer configuration, on top of those base settings. For device ID login in an OSS project, verify through the OSS identity login path rather than direct `FRegistry::User.LoginWithDeviceId(...)`.
 
 ## Common gotchas
 

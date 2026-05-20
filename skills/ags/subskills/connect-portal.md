@@ -6,9 +6,10 @@ description: Bootstrap or repair AGS namespace/IAM client/login-method config fo
   / engine config.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
+- https://github.com/AccelByte/accelbyte-unreal-oss
 see-also:
 - '[iam.md](../references/modules/iam.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
@@ -178,7 +179,7 @@ If the CLI does not expose the needed mutation, stop and give the exact Admin Po
 
 Use this path when the integration reaches AGS and login returns HTTP 400 `invalid_request` with a platform-config error such as "platform client not found".
 
-First hypothesis: the attempted platform/login method is not configured in IAM. Identify the exact AGS platform ID from the SDK/OSS login path or CLI shape, such as `device`, `steam`, `epicgames`, `psn`, or `xbox`.
+First hypothesis: the attempted platform/login method is not configured in IAM. Identify the exact AGS platform ID from the SDK/OSS login path or CLI shape, such as `device`, `steam`, `epicgames`, `psn` (some AGS versions use `ps4`/`ps5` separately — verify the exact ID with `ags describe iam`), or `xbox`.
 
 Do **not** use `check-availability` as the deciding check:
 
@@ -196,6 +197,8 @@ ags iam platform-credentials list --namespace <namespace> --format json
 If the platform credential is missing, show the portal-equivalent action:
 
 `Game Setup > 3rd Party Configuration > Auth & Account Linking > Add New > <Platform> > fill required platform fields > Active`
+
+(If this path doesn't match your portal version, look under IAM > Platform Credentials instead.)
 
 For Device, the required fields usually include `Redirect URI http://127.0.0.1`.
 
@@ -220,7 +223,7 @@ If the user approves CLI mutation:
 
    Other platforms usually require their own fields, such as client ID, client secret, app ID, environment, or issuer values. Get those fields from the CLI skeleton, docs, or user input before mutating.
 
-3. On PowerShell, write the body to a file and use `--json @file` rather than inline JSON to avoid quoting failures.
+3. On PowerShell, write the body to a file and use `--json @file` rather than inline JSON to avoid quoting failures. Verify `--json @file` is a supported flag with `ags iam platform-credentials create --help` before using it.
 4. Run the confirmed create command.
 5. Verify with:
 

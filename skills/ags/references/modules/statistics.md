@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-04
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/implementing-server-authoritative-player-statistics/
@@ -20,7 +20,7 @@ Persistent user-stat tracking for gameplay values such as wins, MMR, XP, item us
 
 ## What it covers
 
-- **Statistic configuration** - per-stat rules such as stat code, display metadata, default value, min/max bounds, increment-only behavior, visibility, access level, global aggregation, and client/server update authority.
+- **Statistic configuration** - per-stat rules such as stat code, display metadata, default value, min/max bounds, increment-only behavior, global aggregation, and client/server update authority. Additional config fields (visibility, access level) may be available — verify current options in the Admin Portal statistics configuration page.
 - **Stat code** - developer-owned identifier for a tracked value, such as `total-wins`, `mmr`, `xp`, or `potions-consumed`.
 - **User statistic value** - persistent value associated with a player account; bounded by the configured default/min/max rules.
 - **Global statistics** - optional game-wide aggregation across users for stats that should also track a namespace-wide total.
@@ -37,7 +37,7 @@ Persistent user-stat tracking for gameplay values such as wins, MMR, XP, item us
 | **Leaderboards** | Leaderboards commonly rank players from a stat code, optionally within a statistic cycle |
 | **Achievements** | Achievement criteria can evaluate statistic updates such as item use, wins, XP, or milestones |
 | **Matchmaking** | Rulesets can use stats such as MMR or skill bands |
-| **Rewards** | Reaching a configured stat threshold can trigger reward flows |
+| **Rewards** | The Rewards module listens to stat update events and grants rewards when configured conditions are met |
 | **Cloud Save** | Use Cloud Save instead when the value is only player attribute storage and does not need stat-driven integrations |
 | **Extend** | Use Extend for custom validation, scoring formulas, post-processing, or APIs that native Statistics cannot express |
 
@@ -55,7 +55,7 @@ Before wiring Statistics, identify:
 
 ## TIED configuration risk
 
-Once player data is associated with a statistic configuration, the configuration can become `TIED`. Treat changes to a TIED configuration as migration-sensitive: deleting can wipe associated user stats, and changing bounds, defaults, update behavior, visibility, access level, global aggregation, cycle capping, or Set By can affect live player data and dependent systems.
+Once player data is associated with a statistic configuration, the configuration can become `TIED`. Changes to a TIED configuration (any structural field) can affect live player data and dependent systems. Treat all changes to TIED configs as migration-sensitive — deleting can wipe associated user stats.
 
 When a requested integration depends on a missing or unclear stat configuration, route to `/ags connect-portal` or the Admin Portal owner before adding game code that cannot pass.
 

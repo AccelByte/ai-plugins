@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/
 see-also:
@@ -26,10 +26,11 @@ Access is the same identity engine that powers AGS IAM, available as its own pro
 |---|---|
 | **Platform identity providers** | Steam, PlayStation, Xbox, Epic Games, Google Play, Apple, Facebook |
 | **Enterprise identity providers** | Azure Active Directory, Google Workspace, AWS Cognito, OpenID Connect |
-| **OAuth 2.0** | Full implementation; IAM clients for game clients, game servers, web portals, admin tools |
+| **OAuth 2.0** | Full implementation; IAM clients for game servers, web portals, and admin tools |
 | **Crossplay identity** | Single persistent player identity across PC, console, mobile |
 | **Real-time debugging** | Trace and debug login errors, token failures, auth edge cases |
 | **Role-based access control** | Granular permissions for players, developers, admin users |
+| **Player sanctions** | Account bans and feature-specific bans for moderation enforcement |
 
 ---
 
@@ -48,6 +49,8 @@ Soft signals:
 
 - Studio mentions the cost of integrating multiple platform IdPs themselves.
 - Compliance / regulatory pressure on identity (data residency, age verification).
+
+> **Shared Cloud caveat:** GDPR processes are not yet supported in AGS Shared Cloud. Studios with GDPR requirements should confirm deployment type (Private Cloud or BYOC) with AccelByte sales before committing.
 
 ---
 

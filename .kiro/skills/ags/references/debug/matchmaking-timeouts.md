@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -24,7 +24,7 @@ Common matchmaking timeout / failure-to-form symptoms and their usual root cause
 Check:
 
 1. Number of active tickets at submission time — if there's only one player in queue, rules requiring N opposing players obviously can't satisfy.
-2. Rule set's MMR / region / mode constraints — relaxed-over-time rules let constraints loosen as ticket ages, but tight-from-start rules can starve.
+2. Rule set's MMR / region / mode constraints — if the ruleset supports a flex/relax mode, constraints may be configured to loosen; check the match pool's timeout and the ruleset's flex configuration in Admin Portal.
 3. Custom-attribute filters — a rule that requires `region=eu-west AND mode=ranked AND skill_band=gold` is multiplicative; few players satisfy all three.
 
 Fix: hand off to `/ags-matchmaking` for rule re-design. As a first-aid measure, widen the rule set's opening constraints and add expansion thresholds.
@@ -36,7 +36,7 @@ Fix: hand off to `/ags-matchmaking` for rule re-design. As a first-aid measure, 
 Check:
 
 1. AMS fleet capacity in the requested region.
-2. Warmed-pool sizes — if pools are exhausted, allocation falls back to cold-start with longer latency (or fails outright if no capacity).
+2. AMS fleet capacity in the requested region — check AMS fleet configuration for server pool status and capacity limits.
 3. AMS status / incidents.
 
 Fix: hand off to `/ags-ams` for fleet-side diagnosis. Studios on their own fleets debug their fleet code.
@@ -48,7 +48,7 @@ Fix: hand off to `/ags-ams` for fleet-side diagnosis. Studios on their own fleet
 Check:
 
 1. The rule set's expansion timeline — at what age does the rule loosen? Are tickets timing out before reaching that loosened state?
-2. Ticket TTL — too short and you reject viable matches that would have formed seconds later.
+2. Ticket timeout duration (configured per match pool) — too short and you reject viable matches that would have formed seconds later.
 
 Fix: tune the rule expansion. This is `/ags-matchmaking` territory.
 

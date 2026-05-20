@@ -6,7 +6,7 @@ description: 'Read-only walkthrough of an existing AGS namespace: which modules 
   anything.'
 allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -102,7 +102,7 @@ A walkthrough that couldn't inspect everything still completes — just say "cou
 1. **Find AGS config on disk.** Look for `.env`, `accelbyte.config.*`, SDK plugin folders, build configs that reference `accelbyte` URLs. List what's found.
 2. **Identify environments and namespaces** from those configs. Distinguish dev / staging / prod where possible.
 3. **If the AGS CLI is installed and authenticated:** run read-only queries:
-   - `ags auth status` and `ags doctor --offline`.
+   - `ags auth status` and `ags doctor`.
    - `ags describe <service> <resource> <method>` before generated service commands.
    - `ags iam clients list --namespace <name>` for each namespace if the current specs expose that command.
    - `ags session game-sessions list --namespace <name>` if the user is interested in active session count and the current specs expose that command.

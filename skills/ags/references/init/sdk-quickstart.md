@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/getting-started/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
 see-also:
 - '[install-sdk.md](../../subskills/install-sdk.md)'
 - '[_index.md](../sdks/_index.md)'
@@ -51,7 +52,7 @@ For the operational install steps, see `subskills/install-sdk.md`.
 
 After the first successful login, confirm:
 
-- The token decodes (it's a JWT — base64-decode the middle segment) and contains the expected `namespace` claim.
+- The token decodes (it's a JWT — base64-decode the middle segment) and contains the expected `namespace` claim (verify the exact claim name against the IAM authentication docs).
 - A second call works (e.g. `GetMyProfile` / equivalent) — proves the token is being attached to subsequent requests.
 
 Both checks done = SDK is wired. Move on to the module-by-module wiring (`/ags integrate`).

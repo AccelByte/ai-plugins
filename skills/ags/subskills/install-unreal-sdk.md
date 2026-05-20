@@ -5,7 +5,7 @@ description: Install or scaffold the AGS Unreal plugin set in an Unreal Engine p
   with pinned official sources and OSS identity verification.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-04
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
 - https://docs.accelbyte.io/gaming-services/tutorials/byte-wars/unreal-engine/learning-modules/general/module-initial-setup/unreal-module-initial-setup-install-the-accelbyte-game-sdk/
@@ -29,6 +29,8 @@ Default to `OnlineSubsystemAccelByte` as the Unreal integration surface. Use dir
 <grounding_rules>
 
 Read `references/sdks/game-engine/unreal.md` before installing. Do not fabricate version compatibility or repo tags.
+
+Note on declared sources: the first source (`setup-game-sdk/unreal-sdk/`) covers the standalone AccelByteUe4Sdk download-and-extract workflow. The OSS-first + git-submodule approach used by this subskill is grounded in the Byte Wars tutorial source. Use the tutorial source as the authoritative reference for the `Plugins/AccelByte/` submodule install pattern.
 
 Do not use generic web search for version discovery. Use only the official repo URLs listed in this file and the Unreal reference. To inspect available versions, ask for approval to run targeted Git commands such as `git ls-remote --tags <official-repo-url>` or use a user-provided tag. If the compatible tag is still unclear, ask the user to choose it before installing.
 

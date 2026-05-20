@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://accelbyte.io/ags-eos
 - https://docs.accelbyte.io/
@@ -48,9 +48,9 @@ For the implementation pattern, see `references/cookbook/headless-account-linkin
 (Names only — full list at `https://accelbyte.github.io/extend-apps-directory/`.)
 
 - **EOS Voice Integration** — syncs EOS Voice rooms with AGS session and party state.
-- **EOS Easy Anti-Cheat** — authenticates EAC signals and maps them to AGS enforcement policies.
+- **EOS Easy Anti-Cheat** — integrates EAC with AGS enforcement (see the Extend Apps Directory for details).
 - **Core Matchmaker** — overrides EOS matchmaking with custom MMR / Elo logic.
-- **Rank Suite** — adds MMR-based weekly ranking on top of EOS multiplayer sessions.
+- **Rank Suite** — weekly MMR-based ranking with scheduled standing resets.
 
 These apps deploy as Extend apps inside AGS infrastructure. The conversation about scaffolding them belongs in `/ags-extend`, not `/ags`.
 

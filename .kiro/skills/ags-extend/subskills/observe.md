@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://github.com/AccelByte/extend-helper-cli
 see-also:
 - '[deploy-cli-commands.md](../references/deploy/cli-commands.md)'
@@ -200,7 +200,7 @@ Based on the diagnosis:
 | `extend-helper-cli` missing | Direct to `/ags-extend install-cli`. Stop. |
 | No app dir found and user didn't provide namespace/app | Ask for both. Don't guess. |
 | `get-app-info` returns `401 unauthorized` | Session expired or env vars unset. Direct user to `references/deploy/cli-commands.md#authentication` — either re-export `AB_BASE_URL`/`AB_CLIENT_ID`/`AB_CLIENT_SECRET` or run `extend-helper-cli login`. |
-| `get-app-info` returns `403 forbidden` | OAuth client lacks read permissions for Extend in this namespace. User needs Admin Portal to grant the `EXTEND:APP [READ]` permission. |
+| `get-app-info` returns `403 forbidden` | OAuth client lacks read permissions for Extend in this namespace. User needs Admin Portal to grant read permissions for Extend apps (the exact permission string may vary — check Admin Portal → IAM → Clients → [client] → Permissions if unsure). |
 | `get-app-info` returns `namespace not found` | Wrong namespace or typo. Verify against the Admin Portal. |
 | App named in invocation isn't deployed | See `empty_result_recovery`. |
 | `get-app-info` runs but JSON is incomplete | CLI version mismatch. Suggest `/ags-extend install-cli` to upgrade. Show the raw output. |

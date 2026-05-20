@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -20,10 +20,10 @@ The AGS **TypeScript SDK** for web apps that talk to AGS — admin / live-ops da
 
 ## What's in scope here
 
-- Installation: npm package via `npm install` / `yarn add` / `pnpm add`. Importable in any modern bundler (Vite, webpack, Next.js, etc.).
+- Installation: `npm install @accelbyte/sdk @accelbyte/sdk-iam` (plus any additional `@accelbyte/sdk-*` module packages needed). The core `@accelbyte/sdk` is a peer dependency of all module packages and must be installed. Importable in any modern bundler (Vite, webpack, Next.js, etc.).
 - Module shape: services per AGS module exposed as TypeScript classes / functions; OAuth flows, IAM, Lobby, Sessions, Store, etc.
 - Convention: Promise-based async / `await`. TypeScript types generated from the AGS OpenAPI specs.
-- Auth flows: typically OAuth 2.0 PKCE for web apps. Can also use confidential clients server-side (e.g. in a Next.js API route or a Node backend that talks to AGS on behalf of the web frontend).
+- Auth flows: typically OAuth 2.0 PKCE for web apps. The package ships separate browser and Node entry points. Confidential client flows are not documented in the README — verify with AccelByte if you need server-side OAuth beyond the PKCE flow.
 
 `subskills/install-sdk.md` is the operational install guide and includes the web-app path. This file is the conceptual "what is the TypeScript SDK?" reference.
 
@@ -42,8 +42,8 @@ The AGS **TypeScript SDK** for web apps that talk to AGS — admin / live-ops da
 ## Common gotchas
 
 - **CORS** — AGS endpoints are CORS-aware, but custom domains or admin endpoints may need explicit allow-listing. Check Admin Portal config or AccelByte support if a fetch fails CORS.
-- **Token storage** — browser-side OAuth tokens need careful handling (HttpOnly cookies for refresh tokens, in-memory for access tokens). The SDK has guidance; don't put refresh tokens in `localStorage`.
-- **Bundle size** — the TypeScript SDK pulls types and clients for all AGS modules by default. Tree-shake aggressively if bundle size matters.
+- **Token storage** — browser-side OAuth tokens need careful handling. The SDK uses `withCredentials` to send cookies automatically; avoid storing tokens in `localStorage`.
+- **Bundle size** — the SDK is modular. Install only the `@accelbyte/sdk-*` packages you actually use. If you install multiple modules, tree-shake aggressively.
 
 ## Where this SDK ends
 
@@ -52,5 +52,5 @@ The AGS **TypeScript SDK** for web apps that talk to AGS — admin / live-ops da
 
 ## Where to look in the docs
 
-- AccelByte TypeScript SDK docs: `https://docs.accelbyte.io/`
-- SDK npm package / source: AccelByte's GitHub and npm registry.
+- AccelByte TypeScript SDK source + docs: `https://github.com/AccelByte/accelbyte-typescript-sdk`
+- SDK npm package: `@accelbyte/sdk` and `@accelbyte/sdk-*` module packages on npm.

@@ -69,7 +69,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 | `install-dep`, "install dependencies", "go mod tidy", "pip install", "restore packages" | `subskills/install-dep.md` |
 | `install-cli`, "extend-helper-cli", "install cli" | `subskills/install-cli.md` |
 | `install-mcp`, "mcp setup", "mcp server", "hook up ides", IDE name + "mcp" | `subskills/install-mcp.md` |
-| `proto`, "regen proto", "regenerate proto", "buf generate", "proto contract changed" | `subskills/proto.md` |
+| `proto`, "regen proto", "regenerate proto", "buf generate", "make proto", "proto contract changed" | `subskills/proto.md` |
 | `debug`, "run locally", "test locally", "local server", "localhost" | `subskills/debug.md` |
 | `test`, "unit test", "integration test", "run tests", "write a test", "coverage" | `subskills/test.md` |
 | `deploy`, "push", "ship", "release", "image-upload" | `subskills/deploy.md` |
@@ -137,15 +137,15 @@ The "What the CLI does NOT have" section of `cli-commands.md` explicitly catalog
 
 ## Project layout: per-app, no project-wide manifest
 
-There is no project-wide manifest file. Each Extend app is a standalone directory cloned from an AccelByte template (`extend-event-handler-go`, `extend-service-extension-go`, etc.) and carries its own:
+There is no project-wide manifest file. Each Extend app is a standalone directory cloned from an AccelByte template (Go, C#, Python, Java — see `references/init/templates.md`) and carries its own:
 
 - `Makefile` — wraps Docker-based build + proto regen
 - `Dockerfile` — multi-stage build (proto-builder → builder → runtime)
-- `.env` (or `.env.template`) — per-app credentials and config
+- `.env.template` (or `.env` — a copy for local use) — per-app credentials and config
 - `.devcontainer/` — optional VS Code devcontainer with the toolchain pre-installed
 - `IMPLEMENTATION_PLAN.md` (after `/ags-extend wizard`) — the agreed plan
 
-**Multi-app projects** are just multiple of those directories side by side, typically inside one git repo. Subskills discover the active app by locating a `Makefile` + `Dockerfile` in the working directory or one level up — never by reading a project-level config file.
+**Multi-app projects** are just multiple of those directories side by side, typically inside one git repo. Subskills discover the active app by locating a `Makefile` + `Dockerfile` in the working directory or one level up — never by reading a project-level config file (skill-internal discovery heuristic, not an AGS contract).
 
 `references/init/manifest-schema.md` documents a forward-looking proposal for a project-wide `extend-project.yaml`. **No subskill should generate it today**, and references in this skill bundle have been updated to reflect per-app discovery.
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
 - https://github.com/AccelByte/extend-helper-cli
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
@@ -21,7 +21,7 @@ extend-helper-cli get-app-info \
   --app <my-extend-app>
 ```
 
-Response includes `appStatus` (e.g. `app-undeployed`, `running`, `stopped`, `deployment failed`) and timestamps.
+Response includes `appStatus` (e.g. `undeployed`, `running`, `stopped`, `deployment failed`) and timestamps.
 
 To query a single field (e.g. status only):
 
@@ -63,8 +63,8 @@ Open Grafana Cloud from the Extend app's detail page in the Admin Portal → cli
 
 ### Retention
 
-- **Logs:** 30 days
-- **Metrics:** 13 months
+- **Logs:** 30 days (default; may vary by plan or configuration)
+- **Metrics:** 13 months (default; may vary by plan or configuration)
 
 For longer retention, forward to an external sink.
 

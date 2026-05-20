@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -26,6 +26,8 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **Publisher namespace.** A special parent namespace some studios use to share entitlements (e.g. an account upgrade across multiple titles) across child namespaces. Not every studio needs one.
 
+**Studio namespace.** A middle-tier namespace between Publisher and Game, used when a publisher manages multiple independent studios. Not required in simple single-studio setups.
+
 **Region.** Geographic deployment. AGS shared cloud runs in multiple regions; private cloud is single-region by default. Matchmaking and AMS use region for latency optimization.
 
 ---
@@ -45,7 +47,7 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **Refresh token.** Longer-lived token used to get a new access token without re-authenticating. Stored client-side; rotated on each refresh.
 
-**Headless account.** A player account auto-created when the player first logs in via a third-party identity provider (Steam, Epic, PSN, etc.) without explicitly registering. The account is "headless" in that it has no AccelByte-native credentials yet — it's linked to the third-party identity. Players can later upgrade by adding email/password.
+**Headless account.** A player account auto-created when the player first logs in via a third-party identity provider (Steam, Epic, PSN, etc.) or when using anonymous/device-ID login, without explicitly registering. The account is "headless" in that it has no AccelByte-native credentials yet — it's linked to the third-party identity or device. Players can later upgrade by adding email/password.
 
 **Headless account linking.** The bridge mechanism AGS uses for the EOS (Epic Online Services) coexistence story. When a player authenticates via EOS, AGS creates a headless AGS account linked to the EOS identity, so the player has both identities in lockstep without a separate registration.
 
@@ -95,7 +97,7 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **Item.** A single thing in the store — a skin, a bundle, a loot box, a season pass. Items have categories, prices, and entitlement effects when purchased.
 
-**Wallet.** A player's per-namespace balance in one or more currencies. Currencies can be real (USD via Stripe / platform IAP) or virtual (gold coins, gems).
+**Wallet.** A player's per-namespace store of virtual currency; one wallet per currency (a player with multiple in-game currencies has multiple wallets). Real-money purchases (via Stripe or platform IAP) convert to virtual currency — the wallet holds only virtual currency.
 
 **Entitlement.** A player's right to use an item or feature. Granted by purchase, by promotion, by achievement unlock, etc. Entitlements are checked at use-time (e.g., game client checks entitlements before letting the player equip a cosmetic).
 
@@ -109,7 +111,7 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 ## Telemetry & operations
 
-**PCCU (Peak Concurrent Users).** The maximum number of distinct players actively interacting with AGS APIs in a single day. AGS pricing meters PCCU per day; tier thresholds use PCCU as their basis.
+**PCCU (Peak Concurrent Users).** The peak count of simultaneously active players at any moment in a given day. Not the same as DAU (daily active users). AGS pricing meters PCCU per day; tier thresholds use PCCU as their basis.
 
 **DAU (Daily Active Users).** Distinct players in a 24-hour window. Less important than PCCU for AGS billing; useful for retention analysis.
 

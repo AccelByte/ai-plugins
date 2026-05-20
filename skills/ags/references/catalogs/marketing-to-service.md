@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-30
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/api-explorer/
 - https://docs.accelbyte.io/gaming-services/modules/
@@ -53,7 +53,7 @@ This catalog is the canonical translation table. Use it whenever a user asks "wh
 | **Tools & Utilities** | `loginqueue` | `justice-login-queue-service` (→ **Login Queue**) | Player traffic queueing during peak load. |
 | Tools & Utilities (auxiliary) | `iam` | (→ **IAM**) | Login allowlist and profanity filter live in IAM. |
 | Tools & Utilities (auxiliary) | (no public spec) | — | Configuration Migration, Audit Logs, Access Logs, Grafana Cloud Observability are platform/admin features without dedicated public OpenAPI surfaces. |
-| **Extend** | `csm` | `Custom Service Manager` (→ **CSM**) | The Extend control plane — registers and manages Extend Override / Service Extension / Event Handler / App UI deployments. Customers usually don't call CSM directly; they interact via the Admin Portal and the Extend SDKs. |
+| **Extend** | `csm` | `Custom Service Manager` (→ **CSM**) _(note: `info.title` is `custom-service-manager` (hyphenated); `info.description` is `Custom Service Manager`)_ | The Extend control plane — registers and manages Extend Override / Service Extension / Event Handler / App UI deployments. Customers usually don't call CSM directly; they interact via the Admin Portal and the Extend SDKs. |
 
 ## Online
 
@@ -105,7 +105,7 @@ The API Explorer page (`docs.accelbyte.io/api-explorer`) renders some additional
 
 | API Explorer category | Underlying spec(s) | Where it appears in marketing docs |
 |---|---|---|
-| **Reporting & Moderation** | `reporting` (`justice-reporting-service`) — player-on-player reports, automated moderation actions. Adjacent moderation features land in `iam` (bans, sanctions), `chat` (chat moderation hooks), and the **Profanity Filter** under Foundations → Tools & Utilities. | No single subcategory. The Reporting service has no module page; the moderation surface is split across IAM (bans / sanctions), Chat (chat moderation), and Tools & Utilities (profanity filter). |
+| **Reporting** _(also labelled 'Reporting & Moderation' in some UI views)_ | `reporting` (`justice-reporting-service`) — player-on-player reports, automated moderation actions. Adjacent moderation features land in `iam` (bans, sanctions), `chat` (chat moderation hooks), and the **Profanity Filter** under Foundations → Tools & Utilities. | No single subcategory. The Reporting service has no module page; the moderation surface is split across IAM (bans / sanctions), Chat (chat moderation), and Tools & Utilities (profanity filter). |
 
 If a user asks specifically about `reporting.json` or "the Reporting service", the answer is: it's a real service (`reporting`, title `justice-reporting-service`) that handles player-submitted reports and moderation workflows, but AccelByte does not publish a top-level module page for it; it is grouped into a sidebar bucket on the API Explorer alongside IAM-driven moderation features.
 

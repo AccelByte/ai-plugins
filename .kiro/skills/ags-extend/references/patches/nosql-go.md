@@ -4,7 +4,7 @@ language: go
 app-types:
 - service-extension
 docs: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-nosql-database/
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-nosql-database/
 see-also:
@@ -14,6 +14,8 @@ see-also:
 ---
 
 # NoSQL (MongoDB / DocumentDB) — Go
+
+> **Closed Alpha** — Extend NoSQL requires namespace allowlisting before provisioning. Contact your AccelByte account team to request access.
 
 Replaces the CloudSave storage backend in a Go Service Extension template with MongoDB. AccelByte's managed NoSQL offering is DocumentDB (MongoDB-compatible). The connection string format differs slightly between local development (plain MongoDB) and production (DocumentDB with TLS), so the wiring reads an optional CA cert path from the environment to switch modes.
 
@@ -154,7 +156,15 @@ DOCDB_PASSWORD=password
 DOCDB_DATABASE_NAME=<your_database_name>
 ```
 
-`DOCDB_CA_CERT_FILE_PATH` is optional — only needed when connecting to DocumentDB in production with TLS. Leave it out of `.env.template` and set it in the deployment environment.
+`DOCDB_CA_CERT_FILE_PATH` is optional — only needed when connecting to DocumentDB in production with TLS. Download the AWS global bundle:
+
+```bash
+curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+```
+
+Set `DOCDB_CA_CERT_FILE_PATH` to the path of the downloaded file. Leave it out of `.env.template` and set it in the deployment environment.
+
+For local testing against a real DocumentDB cluster, use TCP tunneling via `extend-helper-cli tunnel` and modify the TLS connection string accordingly.
 
 ### 5. Update `docker-compose.yaml`
 

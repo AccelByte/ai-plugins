@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-05
+last-verified: 2026-05-09
 see-also:
 - '[install-cli.md](../../subskills/install-cli.md)'
 - '[observe.md](../../subskills/observe.md)'
@@ -23,7 +23,7 @@ When operating the AGS CLI on a user's behalf:
 2. Use `--skeleton` where available to discover request body schemas before writing JSON. Do not invent model fields from memory or examples for another resource.
 3. Use `--dry-run` where available before mutating operations so the user can inspect the resolved command/body.
 4. Use `--format json` for automation and evidence gathering. Do not parse human-readable output when JSON output is available.
-5. Treat create, update, delete, kick, ban, grant, revoke, and similar operations as mutations. Show the discovered command/body and get explicit user confirmation before running them.
+5. Treat create, update, delete, kick, ban, grant, revoke, and similar operations as mutations. Show the discovered command/body and get explicit user confirmation before running them. (LLM safety layer — not in the CLI's source documentation; complements the four source-documented rules above.)
 6. Do not hardcode guessed service, resource, method, flag, `--api-scope`, or `--api-version` values. Discover them from `ags describe` or CLI help, then report when the current CLI does not expose the needed operation.
 
 ## What you can do via the CLI

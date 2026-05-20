@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-05-09
 note: Canonical GitHub Actions workflow for Extend build + deploy. In CI, the CLI
   authenticates via AB_CLIENT_ID, AB_CLIENT_SECRET, and AB_BASE_URL environment variables
   (non-interactive). The interactive `login` subcommand exists but is not used in
@@ -128,7 +128,7 @@ jobs:
 - **`push` trigger for main.** Runs test + image-upload on every main merge, but the deploy job is gated on `workflow_dispatch` — preventing auto-deploy-on-push to production. The developer must click a button.
 - **`needs:` dependency chain.** test → image-upload → deploy. Each depends on the previous succeeding.
 - **`environment: production`.** Enables GitHub's environment protection rules (required reviewers, deployment branches). Configure the `production` environment under Settings → Environments.
-- **Credentials via env vars.** The CLI reads `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `AB_BASE_URL` from the environment for non-interactive (CI) use. No separate login step is needed. The interactive `login` subcommand exists for local/terminal use but is not used in CI pipelines.
+- **Credentials via env vars.** The CLI reads `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `AB_BASE_URL` from the environment for non-interactive (CI) use. `AB_NAMESPACE` can also be set as an env var (as in the official quickstart) but is passed as `--namespace` flag here for explicitness. No separate login step is needed. The interactive `login` subcommand exists for local/terminal use but is not used in CI pipelines.
 
 ## Per-language setup adjustments
 
@@ -206,7 +206,7 @@ Once the pipeline is green:
 - Add branch protection so `main` requires the test job to pass before merge.
 - Add required reviewers to the `production` environment so deploy requires a second click from another team member.
 - Pin `extend-helper-cli` to a specific version in the install step (don't use `latest` in prod). Replace the URL with a versioned tag.
-- Rotate `AB_CLIENT_SECRET` quarterly. The Admin Portal supports rotation without downtime if you stagger old/new.
+- Rotate `AB_CLIENT_SECRET` periodically. In the Admin Portal, generate a new client secret, update your CI secrets, then delete the old one to complete the rotation.
 
 ## Troubleshooting
 
@@ -214,5 +214,5 @@ Once the pipeline is green:
 |---|---|
 | `extend-helper-cli: command not found` | The install step failed or PATH isn't set. Confirm the binary exists at `/usr/local/bin/extend-helper-cli` in the job. |
 | `401 unauthorized` at `image-upload` | `AB_CLIENT_ID`/`AB_CLIENT_SECRET` don't match or the client lacks permissions. Recreate the IAM client in the Portal. |
-| `deploy-app` hangs for 10+ minutes | Usually the image is too large or the health check is failing. Check app status with `extend-helper-cli get-app-info --app matchmaking-override --namespace ...`. Check logs via Grafana Cloud. |
+| `deploy-app` exits immediately (use `--wait` to block). App remains non-Running for 10+ minutes | Usually the image is too large or the health check is failing. Check app status with `extend-helper-cli get-app-info --app matchmaking-override --namespace ...`. Check logs via Grafana Cloud. |
 | Deploy succeeds but app shows `Degraded` | Health check fails once the app starts. Check logs via Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud). |

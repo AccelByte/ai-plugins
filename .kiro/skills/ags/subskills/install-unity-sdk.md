@@ -4,7 +4,7 @@ description: Install or scaffold the AGS Unity SDK packages in a Unity project. 
   Unity Package Manager Git URLs for accelbyte-unity-sdk and, when needed, accelbyte-unity-networking.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-04
+last-verified: 2026-05-09
 sources:
 - https://github.com/AccelByte/accelbyte-unity-sdk
 - https://github.com/AccelByte/accelbyte-unity-networking
@@ -59,7 +59,7 @@ Read `ProjectSettings/ProjectVersion.txt`, detect `Packages/manifest.json`, and 
 Install the official package set:
 
 - Required: `com.accelbyte.unitysdk` from `https://github.com/AccelByte/accelbyte-unity-sdk.git`
-- Optional when networking is needed: `com.accelbyte.unitynetworking` from `https://github.com/AccelByte/accelbyte-unity-networking.git`
+- Optional when networking is needed: `com.accelbyte.networking` from `https://github.com/AccelByte/accelbyte-unity-networking.git`
 
 Pin each package to a tag, branch, or commit compatible with the project's Unity version. Prefer tags for reproducibility.
 
@@ -71,7 +71,7 @@ Edit `Packages/manifest.json` using UPM Git URLs shaped like:
 {
   "dependencies": {
     "com.accelbyte.unitysdk": "https://github.com/AccelByte/accelbyte-unity-sdk.git#<tag>",
-    "com.accelbyte.unitynetworking": "https://github.com/AccelByte/accelbyte-unity-networking.git#<tag>"
+    "com.accelbyte.networking": "https://github.com/AccelByte/accelbyte-unity-networking.git#<tag>"
   }
 }
 ```
@@ -80,7 +80,7 @@ Only add `com.accelbyte.unitynetworking` when the project needs it or the user r
 
 ### Step 4: Configure
 
-Create or update the Unity SDK configuration asset or config file expected by the current SDK docs. Wire it to the project's chosen config source when AGS values are available. Keep secrets out of client builds; Unity game clients use a public IAM client.
+Create `Assets/Resources/AccelByteSDKConfig.json` (client config) and `Assets/Resources/AccelByteSDKOAuthConfig.json` (OAuth config) as expected by the current SDK docs, placing both under `Assets/Resources/`. Wire them to the project's chosen config source when AGS values are available. Keep secrets out of client builds; Unity game clients use a public IAM client.
 
 If AGS values are missing, do not create placeholder config values. Stop after package installation and route to `/ags connect-portal`.
 

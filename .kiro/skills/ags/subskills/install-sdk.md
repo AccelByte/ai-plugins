@@ -5,7 +5,7 @@ description: Detect the target engine/runtime and route to the right AGS SDK ins
   Web SDK, and custom-engine REST fallback.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -149,8 +149,8 @@ Most SDKs read config either from `.env` directly (web) or from a per-engine con
 
 - Unreal: handled by `/ags install-unreal-sdk`.
 - Unity: handled by `/ags install-unity-sdk`.
-- Godot: a node / autoload pointing at `.env` or environment variables.
-- Roblox: a server-side config script storing the values.
+- Godot: a node / autoload pointing at `.env` or environment variables (see `references/sdks/game-engine/godot.md` for config details).
+- Roblox: a server-side config script storing the values (see `references/sdks/game-engine/roblox.md` for config details).
 - TypeScript Web: `process.env.*` directly, or an init call passing the values from `.env`.
 
 Wire it. Confirm the SDK can read the values.
@@ -215,7 +215,7 @@ Skill: Will install: @accelbyte/sdk (latest)
 
 User: y
 
-Skill: ✓ npm install @accelbyte/sdk
+Skill: ✓ npm install @accelbyte/sdk @accelbyte/sdk-iam
        ✓ Wrote src/lib/accelbyte-client.ts (initializes from .env)
        ✓ Test login (OAuth PKCE flow): succeeded. token received.
 
@@ -248,4 +248,4 @@ Skill: ...
 - **Engine version unsupported by SDK** — surface the gap. Point at the SDK's release notes for the matching version range.
 - **`.env` missing required values** — name the missing keys; route to `/ags connect-portal`.
 - **User asks for "Go SDK" / "Python SDK" / "C# SDK" / "Java SDK"** — these are Extend SDKs. Route to `/ags-extend`. Do not install here.
-- **Custom engine** (not Unreal / Unity / Godot / Roblox / Web) — say there's no Game Engine SDK for that engine; integrate via REST + OpenAPI directly. Point at `https://docs.accelbyte.io/` for the OpenAPI specs.
+- **Custom engine** (not Unreal / Unity / Godot / Roblox / Web) — say there's no Game Engine SDK for that engine; integrate via REST + OpenAPI directly. From `https://docs.accelbyte.io/`, navigate to SDK & Tools > SDK References > API Explorer for the OpenAPI specs.

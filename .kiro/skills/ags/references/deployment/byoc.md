@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -10,13 +10,13 @@ see-also:
 
 # Deployment — Bring Your Own Cloud (BYOC)
 
-AGS deployed into the customer's own AWS environment. **AccelByte-managed**, but on the customer's cloud account.
+AGS deployed into the customer's own cloud environment (typically AWS). **AccelByte-managed**, but on the customer's cloud account.
 
 ---
 
 ## What it is
 
-The customer brings their AWS account (existing org-level commitments, cost-allocation buckets, security boundaries). AccelByte deploys AGS into that account and runs ops on top of it. Customer pays AWS directly for infrastructure; pays AccelByte for the platform license and management.
+The customer brings their cloud account (typically AWS; confirm cloud provider with AccelByte sales — existing org-level commitments, cost-allocation buckets, security boundaries). AccelByte deploys AGS into that account and runs ops on top of it. Customer pays the cloud provider directly for infrastructure; pays AccelByte for the platform license and management.
 
 ## When it's the right answer
 
@@ -35,13 +35,13 @@ The customer brings their AWS account (existing org-level commitments, cost-allo
 
 - **Upgrades** — coordinated with customer; similar to Private Cloud but with customer-side AWS-layer validation steps.
 - **Support** — Professional Support / Delivery Manager typical, since BYOC is enterprise-tier.
-- **Region** — wherever the customer has AWS presence.
+- **Region** — wherever the customer's hosting environment is present.
 
 ## How it differs from Private Cloud
 
 | | Private Cloud | BYOC |
 |---|---|---|
-| Infra owned by | AccelByte | Customer (AWS account) |
+| Infra owned by | AccelByte | Customer (cloud account) |
 | Infra paid by | AccelByte (rolled into contract) | Customer (direct to AWS) |
 | Best for | Data-residency / SLA / compliance | Existing AWS commitments to consume |
 

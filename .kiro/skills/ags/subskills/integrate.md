@@ -6,7 +6,7 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -188,9 +188,9 @@ If the plan includes multiple modules, execute only the approved feature slice u
 
 ```
    1. IAM            (auth flow — required for everything else)
-   2. Lobby          (party / presence / chat)
-   3. Matchmaking    (rule submission and ticket lifecycle)
-   4. Session        (game session creation, server allocation)
+   2. Lobby          (party / presence / chat — listed as "Parties & Presence" and "Chat" in the live docs navigation)
+   3. Session        (game session creation, server allocation)
+   4. Matchmaking    (rule submission and ticket lifecycle)
    5. Store          (catalog browse, purchase flow)
    6. Statistics     (stat update, stat readback, cycles when needed)
    7. Leaderboards   (score posting / stat ranking queries)
@@ -199,7 +199,7 @@ If the plan includes multiple modules, execute only the approved feature slice u
   10. Analytics      (custom event emission)
 ```
 
-This order respects dependencies — IAM is the basis for everything; Sessions depends on Matchmaking depends on Lobby; Leaderboards and Achievements often depend on Statistics stat codes and cycles.
+This order respects dependencies — IAM is the basis for everything; Matchmaking depends on Session (when a match is found, Matchmaking requests a game session from AGS Session), and Session depends on Lobby; Leaderboards depend on Statistics statcodes, while cycles apply only for seasonal leaderboards. Achievements depend on Statistics statcodes for incremental/global criteria.
 
 When the prompt combines progression, Statistics, and Achievements, wire Statistics as the source of progression first. For counter-style progression, prefer the native statistic-backed achievement path: configure or confirm an incrementing stat, update that stat from gameplay, then configure the achievement criterion to unlock from the stat value or threshold. Do not skip this option or route to custom achievement logic unless the requested rule cannot be represented by a statistic/cycle/event criterion.
 

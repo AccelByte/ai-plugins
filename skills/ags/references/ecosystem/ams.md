@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/multiplayer-servers/
 - https://accelbyte.io/multiplayer-servers
@@ -29,7 +29,7 @@ AMS is dedicated game-server hosting designed for studios that need reliable, lo
 | **Warmed server pools** | Pre-warms servers per region and time-of-day profile so there's no cold-start latency at match start |
 | **Watchdog lifecycle management** | Lightweight watchdog process per server handles health monitoring, graceful shutdown, crash detection, and replacement |
 | **Native matchmaking integration** | Server allocation triggers automatically when a match confirms — no custom glue between matchmaking and the fleet |
-| **Multi-cloud and multi-region** | Deploy across AWS / GCP / Azure with regional routing tuned for player latency or cost |
+| **Multi-cloud and multi-region** | Deploy across AWS / GCP / Azure or bare metal (via Servers.com) — 7 global regions and 63 points of presence, with regional routing tuned for player latency or cost |
 | **Observability** | Built-in metrics, logs, traces; integrates with external monitoring stacks |
 
 ## Deployment model
@@ -58,7 +58,7 @@ Soft signals:
 ## When AMS isn't the right answer
 
 - The studio's game is **not multiplayer** or uses listen-server / peer-to-peer architecture only. AMS is dedicated-server-shaped.
-- They have an existing **multi-year cloud commitment** they need to consume — BYOC of AMS may be possible; loop in AccelByte sales for the deployment shape.
+- They have an existing **multi-year cloud commitment** they need to consume — contact AccelByte sales for deployment options. AMS also supports bare metal deployment via Servers.com for studios with specific infrastructure requirements.
 - They want **edge / serverless** server allocation patterns specific to a competitor (Edgegap, Hathora). AMS competes with these; the choice is a sales conversation, not a technical fit question.
 
 ---
@@ -89,7 +89,7 @@ For SDK-side integration (how a game client gets the allocated server's address 
 
 For broader context outside this repo:
 
-- AccelByte AMS product page: `https://accelbyte.io/products/multiplayer-servers`.
+- AccelByte AMS product page: `https://accelbyte.io/multiplayer-servers`.
 - AccelByte AMS docs: `https://docs.accelbyte.io/`.
 - AccelByte sales / Delivery Manager for fleet sizing and contract conversations.
 

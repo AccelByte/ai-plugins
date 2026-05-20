@@ -5,9 +5,9 @@ description: Pull read-only signals from a deployed AGS namespace. Use when the 
   availability, auth health, or connectivity.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-05-07
+last-verified: 2026-05-09
 sources:
-- https://docs.accelbyte.io/
+- https://github.com/AccelByte/accelbyte-ags-cli/releases/latest
 see-also:
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[event-catalog.md](../references/observe/event-catalog.md)'

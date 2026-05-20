@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-05-09
 sources:
 - https://accelbyte.io/development-toolkit
 see-also:
@@ -109,6 +109,6 @@ ADT is independent but plays nicely with AGS:
 
 For broader context outside this repo:
 
-- AccelByte ADT product page: `https://accelbyte.io/products/development-toolkit`.
+- AccelByte ADT product page: `https://accelbyte.io/development-toolkit`.
 - AccelByte ADT docs: `https://docs.accelbyte.io/`.
 - AccelByte sales for licensing and console DevKit setup.
