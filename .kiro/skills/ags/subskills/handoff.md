@@ -1,9 +1,9 @@
 ---
 name: ags-handoff
 description: Decide whether `/ags` is the right skill, or whether the user should
-  be in a peer skill (`/ags-extend`, `/ags-ams`, `/ags-matchmaking`, `/adt`) or talking
-  to AccelByte sales. Use when the user asks 'should I add Extend / AMS / ADT / Access?'
-  or 'is AGS even right for this?'
+  be in a nested capability (`/ags ams`, `/ags matchmaking`), adjacent skill (`/ags-extend`,
+  `/adt`), or talking to AccelByte sales. Use when the user asks 'should I add Extend
+  / AMS / ADT / Access?' or 'is AGS even right for this?'
 allowed-tools: Read Glob
 model: sonnet
 last-verified: 2026-05-09
@@ -19,7 +19,7 @@ see-also:
 
 # AGS Handoff Advisor
 
-Read-only routing decisions: should this conversation continue in `/ags`, or move to one of the peer skills (`/ags-extend`, `/ags-ams`, `/ags-matchmaking`, `/adt`) or to AccelByte sales / docs? Cuts wasted iteration when the user is in the wrong skill for what they actually need.
+Read-only routing decisions: should this conversation continue in `/ags`, move to a nested capability (`/ags ams`, `/ags matchmaking`), move to an adjacent skill (`/ags-extend`, `/adt`), or go to AccelByte sales / docs? Cuts wasted iteration when the user is in the wrong skill for what they actually need.
 
 ## Behavior Constraints
 
@@ -129,7 +129,7 @@ directly address the latency; the watchdog removes the fleet-ops
 overhead; native AGS matchmaking integration eliminates the AGS↔fleet
 glue you'd otherwise be writing.
 
-Next step: invoke `/ags-ams` for fleet config, sizing, and rollout.
+Next step: invoke `/ags ams` for fleet config, sizing, and rollout.
 For pricing and contract scope, AccelByte sales / your Delivery Manager.
 ```
 
@@ -193,9 +193,9 @@ User: How do I tune the MMR formula for my matchmaking?
 **Recommendation:** That's matchmaking depth — wrong skill
 
 `/ags` covers matchmaking conceptually; rule design, MMR tuning, ticket
-lifecycle, and debugging match formation belong in `/ags-matchmaking`.
+lifecycle, and debugging match formation belong in `/ags matchmaking`.
 
-Next step: invoke `/ags-matchmaking` and bring your current rule set.
+Next step: invoke `/ags matchmaking` and bring your current rule set.
 ```
 
 ## Error handling

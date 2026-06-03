@@ -80,9 +80,9 @@ This catalog is the canonical translation table. Use it whenever a user asks "wh
 | **Chat** | `chat` | `justice-chat-service` (→ **Chat**) | Real-time chat, channels, moderation hooks. Distinct from Lobby. |
 | **Dedicated Server Hub** | `lobby` | (→ **Lobby**) | DS Hub is the server-facing WebSocket channel inside the Lobby service. No standalone `dshub.json`. |
 | **Guilds & Clans** | `group` | `justice-group-service` (→ **Group**) | Player groups (used to back the Guilds & Clans feature). |
-| **Matchmaking** | `match2` | `Justice Match Service v2` (→ **Match v2**) | Rule-based matchmaking, ticket lifecycle, backfill. The `2` reflects the v2 generation; the v1 matchmaking service is deprecated and not in the public spec list. Deep matchmaking work belongs to the `/ags-matchmaking` peer skill. |
+| **Matchmaking** | `match2` | `Justice Match Service v2` (→ **Match v2**) | Rule-based matchmaking, ticket lifecycle, backfill. The `2` reflects the v2 generation; the v1 matchmaking service is deprecated and not in the public spec list. Deep matchmaking work routes through `/ags matchmaking`. |
 | **Multiplayer Notifications** | `lobby` | (→ **Lobby**) | Client and server notifications run through the Lobby + DS Hub websockets. |
-| **Multiplayer Servers** | `ams` | `fleet-commander` (→ **AMS / Fleet Commander**) | AccelByte Multiplayer Servers — fleet management, dedicated server lifecycle. The spec title is `fleet-commander` (the control component). The product name is **AMS**. Deep AMS work belongs to the `/ags-ams` peer skill. |
+| **Multiplayer Servers** | `ams` | `fleet-commander` (→ **AMS / Fleet Commander**) | AccelByte Multiplayer Servers — fleet management, dedicated server lifecycle. The spec title is `fleet-commander` (the control component). The product name is **AMS**. Deep AMS work routes through `/ags ams`. |
 | **Parties & Presence** | `lobby` | (→ **Lobby**) | Party lifecycle, party invites, presence. Same spec as Friends. |
 | **Peer-to-Peer** | `session` | `justice-session-service` (→ **Session**) | P2P matches are modeled as P2P sessions in the Session service; there is no standalone P2P spec. |
 | **Session** | `session` | `justice-session-service` (→ **Session**) | Game session lifecycle, server allocation, reconnection, persistent sessions. |
@@ -118,7 +118,7 @@ When you see a `*.json` spec name and need to point a user at the right docs pag
 | Spec filename | Marketing home (module → subcategory) |
 |---|---|
 | `achievement` | Online → Achievements |
-| `ams` | Multiplayer → Multiplayer Servers (also product name **AMS**, peer skill `/ags-ams`) |
+| `ams` | Multiplayer → Multiplayer Servers (also product name **AMS**, capability route `/ags ams`) |
 | `basic` | Foundations → Identity & Access (auxiliary; profiles & namespace config) |
 | `challenge` | Online → Challenges |
 | `chat` | Multiplayer → Chat |
@@ -133,7 +133,7 @@ When you see a `*.json` spec name and need to point a user at the right docs pag
 | `legal` | Foundations → Legal & Privacy |
 | `lobby` | Online → Friends, Online → Presence, Multiplayer → Parties & Presence, Multiplayer → Multiplayer Notifications, Multiplayer → Dedicated Server Hub |
 | `loginqueue` | Foundations → Tools & Utilities |
-| `match2` | Multiplayer → Matchmaking (peer skill `/ags-matchmaking`) |
+| `match2` | Multiplayer → Matchmaking (capability route `/ags matchmaking`) |
 | `platform` | Online → Store & Catalog, Online → Wallets & Payments, Online → Rewards (e-commerce) |
 | `reporting` | API Explorer → Reporting & Moderation (no dedicated module page) |
 | `seasonpass` | Online → Season Pass |

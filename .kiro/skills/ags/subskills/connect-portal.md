@@ -45,7 +45,7 @@ Before writing anything, confirm:
 
 1. The AGS CLI is installed (`ags --version` or `ags --help`). If not, route to `/ags install-cli` and stop here.
 2. The CLI is authenticated to the right Admin Portal (`ags auth status`). If not, point at `ags auth login`.
-3. The active CLI profile has or can reveal the base URL and namespace (`ags config`, `ags auth status`, project `.env`, or user input).
+3. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
 4. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
 5. The project type is known (Unreal / Unity / Godot / Roblox / Web / custom engine). If this subskill is invoked from `/ags init`, use the project type detected in Stage 1 and confirmed by the wizard. Do not ask again or fall back to generic `.env` behavior when the project type is already known.
 
@@ -120,7 +120,13 @@ ags config --help
 ags describe iam clients list
 ```
 
-Use the actual CLI command surface. If `ags config get base-url` / `ags config get namespace` or equivalent is available, use it. If not, use `ags auth status`, project `.env`, or ask the user.
+Use the actual CLI command surface. For existing game projects, inspect project runtime config before choosing a namespace:
+
+- Unreal: `Config/DefaultEngine.ini`, especially `[/Script/AccelByteUe4Sdk.AccelByteSettings]` and server settings.
+- Unity: the project's AccelByte SDK settings asset/json.
+- Web/custom: `.env` or app config.
+
+If `ags config get base-url` / `ags config get namespace` or equivalent is available, use it only as a consistency check against project config. If project config and CLI profile disagree, stop and ask which target to use before running namespace-scoped commands.
 
 ### Step 2: Decide on the IAM client kind and login methods
 

@@ -22,16 +22,6 @@ Checklist-driven planner for choosing the next useful AGS-backed feature slice i
 
 This subskill is mostly read-only, but it may write the final approved plan document. It does not install SDKs, configure portal values, call AccelByte APIs, or edit game/runtime code.
 
-## Mandatory Checklist Protocol
-
-### Codex-only checklist handling
-
-Codex must read this checklist before taking action, then call `update_plan` with each checklist item as a plan step. Before starting a checklist item, update that item to `in_progress`. After finishing and verifying it, update that item to `completed`. Only one checklist item may be `in_progress` at a time.
-
-Do not collapse steps, skip `update_plan`, or mark multiple items `in_progress`. If a step stops early, leave it `in_progress` or move it back to `pending` only if the user explicitly chooses to pause or retry later.
-
-For non-Codex agents, mirror the checklist using the agent's native task-tracking mechanism if one exists. If the runtime has no task tracker, announce the active checklist item in text and keep the same one-step-at-a-time sequencing.
-
 ## Checklist
 
 - [ ] Verify init prerequisites
@@ -54,8 +44,9 @@ For non-Codex agents, mirror the checklist using the agent's native task-trackin
 - Do not fabricate module behavior, SDK calls, or code architecture. If project code is unclear, state the uncertainty and ask.
 - Suggest one or two small implementation slices first. Do not present a full product roadmap unless the user asks for roadmap planning.
 - If a request belongs to a peer skill, flag it instead of pretending this wizard owns it:
-  - Deep matchmaking rules/MMR -> `/ags-matchmaking`.
-  - Dedicated server fleet work (AMS / Multiplayer Servers / Dedicated Server Hub) -> `/ags-ams`.
+  - Deep matchmaking rules/MMR -> `/ags matchmaking`.
+  - Matchmaking player-count relaxation, such as "4 players, then loosen to 1" -> `/ags matchmaking ruleset`; this is `alliance_flexing_rule`, not a session-template-only or pool-only setting.
+  - Dedicated server fleet work (AMS / Multiplayer Servers / Dedicated Server Hub) -> `/ags ams`.
   - Custom backend behavior or service override -> `/ags-extend`.
   - Build distribution/crash/playtest -> `/adt`.
 
@@ -138,7 +129,7 @@ Do not print the final response if prerequisites are missing or the user has not
 
 The wizard is complete when:
 
-1. The checklist has been mirrored into `update_plan`.
+1. The checklist has been mirrored into the host-native progress tracker or a visible checklist fallback.
 2. Init prerequisites are verified, or the wizard has recorded the user's explicit choice to continue with planning-only caveats.
 3. The project has been inspected enough to infer game type, engine/runtime, existing AGS-related code/config, and likely next integration points.
 4. The user has confirmed or corrected the inferred game context.
@@ -150,9 +141,9 @@ The wizard is complete when:
 
 ## Workflow
 
-### Step 0: Mirror The Checklist Into update_plan
+### Step 0: Mirror The Checklist Into The Host-Native Progress Tracker
 
-Before Step 1, call `update_plan` with these exact plan steps:
+Before Step 1, mirror these exact plan steps into the host-native progress tracker. If the harness has no native tracker, keep the same steps as a visible checklist in the response:
 
 1. Verify init prerequisites
 2. Read project context

@@ -12,8 +12,10 @@ see-also:
 - '[godot.md](godot.md)'
 - '[roblox.md](roblox.md)'
 - '[typescript.md](../web/typescript.md)'
+- '[unreal-verification.md](unreal-verification.md)'
+- '[unreal-p2p.md](unreal-p2p.md)'
 - '[install-sdk.md](../../../subskills/install-sdk.md)'
-- '[install-unreal-sdk.md](../../../subskills/install-unreal-sdk.md)'
+- '[unreal-install.md](unreal/install.md)'
 ---
 
 # SDK — Unreal Engine
@@ -21,6 +23,10 @@ see-also:
 The AGS **Unreal Engine SDK** for game clients and dedicated game servers. Supports Unreal Engine 4.27+ (4.25+ per GitHub SDK plugin repos); UE 5.0–5.6.x stable, 5.7.x Beta. Wraps the AGS REST + OpenAPI surface; same module shape as the Unity, Godot, and Roblox SDKs.
 
 For normal Unreal game-client work, prefer the AGS Unreal Online Subsystem (`OnlineSubsystemAccelByte`) as the integration surface. It implements Unreal's Online Subsystem interfaces and should be the default path for identity/auth, sessions, lobby, and gameplay-facing AGS flows. Use direct `AccelByteUe4Sdk` / `FRegistry::User.*` calls only when the user explicitly asks for raw SDK integration, is building a low-level wrapper, or the project is intentionally not using OSS.
+
+When editing or verifying Unreal C++ code, also read `unreal-verification.md`. If the Unreal Editor is already running and the Unreal SDK MCP tools are available, prefer live coding compile verification before falling back to a normal Unreal build.
+
+For peer-to-peer sessions, also read `unreal-p2p.md`; it contains the reusable Session V2, Network Utilities, and `GameNetDriver` setup for both custom/joinable sessions and matchmaking-created sessions.
 
 > **Versions move.** Treat the version range above as a starting point. Do not use generic web search to discover compatible tags. Use targeted Git queries against the official repos listed below, a user-provided tag, or a user-approved official release archive.
 
@@ -38,7 +44,7 @@ For normal Unreal game-client work, prefer the AGS Unreal Online Subsystem (`Onl
 - Convention: Unreal-friendly delegate-based async — request → success delegate / error delegate. (Inferred convention based on Unreal idioms — verify against SDK README.)
 - Build target shape: client builds use a public IAM client; dedicated server builds use a confidential IAM client with a server secret.
 
-`subskills/install-unreal-sdk.md` is the operational guide for actually installing and scaffolding into an Unreal project. This file is the conceptual "what is the Unreal SDK?" reference.
+`references/sdks/game-engine/unreal/install.md` is the operational install flow used by `/ags install-sdk` for Unreal projects. This file is the conceptual "what is the Unreal SDK?" reference.
 
 ## Install workflow
 
@@ -67,6 +73,7 @@ Configure AGS through `Config/DefaultEngine.ini`: SDK base settings go under `[/
 - **Public vs. confidential client mixup** — using the dedicated-server SDK with a public client (or vice versa) silently fails at token-exchange time. The error usually shows up in a Lobby or Session call later.
 - **UE 5 module renames** — engine version transitions occasionally rename modules; pin SDK version against the engine version when supporting multiple branches.
 - **SDK-only installs** — installing only `AccelByteUe4Sdk` is incomplete for the recommended Unreal path. Install `OnlineSubsystemAccelByte` and `AccelByteNetworkUtilities` as well unless the user explicitly chose raw SDK integration.
+- **P2P net driver config wraps** — `NetDriverDefinitions` entries in `DefaultEngine.ini` must stay on one physical line. If `DriverClassName="/Script/..."` is split across lines, Unreal logs `Bad quoted string` and then fails to create `GameNetDriver`.
 - **Non-Git projects** — `git submodule add` requires a parent Git worktree. Use pinned `git clone` first; use official release/source archives only when Git is unavailable or the team explicitly wants manual plugin management.
 - **Local copy drift** — copying from `D:\...` or another local repo makes the workflow non-reproducible. Use a pinned official repo, submodule, clone, or release archive.
 - **Drive-wide discovery** — recursive searches such as `Get-ChildItem D:\ -Recurse -Filter AccelByteUe4Sdk` are not part of the installer workflow. They are slow, brittle, and bias the agent toward non-reproducible local state.

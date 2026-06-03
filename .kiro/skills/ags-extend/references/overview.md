@@ -50,7 +50,7 @@ A studio wants VIP players' matchmaking requests weighted higher in the queue. T
 
 ## Pattern: Extend Event Handler
 
-**What it does.** Runs your code when AGS emits an event (match completed, entitlement granted, player banned, etc.). Delivered asynchronously via Kafka Connect — AGS fires the event and moves on without waiting.
+**What it does.** Runs your code when AGS emits an event (match completed, entitlement granted, player banned, etc.). Delivered asynchronously — AGS fires the event and moves on without waiting.
 
 **Architecture.** gRPC server receiving events on an `onMessage` method. AccelByte subscribes your handler to specific event types via manifest/Portal config.
 
@@ -132,7 +132,7 @@ Each combo is still N separate Extend apps. Each app is its own directory cloned
 
 **Override** — Registered against a specific AGS service + override point in the Admin Portal. When the service reaches that point internally, it routes the call to your gRPC endpoint instead of running its default.
 
-**Event Handler** — Subscribed to specific event types. AccelByte delivers matching events via Kafka Connect. No polling, no webhook setup, no retry loop to build — AccelByte's delivery layer handles it.
+**Event Handler** — Subscribed to specific event types. AccelByte delivers matching events asynchronously. No polling, no webhook setup, no retry loop to build — AccelByte's delivery layer handles it.
 
 **Service Extension** — Standalone. It calls AGS APIs using the AGS SDK; credentials and token management are automatic. Game clients or other services call it directly via REST (or gRPC for internal callers).
 
@@ -148,7 +148,7 @@ Extend apps run inside AccelByte's cloud, same network as AGS.
 - Multiple Extend apps can deploy within the same namespace.
 - You package as Docker; AccelByte handles compute, networking, scaling, uptime.
 - Observability via Grafana Cloud (health, logs, metrics). Access via Admin Portal → app detail → Open Grafana Cloud.
-- Dev Containers supported for containerized dev environments.
+- Dev Containers supported for containerized dev environments (Go, C#, Python; **not available for Java** — no plans to add it).
 
 **Hard limits to know before you design:**
 
@@ -158,8 +158,10 @@ Extend apps run inside AccelByte's cloud, same network as AGS.
 | Log retention | 30 days | Anything older lives in whatever external sink you forward to. |
 | Metrics retention | 13 months | Fine for SLO tracking; not enough for long-term trending — export. |
 | Max HTTP request size | 4.5 MB | Large payloads need chunking or a signed URL upload pattern. |
-| Override memory max | 2382 MB | See `references/init/resource-defaults.md` for the full table. |
-| Override CPU max | 1415 m | Same. |
+| Override / Service Extension memory max | 2382 MB | See `references/init/resource-defaults.md` for the full table. |
+| Override / Service Extension CPU max | 1415 m | Same. |
+| Event Handler memory max | 1358 MB | Event Handler caps lower than Override/Service Extension. |
+| Event Handler CPU max | 1215 m | Same. |
 | Max replicas (any type) | 60 | Design for stateless horizontal scale up to this. |
 
 ---

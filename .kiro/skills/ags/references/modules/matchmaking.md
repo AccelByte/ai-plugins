@@ -12,7 +12,7 @@ see-also:
 
 Rule-based matchmaking. Consumes **tickets** (player or party requests with attributes — MMR, region, mode, party size, custom attributes) and emits **matches** when the ticket pool satisfies the configured rule set.
 
-> **Deep work belongs in `/ags-matchmaking`.** This file covers the conceptual shape only — what matchmaking is and how it fits with Lobby, Sessions, and AMS. For rule design, MMR tuning, ticket lifecycle internals, region routing, scoring algorithms, or debugging match formation, hand off via the matchmaking redirect in `SKILL.md` or `references/ecosystem/matchmaking.md`.
+> **Deep work routes through `/ags matchmaking`.** This file covers the conceptual shape only — what matchmaking is and how it fits with Lobby, Sessions, and AMS. For rule design, MMR tuning, ticket lifecycle internals, region routing, scoring algorithms, or debugging match formation, route via the matchmaking redirect in `SKILL.md` or `references/ecosystem/matchmaking.md`.
 
 ---
 
@@ -43,7 +43,7 @@ Rule-based matchmaking. Consumes **tickets** (player or party requests with attr
    game clients connect
 ```
 
-Each step is a separate AGS module / product. Native rule sets cover most matchmaking needs; when they don't, the answer is **Extend Override**, not custom server-side glue. That conversation routes to `/ags-extend ask` after `/ags-matchmaking` confirms the native rule ceiling has been hit.
+Each step is a separate AGS module / product. Native rule sets cover most matchmaking needs; when they don't, the answer is **Extend Override**, not custom server-side glue. That conversation routes to `/ags-extend ask` after `/ags matchmaking` confirms the native rule ceiling has been hit.
 
 ## When to hand off
 
@@ -52,10 +52,10 @@ Each step is a separate AGS module / product. Native rule sets cover most matchm
 | "What is matchmaking?" | Stays here |
 | "How does matchmaking fit with Lobby and Sessions?" | Stays here (also see `references/integrate/lobby-session.md`) |
 | "Should I add matchmaking?" | `/ags handoff` |
-| Anything about rule expressions, MMR, ticket lifecycle, region routing, debugging match formation | `/ags-matchmaking` |
+| Anything about rule expressions, MMR, ticket lifecycle, region routing, debugging match formation | `/ags matchmaking` |
 | Customizing the matchmaking decision beyond what native rules can express | `/ags-extend ask` (Override pattern) |
 
 ## Where to look in the docs
 
 - AccelByte matchmaking docs: `https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/`
-- For depth: `/ags-matchmaking` (peer skill).
+- For depth: `/ags matchmaking` (capability route).

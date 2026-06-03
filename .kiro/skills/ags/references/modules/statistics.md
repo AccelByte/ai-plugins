@@ -26,7 +26,7 @@ Persistent user-stat tracking for gameplay values such as wins, MMR, XP, item us
 - **Global statistics** - optional game-wide aggregation across users for stats that should also track a namespace-wide total.
 - **Update strategies** - update methods such as increment, min, max, or override; exact enum names vary by SDK version, so always verify against the selected SDK docs.
 - **Set By** - configuration that decides whether a stat can be updated by game client calls or only by trusted server-side calls. Use server authority for competitive, ranked, economy-sensitive, or anti-cheat-sensitive stats.
-- **Statistic cycles** - time windows such as daily, weekly, monthly, annual, or seasonal cycles. Cycles let the same stat code track progress within a time frame and reset when the cycle rolls over.
+- **Statistic cycles** - time windows such as daily, weekly, monthly, seasonal, and annual cycles. Cycles let the same stat code track progress within a time frame and reset when the cycle rolls over.
 - **Additional data** - optional structured metadata stored with a user statistic, such as character, weapon, vehicle, mode, or display-name context.
 
 ## How Statistics relates to other modules

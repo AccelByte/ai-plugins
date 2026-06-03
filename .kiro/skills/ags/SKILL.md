@@ -5,20 +5,47 @@ description: "AccelByte Gaming Services (AGS) — managed game backend. Covers p
 
 # AGS
 
-Single entry point for AccelByte Gaming Services — concept questions, namespace setup, SDK integration, and the "where do I go next" decisions across the AccelByte product family. **This file is a router.** It reads the user's invocation, picks exactly one subskill, hands control to it, and otherwise stays out of the way.
+Single entry point for AccelByte Gaming Services — concept questions, namespace setup, SDK integration, Matchmaking, AMS, and the "where do I go next" decisions across the AccelByte product family. **This file is the single canonical AGS entry point and router.** It reads the user's invocation, picks exactly one workflow, capability router, or subskill, hands control to it, and otherwise stays out of the way.
 
-Never answer AGS concept questions, scaffold projects, run CLI commands, or describe Admin Portal flows from this file. All of that belongs inside a subskill.
+Before running this skill, apply `accelbyte` when it is available.
 
-Four areas are deep enough to live in their own peer skills. Hand off rather than answering yourself:
+Never answer AGS concept questions, scaffold projects, run CLI commands, or describe Admin Portal flows from this file. All of that belongs inside a subskill, workflow, or capability router.
 
-- **Extend** (Override / Event Handler / Service Extension / App UI) → `/ags-extend`. Architecturally part of AGS; gets its own skill because the Extend lifecycle is deep enough to warrant one (scaffold, deploy, debug, observe).
-- **AMS** beyond the basic concept (fleet configuration, server binary upload, watchdog tuning, regional rollout, dedicated-server lifecycle) → `/ags-ams`. Architecturally part of AGS; gets its own skill because AMS operations are deep enough to warrant one.
-- **Matchmaking** beyond the basic concept (rule design, MMR, ticket lifecycle, ruleset tuning, region routing logic, debugging match formation) → `/ags-matchmaking`. Architecturally part of AGS; gets its own skill because matchmaking has enough surface area to warrant a dedicated lifecycle.
+This is the single canonical AGS entry point. Do not decline deep Matchmaking or AMS work just because it is deep; route it inside this skill.
+
+`/ags` owns AGS routing for core modules, Matchmaking, and AMS. Do not decline deep Matchmaking or AMS work just because it is deep. Route that work to the nested capability routers:
+
+## Capability Routers
+
+- Matchmaking-specific work → `capabilities/matchmaking/router.md`.
+- AMS-specific work → `capabilities/ams/router.md`.
+
+Two boundaries still leave this router:
+
+- **Extend** (Override / Event Handler / Service Extension / App UI / custom gRPC handler deployment) → `/ags-extend`.
 - **ADT** (build distribution, crash reporting, playtest tooling) → `/adt`. **A separate AccelByte product**, not under AGS. Originally BlackBox.
 
-`/ags` knows all four exist and where they fit, and handles "what is X?" at a conceptual level — but the real workflows live in those peer skills.
+## Required Maps
 
-A note on architecture: Extend, AMS, and Matchmaking are all *part of* AGS, not separate products. They get peer skills because of lifecycle depth, not because they're separate products. ADT is the only true separate product among the four.
+Use the maps when a request needs product, dependency, service-name, or migration context:
+
+- `maps/capability-map.md`
+- `maps/dependency-map.md`
+- `maps/service-map.md`
+- `maps/migration-map.md`
+
+## Cross-Service Workflows
+
+Use exactly one workflow when the request describes a cross-service player-facing outcome:
+
+All AGS game integration requests default to player-facing game-flow planning. This includes single-module game requests such as `integrate login`, `wire auth`, `integrate device id login`, `integrate lobby`, `implement matchmaking`, `join session`, and `connect dedicated server`.
+
+Smoke-only, backend-only, debug-only, doctor-only, SDK setup, and namespace setup are explicit exceptions.
+Explicit nested capability invocations such as `/ags matchmaking ...`, `/ags ams ...`, backend-only ruleset/pool/region/backfill work, and backend-only fleet/upload/claim-key work route to the capability routers instead of the game-flow gate.
+
+Matchmaking, Session, AMS, Statistics, and engine-specific references are supporting context for the approved Game Flow Plan. Do not route player-facing implementation requests directly to capability routers or module references before `workflows/online-game-flow.md` establishes the player-facing plan.
+
+- `workflows/online-game-flow.md`
 
 ## Subskills
 
@@ -28,18 +55,16 @@ A note on architecture: Extend, AMS, and Matchmaking are all *part of* AGS, not 
 | 2  | `subskills/explore.md` | any | Read-only walkthrough of an existing namespace's shape (modules in use, IAM clients, environments) | — |
 | 3  | `subskills/wizard.md` | scaffold | Interview → pick modules + SDK + target platforms → produce a starter integration plan | — |
 | 4  | `subskills/connect-portal.md` | scaffold | Bootstrap a namespace + IAM client + `.env` for a new project | wizard (typically) |
-| 5  | `subskills/install-sdk.md` | scaffold | Detect the target SDK and route to the right installer; still owns Godot, Roblox, Web SDK, and custom-engine REST fallback | wizard (typically) |
-| 6  | `subskills/install-unreal-sdk.md` | scaffold | Install/scaffold the AGS Unreal plugin set: OnlineSubsystemAccelByte, AccelByteUe4Sdk, and AccelByteNetworkUtilities | wizard / install-sdk |
-| 7  | `subskills/install-unity-sdk.md` | scaffold | Install/scaffold AGS Unity SDK packages through Unity Package Manager Git URLs | wizard / install-sdk |
-| 8  | `subskills/install-cli.md` | scaffold | Install the AGS CLI for namespace + IAM management | — |
-| 9  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Shared Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
-| 10 | `subskills/install-widget-blueprint-generator.md` | scaffold | Install the Unreal WidgetBlueprintGenerator editor plugin supplied by the Unreal SDK MCP server | install-mcp + install-unreal-sdk (typically) |
-| 11 | `subskills/init.md` | scaffold | Orchestrates wizard + connect-portal + install-sdk + install-cli + optional install-mcp | — |
-| 12 | `subskills/integrate.md` | build | Module-by-module SDK integration guide (auth, lobby, matchmaking, store, etc.) | install-sdk |
-| 13 | `subskills/debug.md` | build | Run a game locally against AGS and trace integration failures | install-sdk |
-| 14 | `subskills/observe.md` | operate | Pull logs, metrics, and event signals from a deployed namespace | connect-portal |
-| 15 | `subskills/doctor.md` | operate | Read-only symptom → likely cause diagnosis; hands off to the subskill that owns the fix | — |
-| 16 | `subskills/handoff.md` | any | Decide when AGS isn't the right tool — route to `ags-extend`, AMS, ADT, Access, or AccelByte support | — |
+| 5  | `subskills/install-sdk.md` | scaffold | Detect the target SDK and install/scaffold Unreal, Unity, Godot, Roblox, Web SDK, or custom-engine REST fallback | wizard (typically) |
+| 6  | `subskills/install-cli.md` | scaffold | Install the AGS CLI for namespace + IAM management | — |
+| 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Shared Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
+| 8  | `subskills/generate-ui.md` | build | Detect the game engine and route AGS UI generation to the engine-specific UI workflow; Unreal is supported through AccelByteUITools | install-sdk |
+| 9  | `subskills/init.md` | scaffold | Orchestrates wizard + connect-portal + install-sdk + install-cli + optional install-mcp | — |
+| 10 | `subskills/integrate.md` | build | Module-by-module SDK integration guide (auth, lobby, matchmaking, store, etc.) | install-sdk |
+| 11 | `subskills/debug.md` | build | Run a game locally against AGS and trace integration failures | install-sdk |
+| 12 | `subskills/observe.md` | operate | Pull logs, metrics, and event signals from a deployed namespace | connect-portal |
+| 13 | `subskills/doctor.md` | operate | Read-only symptom → likely cause diagnosis; hands off to the subskill that owns the fix | — |
+| 14 | `subskills/handoff.md` | any | Decide when AGS isn't the right tool, when to add Extend or ADT, when to use the internal `/ags ams ...` capability, whether Access packaging fits, or whether AccelByte support is needed | — |
 
 Phases run roughly in order but loop (scaffold → build → operate → back to build). `ask`, `explore`, `doctor`, and `handoff` are phase-free: they answer questions or diagnose without mutating anything.
 
@@ -59,10 +84,24 @@ Phases run roughly in order but loop (scaffold → build → operate → back to
 
 Apply these checks in order. Stop at the first match.
 
-1. **Is the message about Extend specifically?** (Override, Event Handler, Service Extension, gRPC interceptor, App UI, `extend-helper-cli`, deploying a custom backend service, the Extend Apps Directory, **the Extend SDKs — Go, Python, C#, or Java**.) → Decline and point at `/ags-extend`. Do not route here.
-2. **Is the message about deep AMS work?** (Fleet configuration, warmed pool sizing, regional fleet rollout, dedicated-server binary upload, watchdog tuning, AMS-specific debugging.) → Decline and point at `/ags-ams`. Conceptual AMS questions ("what is AMS?", "should I add AMS?") stay here in `ask` / `handoff`.
-3. **Is the message about deep matchmaking work?** (Designing rule sets, tuning MMR formulae, region routing logic, ticket lifecycle internals, debugging why matches aren't forming, scoring algorithms.) → Decline and point at `/ags-matchmaking`. Conceptual matchmaking questions ("what is matchmaking?", "how does AGS matchmaking work at a high level?") stay here in `ask`.
-4. **Is the message about ADT?** (Build distribution, Smart Builds, crash reporting, crash video replay, playtest scheduling, ADT Hub, ADT CLI, ADT SDKs, BlackBox.) → Decline and point at `/adt`. ADT is a separate AccelByte product with its own skill. Conceptual "what is ADT?" or "should I add ADT?" questions can stay here in `ask` / `handoff`.
+1. **Is the message about Extend implementation or deployment specifically?** (Override, Event Handler, Service Extension, gRPC interceptor, App UI, `extend-helper-cli`, deploying a custom backend service, the Extend Apps Directory, custom match functions, custom Matchmaking gRPC handlers, **the Extend SDKs — Go, Python, C#, or Java**.) → Point at `/ags-extend`. Do not route here. "Should I add Extend?" decisions route to `subskills/handoff.md` below.
+2. **Is the message about ADT operations specifically?** (Build distribution, Smart Builds, crash reporting, crash video replay, playtest scheduling, ADT Hub, ADT CLI, ADT SDKs, BlackBox.) → Point at `/adt`. ADT is a separate AccelByte product with its own skill. "Should I add ADT?" decisions route to `subskills/handoff.md` below.
+3. **Is the message off-topic?** (Generic backend / cloud advice with no AccelByte tie, unrelated programming help, non-AccelByte products like Pragma / PlayFab when asked about *their* internals.) → Use the off-topic response below. Do not route.
+4. **Is the message empty or only `/ags`?** → Ask the disambiguation question (below). Do not route yet.
+5. **Is the message explicitly scoped to nested Matchmaking capability work?** (Capability-router prefix `/ags matchmaking ...` or `matchmaking ...`; backend-only ruleset design, pool creation, pool tuning, MMR formulae, ticket lifecycle, region routing, backfill, X-Ray, debugging why matches are not forming, scoring algorithms.) → Read `capabilities/matchmaking/router.md`. If the user asks to implement player-facing matchmaking in a game without a capability-router prefix or backend-only scope, continue to the game-integration check.
+6. **Is the message explicitly scoped to nested AMS capability work?** (Capability-router prefix `/ags ams ...` or `ams ...`; backend-only fleet configuration, warmed pool sizing, regional fleet rollout, dedicated-server binary upload, watchdog tuning, AMS Simulator, claim keys, AMS-specific debugging.) → Read `capabilities/ams/router.md`. If the user asks to connect a game to a dedicated server through a player-facing flow without a capability-router prefix or backend-only scope, continue to the game-integration check.
+7. **Is the message about AGS game integration or a cross-service player-facing outcome?** Pick exactly one workflow:
+   All AGS game integration requests default to player-facing game-flow planning. Route `integrate login`, `wire auth`, `integrate device id login`, `integrate lobby`, `implement matchmaking`, `join session`, and `connect dedicated server` to `workflows/online-game-flow.md`. If the user explicitly requests smoke-only/module-only verification or a non-game integration, route to `subskills/integrate.md` instead.
+
+   - Skill-based matchmaking, MMR-driven queues, or rank/stat inputs in a game implementation -> `workflows/online-game-flow.md` first; after the Game Flow Plan is approved, use `references/modules/statistics.md` plus `capabilities/matchmaking/router.md` as supporting context.
+   - Matchmaking that must allocate or claim dedicated servers through AMS in a game implementation -> `workflows/online-game-flow.md` first; after the Game Flow Plan is approved, coordinate `capabilities/matchmaking/router.md`, `capabilities/ams/router.md`, and `references/modules/session.md`.
+   - P2P quick match, listen-server match flow, or no dedicated server allocation in a game implementation -> `workflows/online-game-flow.md` first; after the Game Flow Plan is approved, coordinate `capabilities/matchmaking/router.md` and `references/modules/session.md`.
+   - Login -> matchmaking -> session/DS travel, Play Online, online play end-to-end, or "make the game join a dedicated server through the UI" → `workflows/online-game-flow.md`.
+8. **Is the message a decision about adding or leaving AGS capability scope?** ("should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to Private Cloud", "is AGS right for this", "is AGS even right", "do I need AMS", "do I need Extend".) → Route to `subskills/handoff.md`. This check runs before generic conceptual `ask`.
+9. **Is there a direct subskill cue?** (Table below.) → Route to that subskill.
+10. **Is the message conceptual** ("what", "how does", "which module", "should I use" after the handoff decisions above, "vs", "compared to")? → Route to `subskills/ask.md`.
+11. **Does the message span multiple phases?** → Route to the earliest phase; announce the later steps as follow-ups.
+12. **No match** → Ask the disambiguation question.
 
    Note on SDKs — AGS has three SDK families:
    - **Game Engine SDKs** (Unreal, Unity, Godot, Roblox) — game clients/servers. Owned by `/ags`.
@@ -70,13 +109,6 @@ Apply these checks in order. Stop at the first match.
    - **Extend SDKs** (Go, Python, C#, Java) — libraries Extend apps use. Owned by `/ags-extend`.
 
    If the user says "Go SDK", "Python SDK", "C# SDK", or "Java SDK" in an AccelByte context, that's an Extend SDK question — redirect to `/ags-extend`. Anything else (Unreal/Unity/Godot/Roblox/TypeScript) stays here.
-5. **Is the message off-topic?** (Generic backend / cloud advice with no AccelByte tie, unrelated programming help, non-AccelByte products like Pragma / PlayFab when asked about *their* internals.) → Decline with the off-topic response (below). Do not route.
-6. **Is the message empty or only `/ags`?** → Ask the disambiguation question (below). Do not route yet.
-7. **Is there a direct subskill cue?** (Table below.) → Route to that subskill.
-8. **Is the message conceptual** ("what", "how does", "which module", "should I", "vs", "compared to")? → Route to `ask`.
-9. **Is the message an "is AGS even right for this?" / "should I add AMS / ADT / Extend?" question?** → Route to `handoff`.
-10. **Does the message span multiple phases?** → Route to the earliest phase; announce the later steps as follow-ups.
-11. **No match** → Ask the disambiguation question.
 
 ### Cue table
 
@@ -84,22 +116,20 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 
 | Cue | Route |
 |---|---|
-| `ask`, "what is", "what does AGS", "which module", "how does", "should I use", "vs", "compared to", "explain" | `subskills/ask.md` |
+| `handoff`, "should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to private cloud", "do I need AMS", "is AGS even right", "is AGS right for this" | `subskills/handoff.md` |
+| `ask`, "what is", "what does AGS", "which module", "how does", "should I use" without an add / leave-scope decision, "vs", "compared to", "explain" | `subskills/ask.md` |
 | `explore`, "what's in my namespace", "show me my setup", "what modules am I using", "which clients exist" | `subskills/explore.md` |
 | `init`, "set up everything", "from scratch", "bootstrap", "start a new AGS project", "new namespace from zero" | `subskills/init.md` |
 | `wizard`, "new project" (without "set up everything"), "start a project", "scaffold", "which modules do I need" | `subskills/wizard.md` |
 | `connect-portal`, "create a namespace", "create an IAM client", "oauth client", "bootstrap portal", ".env" | `subskills/connect-portal.md` |
-| `install-unreal-sdk`, "add AGS to Unreal", "Unreal SDK", "Unreal OSS", "OnlineSubsystemAccelByte", "AccelByteUe4Sdk" | `subskills/install-unreal-sdk.md` |
-| `install-unity-sdk`, "add AGS to Unity", "Unity SDK", "Unity Package Manager", "accelbyte-unity-sdk", "accelbyte-unity-networking" | `subskills/install-unity-sdk.md` |
-| `install-widget-blueprint-generator`, "WidgetBlueprintGenerator", "widget blueprint generator", "generate widget blueprint", "patch widget blueprint", "UMG generator" | `subskills/install-widget-blueprint-generator.md` |
-| `install-sdk`, "install the SDK", "Godot SDK", "Roblox SDK", "TypeScript SDK", "TS SDK", "Web SDK", "Game Engine SDK", "AGS SDK" (in a game-project or web-app context) | `subskills/install-sdk.md` |
+| `generate-ui`, "generate AGS UI", "generate widget blueprint", "create widget blueprint", "create tab view", "create leaderboard widget", "create leaderboard list", "create friends screen", "create friends list widget", "create achievements widget", "patch widget blueprint", "UMG generator", "build UMG widget", "build game UI" | `subskills/generate-ui.md` |
+| `install-sdk`, "install the SDK", "add AGS to Unreal", "Unreal SDK", "Unreal OSS", "OnlineSubsystemAccelByte", "AccelByteUe4Sdk", "add AGS to Unity", "Unity SDK", "Unity Package Manager", "accelbyte-unity-sdk", "accelbyte-unity-networking", "Godot SDK", "Roblox SDK", "TypeScript SDK", "TS SDK", "Web SDK", "Game Engine SDK", "AGS SDK" (in a game-project or web-app context) | `subskills/install-sdk.md` |
 | `install-cli`, "AGS CLI", "AccelByte CLI", "install cli" (without "extend-helper" qualifier) | `subskills/install-cli.md` |
 | `install-mcp`, "mcp setup", "mcp server", "hook up ides", IDE name + "mcp" | `subskills/install-mcp.md` |
-| `integrate`, "wire up auth", "integrate lobby", "implement matchmaking", "hook up the store", "implement statistics", "wire statistics", "implement leaderboards" | `subskills/integrate.md` |
+| `integrate`, "wire up auth", "integrate lobby", "implement matchmaking", "hook up the store", "implement statistics", "wire statistics", "implement leaderboards" | `workflows/online-game-flow.md` (see step 7) |
 | `debug`, "run locally", "test against AGS", "auth is failing", "I get a 401", "lobby keeps disconnecting" | `subskills/debug.md` |
 | `observe`, "logs", "metrics", "live status", "PCCU dashboard", "events firing", "pccu", "production traffic" | `subskills/observe.md` |
 | `doctor`, "diagnose", "what's wrong", "something is off", "not sure what's broken", "help me narrow this down" | `subskills/doctor.md` |
-| `handoff`, "should I add Extend", "do I need AMS", "should I move to private cloud", "is AGS even right" | `subskills/handoff.md` |
 
 ### Disambiguation prompt
 
@@ -114,7 +144,7 @@ Use verbatim when no cue matches and the user hasn't typed anything specific:
 > • **debug** — run a game locally against AGS and trace failures
 > • **observe** — logs, metrics, and events from a live namespace
 > • **doctor** — read-only diagnosis when something's off
-> • **handoff** — decide when to add Extend / AMS / ADT / Access
+> • **handoff** — decide when to add Extend or ADT, use `/ags ams ...`, use Access packaging, or change deployment model
 >
 > Which one? (Or describe the symptom / goal and I'll pick.)
 
@@ -128,6 +158,7 @@ When the user describes multiple phases in one message:
 - "Set up the SDK and run it locally" → route to `install-sdk` first, then point at `debug`.
 - "It's broken — figure out what and fix it" → route to `doctor` first, then point at whatever subskill owns the fix (`debug`, `connect-portal`, `integrate`).
 - "Why is auth failing in prod and how do I roll back" → route to `observe` first (diagnose), then point at `connect-portal` or `integrate` for the fix.
+- "Should I add AMS, and if so, how?" → route to `handoff` first (decide), then point at `/ags ams ...` if AMS is the right answer.
 - "Should I add Extend, and if so, how?" → route to `handoff` first (decide), then point at `/ags-extend ask` if Extend is the right answer.
 
 Never invoke a second subskill automatically. The user should see one subskill run per invocation so they can stop if something goes wrong mid-chain.
@@ -144,23 +175,11 @@ Use when the message is clearly about Extend:
 
 > That's an Extend-specific question — Override, Event Handler, Service Extension, App UI, deploying custom backend services, or the `extend-helper-cli`. Run `/ags-extend` to invoke the Extend skill. It owns that lifecycle end-to-end. (`/ags` knows Extend exists and where it fits, but doesn't own its workflow.)
 
-### AMS redirect
-
-Use when the message is about AMS depth (fleet configuration, warmed pool sizing, dedicated-server binary upload, watchdog tuning, regional rollout, AMS-specific debugging):
-
-> That's deep into AMS territory — fleet config, warmed pools, server binary upload, watchdog tuning, or regional rollout. Run `/ags-ams` for that work. `/ags` covers AMS at a conceptual level (what it is, when to add it), but the operational workflow lives in `/ags-ams`.
-
-### Matchmaking redirect
-
-Use when the message is about matchmaking depth (rule design, MMR tuning, ticket lifecycle, region routing, debugging match formation):
-
-> That's deep into matchmaking territory — rule design, MMR, ticket lifecycle, region routing, or debugging why matches aren't forming. Run `/ags-matchmaking` for that work. `/ags` covers matchmaking at a conceptual level (what it is, where it fits in the AGS stack), but the rule and tuning workflows live in `/ags-matchmaking`.
-
 ### ADT redirect
 
 Use when the message is about ADT (build distribution, crash reporting, playtest tooling, BlackBox):
 
-> That's an ADT question — build distribution, crash reporting, crash video replay, or playtest tooling. ADT is a separate AccelByte product with its own skill. Run `/adt` to invoke it. (`/ags` covers "should I add ADT?" at a conceptual level, but ADT's actual workflows live in `/adt`.)
+> That's an ADT question — build distribution, crash reporting, crash video replay, or playtest tooling. ADT is a separate AccelByte product with its own skill. Run `/adt` to invoke it. (`/ags` routes "should I add ADT?" decisions through `subskills/handoff.md`, but ADT's actual workflows live in `/adt`.)
 
 ### When subskills conflict
 
@@ -171,7 +190,8 @@ If the user's follow-up inside a running subskill clearly belongs to a different
 ## What this file does NOT do
 
 - **Does not explain AGS modules.** That's `ask`.
-- **Does not run any CLI commands or write project files.** Those live in `wizard`, `connect-portal`, `install-sdk`, `install-unreal-sdk`, `install-unity-sdk`, `install-cli`, `integrate`, `debug`.
-- **Does not read references.** Subskills own their own reading.
+- **Does not run any CLI commands or write project files.** Those live in `wizard`, `connect-portal`, `install-sdk`, `install-cli`, `integrate`, `debug`.
+- **Does not read references directly.** Subskills, workflows, capability routers, and maps own their own reading.
 - **Does not own the Extend lifecycle.** That's `/ags-extend`.
+- **Does not let module wiring define product completion.** `workflows/online-game-flow.md` owns the Game Flow Plan, and `subskills/integrate.md` is the module-wiring helper for game projects.
 - **Does not carry state across invocations.** Each `/ags` call is fresh; the only state is what's on disk (namespace `.env`, SDK config, etc.), and the relevant subskill reads it.

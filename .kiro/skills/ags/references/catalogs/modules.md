@@ -26,7 +26,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 |---|---|---|
 | **IAM** | Player accounts, OAuth 2.0, platform identity binding, ban management | `references/modules/iam.md` |
 | **Lobby** | WebSocket-based party, presence, chat, invites (SDK service name; public docs now surfaces this as 'Chat' + 'Parties & Presence') | `references/modules/lobby.md` |
-| **Matchmaking** | Rule-based matchmaking; deep work in `/ags-matchmaking` | `references/modules/matchmaking.md` |
+| **Matchmaking** | Rule-based matchmaking; deep work in `/ags matchmaking` | `references/modules/matchmaking.md` |
 | **Session Management** | Game session lifecycle, server allocation, reconnection | `references/modules/session.md` |
 | **Statistics** | Persistent player stats for progression, MMR, leaderboard inputs, and achievement criteria | `references/modules/statistics.md` |
 | **Leaderboards** | Global / seasonal leaderboards, score ingestion | `references/modules/leaderboards.md` |
@@ -43,8 +43,8 @@ The customer-facing AGS docs use marketing names (Foundations / Online / Multipl
 
 | Area | Peer skill | Why |
 |---|---|---|
-| Matchmaking depth | `/ags-matchmaking` | Rule design, MMR tuning, ticket lifecycle |
-| Dedicated game servers | `/ags-ams` | Fleet config, warmed pools, watchdog |
+| Matchmaking depth | `/ags matchmaking` | Rule design, MMR tuning, ticket lifecycle |
+| Dedicated game servers | `/ags ams` | Fleet config, warmed pools, watchdog |
 | Extensibility | `/ags-extend` | Override / Event Handler / Service Extension / App UI |
 
 ## Modules sold standalone

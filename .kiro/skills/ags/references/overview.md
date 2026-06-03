@@ -81,9 +81,9 @@ Detailed bands and tier descriptions are in `references/pricing/pccu-bands.md` a
 
 The AccelByte product picture is simpler than the marketing pages make it look. There are really **two products**:
 
-1. **AGS** (this skill) — the core game backend platform. Includes IAM, Lobby, Sessions, Leaderboards, Achievements, Store/Entitlements, Analytics, Social, plus three deeper areas that have their own peer skills:
-   - **Matchmaking** — rule-based matchmaking. Deep enough to live in `/ags-matchmaking`.
-   - **AMS** (AccelByte Multiplayer Servers) — dedicated game-server hosting integrated with Matchmaking and Sessions. Deep enough to live in `/ags-ams`.
+1. **AGS** (this skill) — the core game backend platform. Includes IAM, Lobby, Sessions, Leaderboards, Achievements, Store/Entitlements, Analytics, Social, plus three deeper areas with dedicated routes:
+   - **Matchmaking** — rule-based matchmaking. Deep work routes through `/ags matchmaking`.
+   - **AMS** (AccelByte Multiplayer Servers) — dedicated game-server hosting integrated with Matchmaking and Sessions. Deep work routes through `/ags ams`.
    - **Extend** — extensibility layer (Override / Event Handler / Service Extension / App UI). Deep enough to live in `/ags-extend`.
 2. **ADT** (AccelByte Development Toolkit) — build distribution + crash reporting + playtest tooling. Originally BlackBox; rebranded under AccelByte. Standalone product with its own skill `/adt`.
 
@@ -98,7 +98,7 @@ The AccelByte product picture is simpler than the marketing pages make it look. 
    │   ┌─── Matchmaking ───┐   ┌────── AMS ──────┐   ┌──── Extend ────┐      │
    │   │  rule-based       │   │  dedicated game │   │  Override      │      │
    │   │  matchmaking      │   │  server hosting │   │  Event Handler │      │
-   │   │  (/ags-matchmaking)│  │  (/ags-ams)     │   │  Service Ext.  │      │
+   │   │  (/ags matchmaking)│  │  (/ags ams)     │   │  Service Ext.  │      │
    │   └───────────────────┘   └─────────────────┘   │  App UI        │      │
    │                                                 │  (/ags-extend) │      │
    │                                                 └────────────────┘      │
@@ -110,11 +110,11 @@ The AccelByte product picture is simpler than the marketing pages make it look. 
    └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Extend, AMS, Matchmaking** are part of AGS but route to peer skills because their workflows are deep. `/ags` covers each conceptually but defers operational work.
+- **AMS and Matchmaking** are part of AGS and route through nested `/ags` capabilities because their workflows are deep. **Extend** is also part of AGS but keeps its own lifecycle skill.
 - **ADT** is a true sibling product. AGS customers can route ADT crash data into AGS analytics, but ADT works without AGS.
 - **Access** is a strict subset of AGS IAM. Same SDKs, same Admin Portal flows, fewer modules turned on.
 
-See `references/ecosystem/` for the "when do I add this" decision triggers per peer skill / product.
+See `references/ecosystem/` for the "when do I add this" decision triggers per capability, skill, or product.
 
 ---
 

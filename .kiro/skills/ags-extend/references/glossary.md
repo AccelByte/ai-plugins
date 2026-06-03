@@ -1,11 +1,12 @@
 ---
 last-verified: 2026-05-07
 sources:
-- https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-task-scheduler/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-nosql-database/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-sql-database/
+- https://github.com/AccelByte/accelbyte-api-proto/blob/main/asyncapi/accelbyte/extend/async_messaging/v1/publisher_service.proto
 see-also:
 - '[overview.md](overview.md)'
 - '[faq.md](faq.md)'
@@ -41,7 +42,7 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 **Override** — synchronous gRPC handler that replaces a specific decision inside an AGS service. AGS calls you, waits, uses your response. Latency you add is latency the caller sees.
 
-**Event Handler** — asynchronous gRPC handler invoked when AGS emits an event. Delivered via Kafka Connect. AGS doesn't wait for you; failures don't block the AGS flow that fired the event.
+**Event Handler** — asynchronous gRPC handler invoked when AGS emits an event. Delivered asynchronously. AGS doesn't wait for you; failures don't block the AGS flow that fired the event.
 
 **Service Extension** — standalone microservice hosted on AccelByte infrastructure. gRPC + gRPC Gateway (REST). You own the API contract. Uses the AGS SDK to call into other AGS services.
 
@@ -164,7 +165,7 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 ## Event delivery
 
-**Kafka Connect** — AccelByte's delivery layer for events to Event Handlers. You don't operate it; you subscribe to event types and AccelByte pushes.
+**Kafka Connect** — the asynchronous message delivery layer AccelByte uses to push events to Event Handlers. You don't operate it; you subscribe to event types and AccelByte pushes.
 
 **Event subscription** — per-namespace config (in the Admin Portal) mapping event types to your Event Handler app. Not automatic across environments — configure in each namespace you want to receive events in.
 
@@ -194,7 +195,7 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 **Async Messaging add-on** (alpha) — AccelByte add-on for custom pub/sub messaging between Extend apps. Publishers (Service Extension) send messages via a gRPC sidecar on port 7474; consumers (Event Handler) receive via `OnMessage`. Proto definitions from `accelbyte-api-proto`. See `references/patches/am-go.md` and `references/patches/am-pub-go.md`.
 
-**Task Scheduler add-on** (alpha) — AccelByte add-on that gives Service Extensions cron-based scheduled background jobs. Implements `OnJobTriggered` (bidirectional streaming) or `RunScheduledTask` (unary). Schedules configured via Admin Portal → App Details → Task Scheduler tab. See `references/patches/ts-go.md`.
+**Task Scheduler add-on** (alpha) — AccelByte add-on that gives Service Extensions cron-based scheduled background jobs. Implements `OnJobTriggered` (bidirectional streaming). Schedules configured via Admin Portal → App Details → Task Scheduler tab. See `references/patches/ts-go.md`.
 
 **NoSQL Database add-on** (closed alpha) — AccelByte-managed Amazon DocumentDB (MongoDB-compatible) for Extend apps. Env vars: `DOCDB_HOST`, `DOCDB_DATABASE_NAME`, `DOCDB_USERNAME`, `DOCDB_PASSWORD`, `DOCDB_CA_CERT_FILE_PATH`. TLS required in production; `SetRetryWrites(false)` mandatory. Local dev uses plain MongoDB via docker-compose. Access via `extend-helper-cli tunnel`. See `references/patches/nosql-go.md`.
 

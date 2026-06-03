@@ -20,7 +20,7 @@ Player accounts, authentication, OAuth 2.0, SSO, ban management, and role-based 
 - **Player accounts** — creation, login, account linking across platforms, ban / suspension management.
 - **Platform identity providers** — Steam, PlayStation, Xbox, Epic Games, Google Play, Apple, Facebook, and more (16 providers total — see the authentication overview for the full list).
 - **Enterprise identity providers** — Azure AD, Google Workspace, AWS Cognito, OpenID Connect.
-- **OAuth 2.0** — full implementation. Two IAM client kinds: Public (game clients, user-login flows) and Confidential (game servers, backend services). Admin portals use Public clients with appropriate redirect URIs.
+- **OAuth 2.0** — full implementation. Three IAM client kinds: Public (game clients, player-facing login flows), Confidential (game servers, trusted backend services), and AccelByte (admin tooling and internal services). See `references/integrate/auth-flow.md` for the full breakdown.
 - **Crossplay identity** — single persistent player identity across PC, console, mobile via account linking.
 - **Headless accounts** — auto-created accounts when a player first logs in via a third-party identity provider without explicitly registering.
 - **Roles & permissions** — granular permission strings controlling resource access; roles bundle permissions assigned to users or services.
@@ -31,7 +31,7 @@ Game clients call `Login*` methods on the SDK with platform credentials (Steam t
 
 Game servers use **confidential** IAM clients with a client secret to obtain server tokens — a different scope than player tokens.
 
-Admin tools and web portals use Public IAM clients with configured redirect URIs.
+Admin tools and web portals use AccelByte IAM clients (higher-trust admin operations).
 
 For end-to-end auth flow patterns, see `references/integrate/auth-flow.md`. For crossplay identity bridging (including the EOS coexistence story), see `references/cookbook/headless-account-linking.md`.
 

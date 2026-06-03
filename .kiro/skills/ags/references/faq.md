@@ -85,11 +85,11 @@ When AGS's defaults don't fit, Extend is the answer rather than forking AGS core
 
 ## Where does AMS fit?
 
-AMS (AccelByte Multiplayer Servers) is dedicated game-server hosting **inside AGS** — natively integrated with AGS Matchmaking and Sessions, with warmed server pools, watchdog lifecycle, multi-cloud regions. Studios running their own dedicated servers are typical AMS candidates. AMS is part of AGS architecturally; it gets a peer skill (`/ags-ams`) because the operational lifecycle (fleet sizing, regional rollout, server binary upload, watchdog tuning) is deep enough to warrant one.
+AMS (AccelByte Multiplayer Servers) is dedicated game-server hosting **inside AGS** — natively integrated with AGS Matchmaking and Sessions, with warmed server pools, watchdog lifecycle, multi-cloud regions. Studios running their own dedicated servers are typical AMS candidates. AMS is part of AGS architecturally; it routes through `/ags ams` because the operational lifecycle (fleet sizing, regional rollout, server binary upload, watchdog tuning) is deep enough to warrant a dedicated capability.
 
 ## Where does Matchmaking fit?
 
-Matchmaking is one of the AGS modules, but rule design / MMR tuning / ticket lifecycle / region routing is a domain of its own. So matchmaking lives inside AGS architecturally and gets a peer skill (`/ags-matchmaking`) for the deep work. `/ags` covers matchmaking conceptually; `/ags-matchmaking` covers operations.
+Matchmaking is one of the AGS modules, but rule design / MMR tuning / ticket lifecycle / region routing is a domain of its own. So matchmaking lives inside AGS architecturally and routes through `/ags matchmaking` for the deep work. `/ags` covers matchmaking conceptually; `/ags matchmaking` covers operations.
 
 ## Where does ADT fit?
 

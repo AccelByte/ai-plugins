@@ -141,8 +141,8 @@ Name the subskill / peer skill that owns the fix:
 | SDK version drift | `/ags install-sdk` |
 | Test-login broken from a code regression | `/ags debug` |
 | Lobby timeouts likely OS-level | `/ags debug` |
-| Match formation likely rule-set issue | `/ags-matchmaking` |
-| AMS fleet capacity issue | `/ags-ams` |
+| Match formation likely rule-set issue | `/ags matchmaking` |
+| AMS fleet capacity issue | `/ags ams` |
 | Suspected AGS incident | AccelByte support |
 | Need more visibility before deciding | `/ags observe` |
 

@@ -10,7 +10,7 @@ see-also:
 - '[roblox.md](roblox.md)'
 - '[typescript.md](../web/typescript.md)'
 - '[install-sdk.md](../../../subskills/install-sdk.md)'
-- '[install-unity-sdk.md](../../../subskills/install-unity-sdk.md)'
+- '[unity-install.md](unity/install.md)'
 ---
 
 # SDK — Unity
@@ -31,7 +31,7 @@ The AGS **Unity SDK** for game clients and dedicated game servers. Supports Unit
 - Convention: callback-based async with optional `async/await` wrappers depending on SDK version. (Verify against SDK release notes.)
 - Build target shape: client builds use a public IAM client; dedicated server builds use a confidential IAM client with a server secret.
 
-`subskills/install-unity-sdk.md` is the operational guide for actually installing and scaffolding into a Unity project. This file is the conceptual "what is the Unity SDK?" reference.
+`references/sdks/game-engine/unity/install.md` is the operational install flow used by `/ags install-sdk` for Unity projects. This file is the conceptual "what is the Unity SDK?" reference.
 
 ## Install workflow
 

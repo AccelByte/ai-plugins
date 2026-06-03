@@ -10,7 +10,7 @@ see-also:
 
 # Resource Defaults
 
-CPU, memory, and replica starting points for AGS Extend apps. `extend-helper-cli create-app` accepts `--cpu` (60–1550m) and `--memory` (100–3300 MB) to set initial values at creation time — see `references/deploy/cli-commands.md`. Once the app exists, resource changes are made in the AGS Admin Portal (app detail → resource configuration) or via the CSM API. `deploy-app`, `start-app`, and `stop-app` do NOT accept resource flags. There is no project-level manifest — these values configure the app directly.
+CPU, memory, and replica starting points for AGS Extend apps. `extend-helper-cli create-app` accepts `--cpu` (60–1415m) and `--memory` (100–2382 MB) to set initial values at creation time — see `references/deploy/cli-commands.md`. Once the app exists, resource changes are made in the AGS Admin Portal (app detail → resource configuration) or via the CSM API. `deploy-app`, `start-app`, and `stop-app` do NOT accept resource flags. There is no project-level manifest — these values configure the app directly.
 
 ## Starting Recommendations
 
@@ -22,7 +22,7 @@ CPU, memory, and replica starting points for AGS Extend apps. `extend-helper-cli
 
 **Reasoning:**
 - Override is synchronous — AGS waits for your response. Keep it lean to minimize added latency.
-- Event Handler and Service Extension have higher reserved overhead per replica from the gRPC + Kafka Connect stack.
+- Event Handler and Service Extension have higher reserved overhead per replica from the gRPC and asynchronous delivery stack.
 
 ## Hard Limits (from AGS docs)
 

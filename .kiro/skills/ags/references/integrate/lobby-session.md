@@ -8,11 +8,12 @@ see-also:
 - '[session.md](../modules/session.md)'
 - '[ams.md](../ecosystem/ams.md)'
 - '[matchmaking.md](../ecosystem/matchmaking.md)'
+- '[unreal-p2p.md](../sdks/game-engine/unreal-p2p.md)'
 ---
 
 # Integrate — Lobby ↔ Session
 
-End-to-end shape for going from "two players in a party" to "two players connected to a dedicated server in a game session". Three AGS modules + (usually) AMS, in sequence.
+End-to-end shape for going from "two players in a party" to "two players connected in a game session". Three AGS modules plus either P2P session travel or, for dedicated-server outcomes, usually AMS.
 
 ---
 
@@ -67,10 +68,12 @@ End-to-end shape for going from "two players in a party" to "two players connect
 
 - **Lobby** — owns party state, presence, chat, invites. Once matchmaking takes over, Lobby tracks the transition but doesn't drive match formation.
 - **Matchmaking** — owns the rule set and ticket lifecycle. Once a match is confirmed, hands off to Session Management.
-- **Session Management** — owns the session wrapper end-to-end (creation through completion). Triggers server allocation; tracks roster; handles reconnection.
+- **Session Management** — owns the session wrapper end-to-end (creation through completion). Tracks roster, handles reconnection, and carries either dedicated-server or P2P session connection details.
 - **AMS** — owns server fleet operations. Returns a server endpoint when allocated.
 
-For matchmaking depth (rule design, MMR, ticket lifecycle), hand off to `/ags-matchmaking`. For AMS operational work, hand off to `/ags-ams`.
+For matchmaking depth (rule design, MMR, ticket lifecycle), hand off to `/ags matchmaking`. For AMS operational work, route to `/ags ams`.
+
+For Unreal P2P, read `references/sdks/game-engine/unreal-p2p.md` before implementing travel. The P2P path requires Session V2, `AccelByteNetworkUtilities`, `GameNetDriver` config, and explicit host/member `ClientTravel(...)` handling after `JoinSession(...)`.
 
 ## Common gotchas
 
@@ -81,6 +84,6 @@ For matchmaking depth (rule design, MMR, ticket lifecycle), hand off to `/ags-ma
 
 ## When custom logic is needed
 
-- Custom matchmaking decision (priority, scoring, segmentation) → Extend Override; route to `/ags-matchmaking` first to confirm native rules can't express it, then `/ags-extend ask`.
+- Custom matchmaking decision (priority, scoring, segmentation) → Extend Override; route to `/ags matchmaking` first to confirm native rules can't express it, then `/ags-extend ask`.
 - Custom backfill → Extend Service Extension or Event Handler; route to `/ags-extend ask`.
 - Custom server fleet (non-AMS) → integration is on the studio side; AGS Session Management exposes hooks for allocation callbacks.

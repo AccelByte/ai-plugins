@@ -3,24 +3,21 @@
   "version": "0.2.0",
   "agents": {},
   "skills": {
-    "ags": {
-      "computedHash": "85e19042d5cca4a2cf7a1be518199c1ddf2cec811ed6d5c84742b6fc1ada8f77"
+    "accelbyte": {
+      "computedHash": "8e00c8f990d3776d7d19ce69a4083d6b8c0b8737bc1200a85a124db274f02eb6"
     },
-    "ags-ams": {
-      "computedHash": "54045a9aef18e108c3f275becc15d517d4cd3366e9287da87819c5a33aca463f"
+    "ags": {
+      "computedHash": "d273c95af10c7db03dad807554e9fb5abef140116d15a8822c23cfed4f4606e6"
     },
     "ags-extend": {
-      "computedHash": "28feebd95efd6ff94efa83f4cf7e3e642cf447b59ce5299e6284ad6f4b5a61a9"
-    },
-    "ags-matchmaking": {
-      "computedHash": "d944eb8a61351086e569fcc5cf8f4f40a6b2cbebbbf78e899df15f93cf138b77"
+      "computedHash": "a8e3b6d2d8d765ecf64b282eae33effda832a2a16d4d8c3d7a656b6c51fea63b"
     }
   },
   "mcps": {},
   "rules": {},
   "generated": {
     ".gitignore": "139364e09a0807fb41d15b8eecbd7b898ec5ac31ed1b520845a2eb4a35ecd321",
-    "INSTALL.md": "894afcb2be286b87cd170b5176240b34f504ec48ac396648b7cf80bb7ec31e61",
-    "README.md": "a826e1170131519b8b03a0db99565667f0966bb85c4c33282699d11ccbc9ea7a"
+    "INSTALL.md": "0d42f5b40b48763741c776ed354e8884e4a88a9399b6ba925d20ce21485e1471",
+    "README.md": "99aadc36d7d68f4830c273bf495c8033f1e24f2cfb9e5b3cc422f5f9f7d3d11c"
   }
 }

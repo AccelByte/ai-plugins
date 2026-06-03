@@ -1,55 +1,69 @@
 ---
 name: ags-install-mcp
-description: Customize the URL for the AGS API MCP server after installing the plugin.
-  The MCP server itself is distributed with the plugin (see content/mcps/ags-api.yaml);
-  this subskill helps the user pick and apply the right URL — default Shared Cloud,
-  per-studio Shared Cloud, or Private Cloud / BYOC.
+description: Set up AGS-related MCP entries in the user's AI IDE. Handles the engine-neutral
+  AGS API MCP URL workflow and routes engine SDK MCP requests to engine-specific references.
 allowed-tools: Read Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-05-25
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 - https://prod.gamingservices.accelbyte.io/mcp
 see-also:
 - '[install-cli.md](install-cli.md)'
+- '[unreal-mcp.md](../references/sdks/game-engine/unreal/mcp.md)'
+- '[unity-mcp.md](../references/sdks/game-engine/unity/mcp.md)'
+- '[godot-mcp.md](../references/sdks/game-engine/godot/mcp.md)'
 ---
 
-# AGS API MCP Server URL Selector
+# AGS MCP Setup
 
-The **AGS API MCP server** is distributed with this plugin. When you installed the plugin (e.g. via `claude --plugin-dir /path/to/accelbyte-ai-plugins`, or by merging `.mcp.json` into your IDE per `INSTALL.md`), the MCP server entry was added to your IDE's MCP config with a default URL. This subskill helps you pick and apply the right URL for your environment.
+This subskill is the engine-neutral MCP setup router for AGS-related MCP servers.
 
-The MCP server source-of-truth is `content/mcps/ags-api.yaml`. The plugin's `INSTALL.md` (in the compiled plugin output) walks the user through merging the MCP config; this subskill is the conversation about **which URL to use**, since that varies per customer.
+It has three paths:
 
-There's a sibling Extend SDK MCP server (`ags-extend-sdk`, declared in `content/mcps/ags-extend-sdk.yaml`) that's owned by `/ags-extend install-mcp` — different MCP, different purpose (Extend SDK code generation, not AGS API calls). Power users wire both.
+1. **AGS API MCP Server** - the default path for `/ags install-mcp`. This configures the MCP URL for the user's AGS deployment and works for every engine and custom project type.
+2. **Game Engine SDK MCP** - engine-specific SDK context MCPs. Detect or ask for the engine, then read the matching engine MCP reference.
+3. **AGS Extend SDK MCP** - owned by `/ags-extend install-mcp`; redirect there.
+
+The AGS API MCP server source of truth is `content/mcps/ags-api.yaml`. Engine SDK MCP behavior lives in `references/sdks/game-engine/<engine>/mcp.md`.
 
 ## Behavior Constraints
 
 <grounding_rules>
 
-The URL patterns are exactly what `content/mcps/ags-api.yaml` declares in its `post-install` prose:
+For the AGS API MCP Server, the URL patterns are exactly what `content/mcps/ags-api.yaml` declares:
 
-- **Default (Shared Cloud, plugin-installed):** `https://prod.gamingservices.accelbyte.io/mcp`
+- **Default Shared Cloud:** `https://prod.gamingservices.accelbyte.io/mcp`
 - **Shared Cloud, per-studio:** `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp`
 - **Private Cloud / BYOC:** `https://{environment_name}.accelbyte.io/mcp`
 
-Don't invent other URL shapes. If the user's environment doesn't fit one of those three, point at AccelByte support / their Delivery Manager.
+Do not invent other AGS API MCP URL shapes. If the user's environment does not fit one of those three, point at AccelByte support or their Delivery Manager.
+
+For Game Engine SDK MCP requests:
+
+- Detect the engine from project files when possible: `.uproject` for Unreal, `Assets/` plus `ProjectSettings/` for Unity, and `project.godot` for Godot.
+- If no engine or multiple engines are detected, ask whether to target Unreal, Unity, or Godot.
+- Unreal SDK MCP setup is documented in `references/sdks/game-engine/unreal/mcp.md`.
+- Unity and Godot SDK MCPs are not supported yet; read their placeholder MCP references and report the unsupported status.
+- Do not install AccelByteUITools from this generic MCP router. Unreal UI generation and generator install are owned by `/ags generate-ui` and the Unreal UI references.
 
 </grounding_rules>
 
 <tool_usage_rules>
 
-- `Glob` to find the user's IDE MCP config file (where the plugin installed the entry):
+- `Glob` to find the user's IDE MCP config file and project engine markers:
   - Claude Code (project): `.mcp.json`
   - Claude Code (user): `~/.claude.json`
   - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) / `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
   - Cursor: `.cursor/mcp.json` (project) or user settings
   - VS Code: `.vscode/mcp.json` or user settings
-  - Kiro: `.kiro/settings/mcp.json` (based on Kiro IDE conventions; not documented in AccelByte-published references)
-  - Codex: `.codex/config.toml` (under `mcp_servers.*`) (based on Codex IDE conventions; not documented in AccelByte-published references)
-- `Read` the user's IDE config to confirm the AGS API MCP entry is present (it will be if the plugin was installed correctly).
-- `Edit` to change the `url` field for the `AGS API MCP Server` entry only — never touch other MCP entries.
-- `Bash` to confirm the chosen URL is reachable (`curl -sIL <url>` returns 200 / a sane status).
-- Don't read other subskills.
+  - Kiro: `.kiro/settings/mcp.json`
+  - Codex: `.codex/config.toml` under `mcp_servers.*`
+- `Read` the user's IDE config to confirm the AGS API MCP entry is present.
+- `Read` exactly one engine MCP reference for Game Engine SDK MCP requests.
+- `Edit` to change the `url` field for the `AGS API MCP Server` entry only; never touch unrelated MCP entries.
+- `Bash` to confirm the chosen AGS API MCP URL is reachable (`curl -sIL <url>` returns 200 / a sane status).
+- Don't read other subskills except when redirecting the user to `/ags-extend install-mcp`.
 
 </tool_usage_rules>
 
@@ -57,84 +71,123 @@ Don't invent other URL shapes. If the user's environment doesn't fit one of thos
 
 Before changing anything:
 
-1. Confirm the plugin is installed and the AGS API MCP entry exists in the user's IDE config. If not, route them at the plugin's `INSTALL.md` first.
-2. Confirm which deployment the user is on (Shared Cloud / Private Cloud / BYOC). If they don't know, ask their Delivery Manager or AccelByte sales contact — don't guess.
+1. Identify which MCP the user means: AGS API MCP Server, Game Engine SDK MCP, AGS Extend SDK MCP, or multiple.
+2. For AGS API MCP Server, confirm the plugin is installed and the AGS API MCP entry exists in the user's IDE config. If not, route them to the plugin `INSTALL.md` first.
+3. For AGS API MCP Server, confirm which deployment the user is on: Shared Cloud, Private Cloud, or BYOC. If they do not know, ask their Delivery Manager or AccelByte sales contact; do not guess.
+4. For Game Engine SDK MCP, detect or ask for the engine and read the matching engine MCP reference.
 
 </dependency_checks>
 
 <action_safety>
 
-Edits the user's IDE MCP config. Specifically:
+This subskill may edit the user's IDE MCP config.
 
-- Show the diff for the `url` change before applying.
-- Don't change anything else in the config — leave other MCP entries untouched.
-- If the IDE config is workspace-scoped (`.mcp.json` in project root), warn the user that the URL change will be checked into the repo if `.mcp.json` is tracked. For per-studio or per-environment URLs that shouldn't be shared, suggest user-scoped config or a `.gitignore` entry.
+- Show the diff for AGS API MCP `url` changes before applying.
+- Do not change unrelated MCP entries.
+- If the IDE config is workspace-scoped, warn the user that the URL change may be checked into the repo if the file is tracked.
+- Do not copy engine SDK MCP packages, install game-engine plugins, or install AccelByteUITools from this file. Engine-specific setup steps belong in engine MCP or UI references.
 
 </action_safety>
 
 <output_contract>
 
-End with a "set" block:
+For AGS API MCP URL setup, end with:
 
-```
+```text
 AGS API MCP URL set
 
-  IDE:               <Claude Code / Claude Desktop / Cursor / VS Code / Kiro / Codex>
+  IDE:               <Claude Code / Codex / Cursor / VS Code / Kiro / OpenCode>
   Deployment:        Shared Cloud (default) | Shared Cloud (per-studio) | Private Cloud / BYOC
   URL:               <URL>
   Config file:       <path>
   Reachability:      OK / unreachable (note details)
 
 Next step:
-  • Restart the IDE if MCP servers don't auto-reload.
-  • For Extend development, also wire the Extend SDK MCP: /ags-extend install-mcp.
+  Restart the IDE if MCP servers do not auto-reload.
+```
+
+For Game Engine SDK MCP requests, end with:
+
+```text
+Game Engine SDK MCP checked
+
+  Engine:      Unreal | Unity | Godot
+  Status:      configured / already present / unsupported / blocked - <reason>
+  Reference:   references/sdks/game-engine/<engine>/mcp.md
+
+Next step:
+  <restart IDE / use AGS API MCP / run /ags generate-ui / none>
 ```
 
 </output_contract>
 
 <completeness_contract>
 
-The URL selection is complete when:
+The AGS API MCP URL path is complete when:
 
 1. The IDE config's `AGS API MCP Server` entry has the correct URL for the user's deployment.
-2. A reachability check has been attempted (and the result reported even if the URL is unreachable from this machine, e.g. due to a firewall — that's the user's network, not necessarily a wrong URL).
-3. The "set" block is printed.
+2. A reachability check has been attempted and reported.
+3. The AGS API MCP URL set block is printed.
 
-If the plugin isn't installed yet, "complete" means the user has been routed to `INSTALL.md` and knows to come back here once the plugin is in.
+The Game Engine SDK MCP path is complete when:
+
+1. The target engine has been detected or confirmed.
+2. The matching engine MCP reference has been read.
+3. The Game Engine SDK MCP checked block is printed.
 
 </completeness_contract>
 
 ## Workflow
 
-### Codex-only config handling
+### Step 0: Select MCP path
 
-Use `.codex/config.toml` only when the user is running Codex. Codex stores MCP servers under TOML tables such as `[mcp_servers.ags_api]`; the JSON examples and `.mcp.json` merge flow in this subskill are for other IDEs.
+Determine the requested MCP setup before editing anything:
 
-For non-Codex IDEs, do not create or edit `.codex/config.toml`. Use the IDE-specific MCP config file listed above, or route the user to the plugin `INSTALL.md` if the plugin-managed MCP entry is missing.
+- If the user asks for AGS API MCP, AGS API URL setup, namespace/studio/private-cloud MCP URL, or a generic `/ags install-mcp` after `connect-portal`, use the AGS API MCP URL workflow.
+- If the user asks for Game Engine SDK MCP, Unreal SDK MCP, Unity SDK MCP, Godot SDK MCP, SDK symbol/snippet lookup, `unreal_sdk`, or engine-specific MCP setup, use the Game Engine SDK MCP router.
+- If the user asks for Extend SDK MCP, route to `/ags-extend install-mcp`.
+- If the user asks for more than one, handle one at a time and start with AGS API MCP unless a missing engine SDK MCP blocks the current task.
 
-### Step 1: Confirm the plugin is installed
+### Game Engine SDK MCP Router
+
+1. Detect the engine:
+
+   ```powershell
+   Get-ChildItem -Recurse -Filter *.uproject
+   Get-ChildItem -Recurse -Filter ProjectSettings -Directory
+   Get-ChildItem -Recurse -Filter Assets -Directory
+   Get-ChildItem -Recurse -Filter project.godot
+   ```
+
+2. Route based on the confirmed engine:
+   - Unreal -> read `references/sdks/game-engine/unreal/mcp.md`.
+   - Unity -> read `references/sdks/game-engine/unity/mcp.md`.
+   - Godot -> read `references/sdks/game-engine/godot/mcp.md`.
+3. Follow that reference's result contract. For Unity and Godot, report unsupported and remind the user AGS API MCP remains available.
+
+### AGS API MCP URL Workflow
+
+#### Step 1: Confirm the plugin is installed
 
 `Glob` for the IDE's MCP config and `Read` it to verify the `AGS API MCP Server` entry is present. If not:
 
-> The plugin's MCP config doesn't appear to be wired into your IDE yet. Follow the plugin's `INSTALL.md` first to merge `.mcp.json` (or the IDE-specific equivalent), then re-run `/ags install-mcp` to customize the URL.
+> The plugin's MCP config does not appear to be wired into your IDE yet. Follow the plugin's `INSTALL.md` first to merge the IDE-specific MCP config, then re-run `/ags install-mcp` to customize the URL.
 
-### Step 2: Confirm deployment
+#### Step 2: Confirm deployment
 
-Ask:
+Ask which AGS deployment the user is on:
 
-> Which AGS deployment are you on?
->
-> 1. **Shared Cloud (default)** — the URL is `https://prod.gamingservices.accelbyte.io/mcp`. This is the default the plugin ships with; if you haven't customized it, you're already done.
-> 2. **Shared Cloud (per-studio)** — your studio has its own subdomain. URL is `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp` — substitute your studio's namespace.
-> 3. **Private Cloud / BYOC** — your studio has a dedicated environment. URL is `https://{environment_name}.accelbyte.io/mcp` — substitute your environment name (your Delivery Manager has this).
->
-> If you don't know, your Delivery Manager or AccelByte sales contact can confirm.
+1. **Shared Cloud default** - `https://prod.gamingservices.accelbyte.io/mcp`.
+2. **Shared Cloud per-studio** - `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp`.
+3. **Private Cloud / BYOC** - `https://{environment_name}.accelbyte.io/mcp`.
 
-### Step 3: Apply the URL
+If they do not know, tell them their Delivery Manager or AccelByte sales contact can confirm.
 
-If the user picked option 1 (default), no change needed — confirm the existing config and stop.
+#### Step 3: Apply the URL
 
-For options 2 and 3, show the diff in the IDE config:
+If the user picked the default and the config already matches, no change is needed.
+
+For per-studio or private/BYOC URLs, show the diff in the IDE config before applying:
 
 ```diff
    "AGS API MCP Server": {
@@ -144,126 +197,26 @@ For options 2 and 3, show the diff in the IDE config:
    }
 ```
 
-Confirm with the user, then apply via `Edit`.
+Then apply via `Edit` after confirmation.
 
-### Step 4: Reachability check
+#### Step 4: Reachability check
 
 ```bash
 curl -sIL -o /dev/null -w "%{http_code}\n" "<the URL>"
 ```
 
-Capture the status code. 200 / 401 / 405 are all "server is reachable" (the MCP requires auth, so 401 is expected without a token; 405 is "method not allowed" for HEAD which is also fine). 4xx-non-auth or 5xx or DNS failure means the URL is wrong or the user's network can't reach it.
+Treat 200, 401, and 405 as reachable. Other 4xx, 5xx, DNS failure, or timeout should be reported as unreachable or inconclusive with details.
 
-### Step 5: Print the "set" block
+#### Step 5: Print the result block
 
-Per `output_contract`. Tell the user to restart the IDE if needed.
+Print the relevant block from `output_contract`.
 
-## Examples
+## Error Handling
 
-### Default Shared Cloud — no change needed
-
-```
-User: /ags install-mcp
-
-Skill: Reading .mcp.json...
-       ✓ AGS API MCP Server entry present.
-       ✓ URL is the default: https://prod.gamingservices.accelbyte.io/mcp
-
-       Which deployment are you on? (Shared Cloud default / per-studio /
-       Private Cloud)
-
-User: Shared Cloud, default.
-
-Skill: ✓ The default URL already matches your deployment. No change needed.
-
-       AGS API MCP URL set
-
-         IDE:           Claude Code
-         Deployment:    Shared Cloud (default)
-         URL:           https://prod.gamingservices.accelbyte.io/mcp
-         Config file:   .mcp.json
-         Reachability:  OK (200 from health check)
-
-       Next step:
-         • Restart Claude Code if MCP servers don't auto-reload.
-         • For Extend development: /ags-extend install-mcp.
-```
-
-### Per-studio Shared Cloud
-
-```
-User: /ags install-mcp — our studio has its own subdomain, "myteam".
-
-Skill: ✓ AGS API MCP Server entry present in .cursor/mcp.json.
-       Will change URL to:
-         https://myteam.prod.gamingservices.accelbyte.io/mcp
-       Diff:
-         - "url": "https://prod.gamingservices.accelbyte.io/mcp"
-         + "url": "https://myteam.prod.gamingservices.accelbyte.io/mcp"
-       Confirm? (y/n)
-
-User: y
-
-Skill: ✓ Applied. Reachability check: 401 (expected — auth required).
-
-       AGS API MCP URL set
-
-         IDE:           Cursor
-         Deployment:    Shared Cloud (per-studio: myteam)
-         URL:           https://myteam.prod.gamingservices.accelbyte.io/mcp
-         Config file:   .cursor/mcp.json
-         Reachability:  OK (401 — auth required, server is up)
-
-       Note: .cursor/mcp.json is workspace-scoped. If your repo is shared
-       and the studio namespace shouldn't be in version control, either
-       move this entry to user-scoped Cursor settings, or add
-       .cursor/mcp.json to .gitignore.
-
-       Next step: restart Cursor.
-```
-
-### Private Cloud
-
-```
-User: /ags install-mcp — Private Cloud, env name "acme-prod".
-
-Skill: ✓ AGS API MCP Server entry present in ~/.claude.json (user scope).
-       Will change URL to:
-         https://acme-prod.accelbyte.io/mcp
-       Confirm? (y/n)
-
-User: y
-
-Skill: ✓ Applied. Reachability check: 405 (HEAD not allowed — server is up).
-
-       AGS API MCP URL set
-
-         IDE:           Claude Code (user scope)
-         Deployment:    Private Cloud (env: acme-prod)
-         URL:           https://acme-prod.accelbyte.io/mcp
-         Config file:   ~/.claude.json
-         Reachability:  OK (405 — HEAD blocked, server reachable)
-
-       Next step: restart Claude Code.
-```
-
-### Plugin not installed
-
-```
-User: /ags install-mcp
-
-Skill: Reading .mcp.json... no AGS API MCP Server entry found.
-       The plugin's MCP config isn't wired into Claude Code yet.
-
-       Follow the plugin's INSTALL.md first to merge .mcp.json (it's in
-       the compiled plugin root), then re-run /ags install-mcp to set the
-       URL for your deployment.
-```
-
-## Error handling
-
-- **Plugin installed but the entry is gone or renamed** — surface the discrepancy. Don't auto-add a new entry; that path belongs in the plugin install flow, not here.
-- **User-supplied URL doesn't match any of the three patterns** — explain the patterns. If the user insists on a custom URL, apply it but warn that it may not be a supported AccelByte endpoint.
-- **Reachability check fails non-auth (DNS, 5xx, timeout)** — surface the failure. Common causes: typo in the namespace / environment name, corporate network blocking the AccelByte domain, the per-studio subdomain doesn't actually exist (Shared Cloud customers may need to confirm with AccelByte that their namespace has been provisioned).
-- **User asks how to get a Bearer token** — point at their IAM client config in the Admin Portal. The MCP authenticates as the user via standard AGS OAuth; the IDE typically prompts for the token on first call or reads it from an environment variable.
-- **User wants the Extend SDK MCP, not the AGS API MCP** — route to `/ags-extend install-mcp`.
+- **Ambiguous MCP request** - ask which MCP the user means before editing config.
+- **Ambiguous engine SDK MCP request** - ask whether to target Unreal, Unity, or Godot.
+- **Plugin installed but the AGS API MCP entry is gone or renamed** - surface the discrepancy. Do not auto-add a new AGS API MCP entry unless the user asks for that config creation flow.
+- **User-supplied AGS API MCP URL does not match any supported pattern** - explain the supported patterns. If the user insists on a custom URL, apply it only after warning that it may not be a supported AccelByte endpoint.
+- **Reachability check fails** - surface DNS, 5xx, timeout, or unexpected status details.
+- **Unity or Godot SDK MCP requested** - report unsupported using the engine MCP placeholder reference.
+- **User wants the Extend SDK MCP** - route to `/ags-extend install-mcp`.

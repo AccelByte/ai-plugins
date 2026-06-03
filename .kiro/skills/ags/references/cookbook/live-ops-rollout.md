@@ -69,4 +69,4 @@ AGS doesn't ship a built-in "rollout to 5% of players" mechanism. Studios use th
 
 - Anything custom-logic-shaped during rollout (custom rule, custom override, event-driven gating) → `/ags-extend ask`.
 - Build distribution / playtest of a new build → `/adt`.
-- Live-ops fleet capacity tuning before a rollout → `/ags-ams`.
+- Live-ops fleet capacity tuning before a rollout → `/ags ams`.

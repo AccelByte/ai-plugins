@@ -43,7 +43,7 @@ Before observing:
 
 1. The AGS CLI is installed (`ags --version` or `ags --help`). If not, route to `/ags install-cli`.
 2. The CLI is authenticated (`ags auth status`).
-3. The namespace name is known.
+3. The namespace name is known from project runtime config for game projects, or from explicit user input for pure ops contexts. Do not use memory, previous sessions, or CLI defaults as the namespace source of truth.
 
 </dependency_checks>
 
@@ -125,8 +125,8 @@ If observation reveals an issue:
 - Auth-related -> `/ags debug` or `references/debug/auth-failures.md`.
 - IAM client misconfiguration -> `/ags connect-portal`.
 - AGS-side incident pattern -> AccelByte support.
-- Operational AMS issue -> `/ags-ams`.
-- Matchmaking-side issue -> `/ags-matchmaking`.
+- Operational AMS issue -> `/ags ams`.
+- Matchmaking-side issue -> `/ags matchmaking`.
 - Extend app issue -> `/ags-extend observe`.
 
 ## Examples

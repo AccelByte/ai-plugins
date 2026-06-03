@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-05-28
 see-also:
 - '[install-cli.md](../../subskills/install-cli.md)'
 - '[observe.md](../../subskills/observe.md)'
@@ -25,6 +25,20 @@ When operating the AGS CLI on a user's behalf:
 4. Use `--format json` for automation and evidence gathering. Do not parse human-readable output when JSON output is available.
 5. Treat create, update, delete, kick, ban, grant, revoke, and similar operations as mutations. Show the discovered command/body and get explicit user confirmation before running them. (LLM safety layer — not in the CLI's source documentation; complements the four source-documented rules above.)
 6. Do not hardcode guessed service, resource, method, flag, `--api-scope`, or `--api-version` values. Discover them from `ags describe` or CLI help, then report when the current CLI does not expose the needed operation.
+
+### AGS CLI auth gate
+
+For any `/ags` workflow that needs to refresh the AGS CLI token:
+
+1. Check the current session with `ags auth status --format json`.
+2. Refresh the current profile with bare `ags auth login`.
+
+Do not add client/profile/config flags or credentials from project/runtime files while refreshing
+the current CLI session.
+
+### Namespace source of truth
+
+For game projects, derive the target `--namespace` from the project's runtime config before running namespace-scoped commands. Do not use memory, previous sessions, or CLI defaults as the namespace source of truth. For Unreal, read `Config/DefaultEngine.ini` and the AccelByte SDK settings sections. For Unity, read the project's AccelByte SDK config asset/json if present. For Web/custom projects, read `.env` or the app config. If project config and CLI profile disagree, stop and ask before running any namespace-scoped command.
 
 ## What you can do via the CLI
 

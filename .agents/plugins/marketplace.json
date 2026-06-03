@@ -1,0 +1,21 @@
+{
+  "name": "accelbyte",
+  "interface": {
+    "displayName": "accelbyte"
+  },
+  "plugins": [
+    {
+      "name": "accelbyte-ai-plugins",
+      "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
+      "source": {
+        "source": "local",
+        "path": "./.codex-temp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

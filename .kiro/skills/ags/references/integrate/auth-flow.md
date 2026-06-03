@@ -24,7 +24,7 @@ End-to-end auth flow shape for an AGS integration. Same pattern across all Game 
         - Steam: Steam ticket
         - PSN:   PSN auth code / token
         - Xbox:  XSTS token
-        - Epic:  Epic auth code
+        - Epic:  EOS auth ticket
         - Apple / Google / Facebook: provider-specific token
         - Email/password: username + password (less common; usually for accounts that have been "upgraded" from headless)
    3. SDK calls AGS IAM with platform credential
@@ -41,6 +41,7 @@ End-to-end auth flow shape for an AGS integration. Same pattern across all Game 
         - SDK clears tokens
         - Refresh token revoked AGS-side
 ```
+
 
 ## Three IAM client kinds (recap)
 
@@ -62,7 +63,7 @@ Before adding login code, identify the user's requested platform login method an
 4. Platform-specific values are configured: app ID, issuer/client ID, redirect URI, bundle/package ID, certificate/key material, or provider metadata as required by that platform.
 5. Engine config values are real values, not placeholders copied from examples.
 
-Use `ags-cli` for read-only discovery where available. If any AGS-side IAM setting is missing, unclear, or needs to be changed, route to `/ags connect-portal` rather than papering over the issue in game code.
+Use the AGS CLI binary `ags` for read-only discovery where available. If any AGS-side IAM setting is missing, unclear, or needs to be changed, route to `/ags connect-portal` rather than papering over the issue in game code.
 
 ## Crossplay account linking
 

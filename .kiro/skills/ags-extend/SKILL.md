@@ -7,6 +7,8 @@ description: "AccelByte Extend — custom server-side game logic on AGS. Use for
 
 Single entry point for the full Extend lifecycle. **This file is a router.** It reads the user's invocation, picks exactly one subskill, hands control to it, and otherwise stays out of the way.
 
+Before running this skill, apply `accelbyte` when it is available.
+
 Never answer Extend questions, scaffold templates, run CLI commands, or apply patches from this file. All of that belongs inside a subskill.
 
 ## Subskills

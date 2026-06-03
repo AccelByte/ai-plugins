@@ -82,9 +82,11 @@ extend-helper-cli --help       # exits 0; prints command list
 
 ## Verbosity (global)
 
-Every subcommand accepts:
+Most subcommands accept:
 
 - `--verbosity {0..6}` (or `-v`) — `0` panic, `1` fatal, `2` error, `3` warn, `4` info (default), `5` debug, `6` trace.
+
+> **Exception:** `tunnel` does not accept `--verbosity`.
 
 ## Create an Extend App
 
@@ -101,8 +103,8 @@ Scenario values are exactly as listed: `event-handler`, `function-override`, `se
 Optional flags:
 
 - `--description {text}` — human-readable description shown in the Admin Portal.
-- `--cpu {millicores}` — initial CPU allocation. Range 60–1550, default 1000. (1 CPU = 1000m.)
-- `--memory {MB}` — initial memory allocation. Range 100–3300, default 350.
+- `--cpu {millicores}` — initial CPU allocation. Range 60–1415, default 1000. (1 CPU = 1000m.)
+- `--memory {MB}` — initial memory allocation. Range 100–2382, default 350.
 - `--wait` plus `--wait-interval {seconds:10}` and `--wait-limit {seconds:600}` to block until the app is ready for image upload.
 - `--confirm` skips the interactive y/n prompt.
 

@@ -1,8 +1,8 @@
 ---
 name: ags-init
 description: 'Checklist-driven AGS initializer: project check, SDK/plugin install,
-  AGS CLI and Unreal SDK MCP setup, connect-portal with user-supplied base URL/namespace/client
-  ID, optional AGS API MCP URL setup, and final summary.'
+  AGS CLI setup, optional engine SDK MCP setup, connect-portal with user-supplied
+  base URL/namespace/client ID, optional AGS API MCP URL setup, and final summary.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
 last-verified: 2026-05-09
@@ -12,25 +12,15 @@ sources:
 see-also:
 - '[connect-portal.md](connect-portal.md)'
 - '[install-sdk.md](install-sdk.md)'
-- '[install-unreal-sdk.md](install-unreal-sdk.md)'
-- '[install-unity-sdk.md](install-unity-sdk.md)'
+- '[unreal-install.md](../references/sdks/game-engine/unreal/install.md)'
+- '[unity-install.md](../references/sdks/game-engine/unity/install.md)'
 - '[install-cli.md](install-cli.md)'
 - '[install-mcp.md](install-mcp.md)'
 ---
 
 # AGS Project Initializer
 
-Checklist-driven guide for getting an existing game or app project ready for AGS integration. This initializer is intentionally procedural: expose the checklist, mirror it into `update_plan`, then execute one step at a time.
-
-## Mandatory Checklist Protocol
-
-### Codex-only checklist handling
-
-Codex must read this checklist before taking action, then call `update_plan` with each checklist item as a plan step. Before starting a checklist item, update that item to `in_progress`. After finishing and verifying it, update that item to `completed`. Only one checklist item may be `in_progress` at a time.
-
-Do not collapse steps, skip `update_plan`, or mark multiple items `in_progress`. If a step stops early, leave it `in_progress` or move it back to `pending` only if the user explicitly chooses to pause or retry later.
-
-For non-Codex agents, mirror the checklist using the agent's native task-tracking mechanism if one exists. If the runtime has no task tracker, announce the active checklist item in text and keep the same one-step-at-a-time sequencing.
+Checklist-driven guide for getting an existing game or app project ready for AGS integration. This initializer is intentionally procedural: expose the checklist, mirror it into the host-native progress tracker, then execute one step at a time.
 
 ## Checklist
 
@@ -85,7 +75,7 @@ Done initializing AGS integration.
   Project:           <Unreal / Unity / Godot / Roblox / Web / other> (<path or detection note>)
   Plugins/SDK:       installed / already present / skipped - <reason>
   AGS CLI:           installed / already present / declined / failed - <reason>
-  Unreal SDK MCP:    configured / already present / skipped - <reason>
+  Engine SDK MCP:    configured / already present / unsupported / skipped - <reason>
   Base URL:          <base-url>
   Namespace:         <namespace>
   Client ID:         <client-id>
@@ -104,10 +94,10 @@ Do not print this summary if the flow stopped early. Print the stop block instea
 
 `init` is complete when:
 
-1. The checklist has been mirrored into `update_plan`.
+1. The checklist has been mirrored into the host-native progress tracker or a visible checklist fallback.
 2. Project type has been detected and reported.
 3. Required AGS game SDK/plugins for the detected project have been installed or confirmed already present.
-4. AGS CLI and the Unreal SDK MCP server tooling have been installed/configured or explicitly skipped with a reason.
+4. AGS CLI and any applicable engine SDK MCP tooling have been installed/configured, reported unsupported, or explicitly skipped with a reason.
 5. `connect-portal` has run with confirmed base URL, namespace, and client ID.
 6. The user has been asked whether to configure the AGS API MCP. If yes, the MCP URL uses the confirmed base URL plus `/mcp`.
 7. The final summary has been printed.
@@ -116,9 +106,9 @@ Do not print this summary if the flow stopped early. Print the stop block instea
 
 ## Workflow
 
-### Step 0: Mirror The Checklist Into update_plan
+### Step 0: Mirror The Checklist Into The Host-Native Progress Tracker
 
-Before Step 1, call `update_plan` with these exact plan steps:
+Before Step 1, mirror these exact plan steps into the host-native progress tracker. If the harness has no native tracker, keep the same steps as a visible checklist in the response:
 
 1. Project check
 2. Install game SDK/plugins
@@ -157,13 +147,13 @@ Report the detected project and any hard blockers, such as a missing required en
 
 ### Step 2: Install game SDK/plugins
 
-Use the detected project type to select the installer subskill. Read the selected subskill before taking action.
+Use the detected project type to run the unified SDK installer. Read `subskills/install-sdk.md` before taking action; it will read the matching engine reference for Unreal, Unity, Godot, Roblox, Web, or custom-engine REST fallback.
 
-- Unreal -> read and run `subskills/install-unreal-sdk.md`.
-- Unity -> read and run `subskills/install-unity-sdk.md`.
-- Godot, Roblox, Web, or other/custom -> read and run `subskills/install-sdk.md`.
+- Unreal -> `/ags install-sdk`, reading `references/sdks/game-engine/unreal/install.md`.
+- Unity -> `/ags install-sdk`, reading `references/sdks/game-engine/unity/install.md`.
+- Godot, Roblox, Web, or other/custom -> `/ags install-sdk`, reading the matching SDK reference.
 
-This step must check whether the relevant AGS SDK/plugin is already installed. If it is missing, install it through the selected subskill. If it is already present, verify enough to report "already present" with evidence.
+This step must check whether the relevant AGS SDK/plugin is already installed. If it is missing, install it through `/ags install-sdk`. If it is already present, verify enough to report "already present" with evidence.
 
 If plugin/SDK installation or verification fails, stop here and print:
 
@@ -171,17 +161,17 @@ If plugin/SDK installation or verification fails, stop here and print:
 Stopped at checklist item: Install game SDK/plugins
 
 Reason: <error>
-Resume: fix the issue, then re-run /ags init or run the selected SDK installer directly.
+Resume: fix the issue, then re-run /ags init or run /ags install-sdk directly.
 ```
 
 When verified, mark `Install game SDK/plugins` completed and `Set up tools` in progress.
 
 ### Step 3: Set up tools
 
-Set up both required tools:
+Set up required and optional tools:
 
 1. AGS CLI.
-2. AccelByte Unreal SDK MCP server.
+2. Engine SDK MCP only when supported and useful for the detected project.
 
 For AGS CLI:
 
@@ -190,47 +180,14 @@ For AGS CLI:
 - If missing, read and run `subskills/install-cli.md`.
 - If the user declines installation, record "declined" and continue only if the next stage can proceed with user-provided values.
 
-For the Unreal SDK MCP server:
+For Engine SDK MCP:
 
-#### Codex-only Unreal SDK MCP setup
+- Unreal -> read `references/sdks/game-engine/unreal/mcp.md` and follow that workflow when the user is running an IDE that supports MCP, or record "skipped" with the exact reason.
+- Unity, Godot, Roblox, Web, or other/custom -> record "unsupported - no engine SDK MCP is available for this project type"; do not run Unreal SDK MCP setup.
+- AGS API MCP is handled later in Step 5 and remains available for every project type.
 
-This block applies only when the user is running Codex. Codex needs a project-scoped `.codex/config.toml` entry because it does not consume the JSON MCP config used by Claude Code, Cursor, Kiro, or similar IDEs.
 
-- Check whether the project-scoped Codex config exists at `<project>/.codex/config.toml` when the user is running Codex.
-- Codex plugin install intentionally leaves `plugins/accelbyte-ai-plugins/.codex/config.toml` empty. Do not merge that file as a ready-made MCP config.
-- The MCP declaration source is `content/mcps/unreal-sdk.yaml`, but for Codex prefer a project-scoped local clone over `uvx --from git`.
-- Clone the MCP server into `.codex/mcp/unreal-sdk-mcp-server` if it is not already present.
-- Install its Python requirements with `python -m pip install -r .codex/mcp/unreal-sdk-mcp-server/requirements.txt`.
-- Write only the needed project-scoped `[mcp_servers.unreal_sdk]` entry.
-- Do not use the AGS API MCP subskill for this tool; AGS API MCP is handled later.
-
-For Codex Unreal projects, prefer this local-clone setup:
-
-```powershell
-git clone https://github.com/AccelByte/unreal-sdk-mcp-server.git .codex/mcp/unreal-sdk-mcp-server
-python -m pip install -r .codex/mcp/unreal-sdk-mcp-server/requirements.txt
-python .codex/mcp/unreal-sdk-mcp-server/generate_cache.py
-```
-
-The `generate_cache.py` step is mandatory — without it the server starts but has no symbol cache and provides no useful tool responses. It requires Doxygen XML files in `data/unreal-sdk/` and `data/oss-sdk/` inside the cloned server directory.
-
-Then write this project-scoped config entry:
-
-```toml
-[mcp_servers.unreal_sdk]
-command = "python"
-args = [".codex/mcp/unreal-sdk-mcp-server/server.py"]
-```
-
-Do not use `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main` as the preferred Codex config. Keep `uvx` as a fallback only when the user explicitly wants no local clone.
-
-After writing config, tell the user to restart Codex or reload MCP servers. The setup is not verified until Codex shows tools for `unreal_sdk` or a smoke run of the local `server.py` reaches MCP initialization without crashing.
-
-#### Non-Codex Unreal SDK MCP setup
-
-If the user is not running Codex, do not edit `.codex/config.toml` and do not require the local `.codex/mcp/...` clone path. Guide them through the relevant `INSTALL.md` MCP setup for `AccelByte Unreal SDK MCP Server`, using that IDE's native MCP config format.
-
-If tool setup fails in a way that blocks connect-portal, stop here. Otherwise mark `Set up tools` completed and `Connect portal` in progress.
+An unsupported or skipped Engine SDK MCP is non-blocking. Continue to `connect-portal` after recording that status. Stop here only if a failed tool setup prevents the project from reaching `connect-portal`.
 
 ### Step 4: Connect portal
 
@@ -281,7 +238,7 @@ After printing, mark `Final summary` completed. No checklist item should remain 
 
 When resuming:
 
-1. Recreate the full checklist with `update_plan`.
+1. Recreate the full checklist in the host-native progress tracker or visible checklist fallback.
 2. Inspect disk/config to identify completed items.
 3. Mark already-verified items as `completed`.
 4. Mark the next incomplete item as `in_progress`.
@@ -293,8 +250,8 @@ Do not re-run plugin/SDK installers, tool installers, or connect-portal if their
 
 - **Multiple project types detected** - ask which project should be initialized.
 - **No project type detected** - treat as other/custom only after telling the user no Unreal, Unity, Godot, Roblox, or Web project markers were found.
-- **SDK/plugin installer unavailable for project type** - stop at `Install game SDK/plugins` and point to the closest installer.
+- **SDK/plugin installer unavailable for project type** - stop at `Install game SDK/plugins` and point to `/ags install-sdk`.
 - **AGS CLI install declined** - continue only if connect-portal can proceed from the user-provided base URL, namespace, and client ID.
-- **Unreal SDK MCP setup skipped** - continue, but record the skip reason in the final summary.
+- **Engine SDK MCP setup skipped or unsupported** - continue, but record the skip or unsupported reason in the final summary.
 - **Missing base URL, namespace, or client ID** - ask. Do not run connect-portal until all three are known.
 - **AGS API MCP declined** - record declined and finish.

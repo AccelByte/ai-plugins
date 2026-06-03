@@ -26,7 +26,7 @@ Start with the game shape:
 
 3. **Online competitive or co-op multiplayer?**
    - Yes → IAM + Lobby + Matchmaking + Sessions.
-   - If matchmaking has any non-trivial requirements, plan to invoke `/ags-matchmaking` after the basic setup.
+   - If matchmaking has any non-trivial requirements, plan to invoke `/ags matchmaking` after the basic setup.
 
 4. **Live-service with seasons / progression / season-pass?**
    - Yes → above + Leaderboards + Achievements + Store.
@@ -35,7 +35,7 @@ Start with the game shape:
    - Yes → all of the above + Social, with **careful IAM platform-binding setup** as the longest item on the timeline (per-platform certification interleaves).
 
 6. **Dedicated game servers?**
-   - Yes → Sessions + AMS. Hand off the AMS operational work to `/ags-ams`.
+   - Yes → Sessions + AMS. Hand off the AMS operational work to `/ags ams`.
 
 7. **Custom backend logic AGS doesn't provide natively?**
    - Yes → Extend. Hand off to `/ags-extend ask` to confirm pattern, then `/ags-extend init` to scaffold.

@@ -121,13 +121,13 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 ---
 
-## Architecture & peer skills
+## Architecture & Capability Routes
 
 **Extend.** AccelByte's extensibility layer **inside AGS**. Three core patterns (Override, Event Handler, Service Extension) plus an App UI pattern. Runs custom backend logic on AGS infrastructure. Part of AGS architecturally; gets a peer skill — `/ags-extend` — because the lifecycle is deep.
 
-**AMS (AccelByte Multiplayer Servers).** Dedicated game-server hosting **inside AGS** with native integration to Matchmaking and Sessions. Warmed pools, watchdog lifecycle, multi-cloud / multi-region. Part of AGS architecturally; gets a peer skill — `/ags-ams` — because the operational lifecycle is deep.
+**AMS (AccelByte Multiplayer Servers).** Dedicated game-server hosting **inside AGS** with native integration to Matchmaking and Sessions. Warmed pools, watchdog lifecycle, multi-cloud / multi-region. Part of AGS architecturally; routes through the `/ags ams` capability because the operational lifecycle is deep.
 
-**Matchmaking.** One of the AGS modules. Gets a peer skill — `/ags-matchmaking` — because rule design, MMR tuning, ticket lifecycle, and region routing are deep enough on their own.
+**Matchmaking.** One of the AGS modules. Routes through the `/ags matchmaking` capability because rule design, MMR tuning, ticket lifecycle, and region routing are deep enough on their own.
 
 **ADT (AccelByte Development Toolkit).** Build distribution + crash reporting + playtest tooling. Originally **BlackBox**, rebranded under AccelByte in March 2023. **Separate AccelByte product** — not part of AGS. Has its own peer skill `/adt`. Works without AGS, though AGS customers can route ADT crash data into AGS analytics.
 
