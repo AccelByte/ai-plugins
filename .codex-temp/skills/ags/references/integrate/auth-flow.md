@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/accounts/how-account-works/
@@ -7,6 +7,7 @@ sources:
 see-also:
 - '[iam.md](../modules/iam.md)'
 - '[headless-account-linking.md](../cookbook/headless-account-linking.md)'
+- '[auth-provider-configuration.md](../platforms/auth-provider-configuration.md)'
 - '[auth-failures.md](../debug/auth-failures.md)'
 ---
 
@@ -60,10 +61,10 @@ Before adding login code, identify the user's requested platform login method an
 1. Namespace and environment match the game config.
 2. Game-client builds use a public IAM client; server builds use a confidential IAM client.
 3. The login method or identity provider is enabled for the namespace and IAM client.
-4. Platform-specific values are configured: app ID, issuer/client ID, redirect URI, bundle/package ID, certificate/key material, or provider metadata as required by that platform.
+4. Platform-specific values are configured using `references/platforms/auth-provider-configuration.md`: app IDs, publisher keys, OAuth client IDs/secrets, issuer/JWKS URLs, redirect URIs, bundle/package IDs, certificate/key material, organization IDs, claim mappings, or provider metadata as required by that platform.
 5. Engine config values are real values, not placeholders copied from examples.
 
-Use the AGS CLI binary `ags` for read-only discovery where available. If any AGS-side IAM setting is missing, unclear, or needs to be changed, route to `/ags connect-portal` rather than papering over the issue in game code.
+Use the AGS CLI binary `ags` for read-only discovery where available. If any AGS-side IAM setting is missing, unclear, or needs to be changed, route to `/ags connect-portal` rather than papering over the issue in game code. If any provider-owned value is missing, stop and ask the user for the exact values listed in `references/platforms/auth-provider-configuration.md`; do not invent placeholders or continue into login code.
 
 ## Crossplay account linking
 

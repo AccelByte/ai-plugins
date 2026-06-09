@@ -1,10 +1,11 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[iam.md](../modules/iam.md)'
 - '[auth-flow.md](../integrate/auth-flow.md)'
+- '[auth-provider-configuration.md](../platforms/auth-provider-configuration.md)'
 - '[debug.md](../../subskills/debug.md)'
 - '[doctor.md](../../subskills/doctor.md)'
 ---
@@ -84,7 +85,7 @@ Fix: route to `/ags connect-portal`. That subskill owns creating/selecting the p
 
 Use this when Unreal/Unity reaches AGS and login returns HTTP 400 `invalid_request` with a platform-config error such as "platform client not found".
 
-First hypothesis: the attempted platform/login method is not enabled or configured in IAM. Identify the exact AGS platform ID from the SDK/OSS login path or CLI shape, such as `device`, `steam`, `epicgames`, `psn`, or `xbox`.
+First hypothesis: the attempted platform/login method is not enabled or configured in IAM. Identify the exact AGS platform ID from the SDK/OSS login path or CLI shape, such as `device`, `steam`, `epicgames`, `psn`, or `xbox`. Then read `references/platforms/auth-provider-configuration.md` and use the matching provider's required-value list as a hard gate.
 
 Do **not** rely on:
 
@@ -103,7 +104,7 @@ If the platform credential is missing, the portal-equivalent action is:
 
 `Game Setup > 3rd Party Configuration > Auth & Account Linking > Add New > <Platform> > fill required platform fields > Active`
 
-For Device, the required fields usually include `Redirect URI http://127.0.0.1`.
+If provider-owned values are missing, stop and route to `/ags connect-portal` with a precise handoff question. Examples: Steam needs Steam App ID and Steam Publisher Web API Key; Epic needs client ID and client secret; Apple needs Service ID, base64 `.p8` private key, Team ID, and Key ID; OIDC needs the selected auth type and the URLs/claim mapping for that type. For PSN, Xbox, and Nintendo, public AGS setup details are not available in the docs, so ask the user for the confidential AccelByte/platform-holder setup output instead of guessing.
 
 If the user approves a CLI mutation, discover the exact create command and body first:
 
@@ -111,7 +112,7 @@ If the user approves a CLI mutation, discover the exact create command and body 
 ags describe iam platform-credentials create
 ```
 
-Use `--skeleton` if available. Do not reuse the Device body for every platform; other platforms usually require their own fields, such as client ID, client secret, app ID, environment, or issuer values.
+Use `--skeleton` if available. Do not reuse the Device body for every platform; other platforms require their own fields, such as client ID, client secret, app ID, publisher keys, organization IDs, issuer/JWKS URLs, or provider metadata. The CLI skeleton can tell you the body shape; it cannot supply provider-owned values.
 
 Device minimal body example (verify required fields first via `ags describe iam platform-credentials create --platform-id device --skeleton` — the Device ID provider docs don't list `RedirectUri` as a required field, so this body may differ from what your AGS version expects):
 

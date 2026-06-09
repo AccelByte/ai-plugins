@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.2.0-blue)
+![version](https://img.shields.io/badge/version-0.2.1-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -134,10 +134,19 @@ Your assistant can search real SDK symbols and examples instead of guessing, mak
 
 ### Claude Code
 
+**CLI:**
+
 ```
 /plugin marketplace add AccelByte/ai-plugins
 /plugin install accelbyte-ai-plugins@accelbyte
 ```
+
+**From within Claude Code:**
+
+1. Run `/plugin` and navigate to the **Marketplaces** tab.
+2. Select **Add Marketplace**, enter `AccelByte/ai-plugins`, and confirm.
+3. Install the **accelbyte-ai-plugins** plugin.
+4. Run `/reload-plugins` to activate the plugin.
 
 ### Claude Desktop
 
@@ -155,9 +164,18 @@ Download `https://github.com/AccelByte/ai-plugins/archive/refs/heads/main.zip`, 
 
 ### Codex
 
+**CLI:**
+
 ```
 codex plugin marketplace add AccelByte/ai-plugins
 ```
+
+**From within Codex:**
+
+1. Run `/plugins` and navigate to the **Add Marketplace** tab.
+2. Enter `AccelByte/ai-plugins` and confirm.
+3. Install the **accelbyte-ai-plugins** plugin.
+4. Restart Codex to activate the plugin.
 
 ### Any agent (Agent Skills)
 
@@ -175,4 +193,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler `v0.2.0`.
+Built with AccelByte External Marketplace compiler `v0.2.1`.

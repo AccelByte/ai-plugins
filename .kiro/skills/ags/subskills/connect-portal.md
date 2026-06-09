@@ -6,13 +6,14 @@ description: Bootstrap or repair AGS namespace/IAM client/login-method config fo
   / engine config.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
 - https://github.com/AccelByte/accelbyte-unreal-oss
 see-also:
 - '[iam.md](../references/modules/iam.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
+- '[auth-provider-configuration.md](../references/platforms/auth-provider-configuration.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[install-cli.md](install-cli.md)'
 - '[install-sdk.md](install-sdk.md)'
@@ -26,7 +27,7 @@ Bootstrap the connection between an AccelByte namespace and a project on disk: d
 
 <grounding_rules>
 
-Operate against information the user provides, files on disk, and AGS CLI results. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, or command shapes. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe`, `ags <service> --help`, and `--skeleton` / `--dry-run` where available to discover the exact generated command and request body before mutating AGS.
+Operate against information the user provides, files on disk, AGS CLI results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe`, `ags <service> --help`, and `--skeleton` / `--dry-run` where available to discover the exact generated command and request body before mutating AGS.
 
 </grounding_rules>
 
@@ -35,6 +36,7 @@ Operate against information the user provides, files on disk, and AGS CLI result
 - `Read` / `Glob` to find existing config files.
 - `Write` / `Edit` only for project-side files (`.env`, SDK config, `.gitignore` updates).
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery freely; use state-changing commands only after showing the command/body and receiving explicit confirmation.
+- `Read` `references/platforms/auth-provider-configuration.md` before configuring any platform/login provider such as Steam, Epic, PSN, Xbox, Apple, Google, Google Play Games, Facebook, Discord, Twitch, Snapchat, Oculus, Microsoft, OIDC, AWS Cognito, Nintendo, or Device ID.
 - Don't read other subskills.
 
 </tool_usage_rules>
@@ -48,6 +50,7 @@ Before writing anything, confirm:
 3. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
 4. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
 5. The project type is known (Unreal / Unity / Godot / Roblox / Web / custom engine). If this subskill is invoked from `/ags init`, use the project type detected in Stage 1 and confirmed by the wizard. Do not ask again or fall back to generic `.env` behavior when the project type is already known.
+6. For third-party provider login, the provider-specific prerequisites in `references/platforms/auth-provider-configuration.md` are satisfied or explicitly handed off to the user.
 
 If any of those are missing, stop and surface the gap before doing work.
 
@@ -61,6 +64,7 @@ This subskill writes to disk and can call AccelByte APIs. Specifically:
 - **Updates `.gitignore`** to ensure `.env` isn't committed — confirm with the user.
 - **Creates an IAM client via the CLI** — only with explicit confirmation, and only after showing the user the client config that will be created.
 - **Enables login methods / IAM settings via the CLI** - only with explicit confirmation, and only after showing the discovered command and JSON body.
+- **Configures third-party provider credentials** - only after the user supplies the provider-owned values listed in `references/platforms/auth-provider-configuration.md`. If values are missing, stop and ask for them with the official setup reference; do not create placeholders or continue into login code.
 - **Never creates a namespace** — that's an Admin Portal operation with a human in the loop.
 - **Never creates production IAM clients** without explicit confirmation that the target is intentionally production.
 
@@ -143,6 +147,8 @@ For platform login methods in game clients, required setup is:
 - The attempted platform/login method configured for the game namespace or IAM client, depending on the current AGS API shape. Examples include `device`, Steam, Epic, PSN, and Xbox.
 - No client secret stored in the game client.
 
+For any third-party platform or social login method, read `references/platforms/auth-provider-configuration.md` now and apply its provider stop point before continuing. If the requested provider requires user-owned values such as Steam App ID, Steam Publisher Web API Key, Epic client secret, Apple private key, Google OAuth client secret, or OIDC issuer/JWKS URLs, ask for those values and stop. Do not continue with placeholder AGS configuration, CLI mutation, or game login code until the values are available.
+
 ### Step 3: Discover existing namespace and IAM state
 
 Use `ags describe` before service commands, then run JSON output commands where exposed:
@@ -187,6 +193,8 @@ Use this path when the integration reaches AGS and login returns HTTP 400 `inval
 
 First hypothesis: the attempted platform/login method is not configured in IAM. Identify the exact AGS platform ID from the SDK/OSS login path or CLI shape, such as `device`, `steam`, `epicgames`, `psn` (some AGS versions use `ps4`/`ps5` separately — verify the exact ID with `ags describe iam`), or `xbox`.
 
+Then read `references/platforms/auth-provider-configuration.md` and use the matching provider's "ask the user for" list as a hard gate before any AGS-side mutation or game-code work.
+
 Do **not** use `check-availability` as the deciding check:
 
 ```bash
@@ -206,7 +214,16 @@ If the platform credential is missing, show the portal-equivalent action:
 
 (If this path doesn't match your portal version, look under IAM > Platform Credentials instead.)
 
-For Device, the required fields usually include `Redirect URI http://127.0.0.1`.
+If provider-owned values are missing, stop here and ask for them. Include the official setup reference from `references/platforms/auth-provider-configuration.md`. Examples:
+
+- Steam: ask for Steam App ID and Steam Publisher Web API Key; use `http://127.0.0.1` for in-game redirect unless the user's AGS version says otherwise.
+- Epic: ask for Epic client ID and client secret; use `http://127.0.0.1` for in-game redirect.
+- Google / Google Play Games: ask for Google OAuth client ID and client secret; for Google Play Games, also ask for Android package/signing and Games App ID details when Unreal Android is in scope.
+- Apple: ask for Apple Service ID, base64 `.p8` private key, Team ID, and Key ID.
+- PSN / Xbox / Nintendo: public setup details are not available in the AGS docs; stop and ask the user to provide the confidential AccelByte/platform-holder setup outputs.
+- Device ID: no external provider credentials; ask whether this is development-only or an intentional production flow with account-upgrade/linking mitigation.
+
+Do not treat a CLI skeleton as permission to invent provider values. The skeleton can tell you the request shape; the user or provider console must supply the values.
 
 If the user approves CLI mutation:
 
@@ -227,7 +244,7 @@ If the user approves CLI mutation:
    }
    ```
 
-   Other platforms usually require their own fields, such as client ID, client secret, app ID, environment, or issuer values. Get those fields from the CLI skeleton, docs, or user input before mutating.
+   Other platforms require their own fields, such as client ID, client secret, app ID, publisher keys, organization IDs, issuer/JWKS URLs, or provider metadata. Get those fields from `references/platforms/auth-provider-configuration.md` and user/provider-console input before mutating.
 
 3. On PowerShell, write the body to a file and use `--json @file` rather than inline JSON to avoid quoting failures. Verify `--json @file` is a supported flag with `ags iam platform-credentials create --help` before using it.
 4. Run the confirmed create command.

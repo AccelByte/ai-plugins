@@ -1,9 +1,13 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/psn-identity/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/xbox-identity/
 see-also:
 - '[iam.md](../modules/iam.md)'
+- '[auth-provider-configuration.md](auth-provider-configuration.md)'
 - '[pc-steam-epic.md](pc-steam-epic.md)'
 - '[mobile.md](mobile.md)'
 ---
@@ -16,6 +20,7 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 
 ## PlayStation (PS4, PS5)
 
+- **Configuration stop point** - the public AGS PSN setup page says to contact AccelByte for access to the guide. Do not guess PSN credential fields. Ask the user for the confidential AccelByte/PlayStation setup output and platform-holder approval before configuring AGS or game login code.
 - **Identity binding** — PSN is one of the AGS-supported platform identity providers. Players auth via PSN ID; AGS issues an AGS token.
 - **PSN DLC** — DLC reconciliation via the AGS Third-party IAP component. See the Store & Catalog module docs for current details.
 - **Crossplay** — supported via account linking on a single AGS player. Sony's crossplay rules apply at the platform-policy level.
@@ -23,6 +28,7 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 
 ## Xbox (Xbox One, Xbox Series X|S)
 
+- **Configuration stop point** - the public AGS Xbox setup page says to contact AccelByte for access to the guide. Do not guess Xbox credential fields. Ask the user for the confidential AccelByte/Xbox setup output and platform-holder approval before configuring AGS or game login code.
 - **Identity binding** — Xbox Live is one of the AGS-supported platform identity providers. Players auth via Xbox Live token; AGS issues an AGS token.
 - **Xbox DLC** — DLC reconciliation via the AGS Third-party IAP component. See the Store & Catalog module docs for current details.
 - **Crossplay** — supported.
@@ -30,6 +36,7 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 
 ## Nintendo Switch
 
+- **Configuration stop point** - the AGS authentication overview lists Nintendo in-game login as supported, but no public Nintendo setup guide is exposed in the authentication navigation. Ask the user for confidential AccelByte/Nintendo setup requirements and Nintendo developer credentials before configuring AGS or game login code.
 - Identity binding for Switch follows Nintendo's flow; AGS supports it as a platform identity provider.
 - Cert and platform constraints follow Nintendo's guidelines, not AGS's.
 
@@ -47,4 +54,5 @@ Reference notes for AGS integrations targeting console platforms. The big variab
 ## Where to look in the docs
 
 - AccelByte IAM platform-provider docs: `https://docs.accelbyte.io/`
+- Provider configuration matrix: `references/platforms/auth-provider-configuration.md`
 - ADT (console DevKit support): `references/ecosystem/adt.md` and `/adt`.

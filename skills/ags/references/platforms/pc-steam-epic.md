@@ -1,10 +1,14 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/steam-identity/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/epic-identity/
 - https://accelbyte.io/ags-eos
 see-also:
 - '[iam.md](../modules/iam.md)'
+- '[auth-provider-configuration.md](auth-provider-configuration.md)'
 - '[eos-coexistence.md](../cookbook/eos-coexistence.md)'
 - '[headless-account-linking.md](../cookbook/headless-account-linking.md)'
 ---
@@ -17,12 +21,16 @@ Reference notes for AGS integrations targeting **Steam** and **Epic Games Store*
 
 ## Steam
 
+- **Configuration stop point** - in-game Steam login needs the Steam App ID and Steam Publisher Web API Key before AGS can be configured. Use `http://127.0.0.1` as the in-game redirect URI unless the user's AGS version says otherwise. Do not continue with placeholders; ask the user to obtain those values from Steamworks first.
+
 - **Identity binding** — Steam is one of the AGS-supported platform identity providers. Players auth via Steam ticket; AGS exchanges the Steam ticket for an AGS token.
 - **Steam DLC** — DLC purchased through Steam can be reconciled into the AGS entitlement model via the Third-party IAP component — verify Steam is listed among supported platforms in the Store & Catalog module docs.
 - **Workshop / UGC** — out of AGS scope; live in the Steam ecosystem. Studios bridge via Extend Service Extensions if they need cross-system coordination.
 - **Common gotcha** — Steam Session Tickets have short validity windows (see Valve developer docs for current limits); ensure token refresh logic is in place before the ticket expires.
 
 ## Epic Games Store
+
+- **Configuration stop point** - Epic login needs the Epic client ID and client secret from the Epic Developer Portal before AGS can be configured. Use `http://127.0.0.1` for in-game redirect and `<BaseURL>/iam/v3/authenticate` for web login when following the public AGS guide.
 
 - **Identity binding** — Epic Games Store is one of the AGS-supported platform identity providers (listed as "Epic" in AGS auth docs — not the same thing as Epic Online Services (EOS), which is a separate Epic product; they often appear together in studio stacks).
 - **DLC reconciliation** — verify Epic Games Store is listed among Third-party IAP supported platforms in the Store & Catalog module docs.
@@ -46,4 +54,5 @@ For end-to-end details, see `references/cookbook/eos-coexistence.md` and `refere
 ## Where to look in the docs
 
 - AccelByte IAM platform-provider docs: `https://docs.accelbyte.io/`
+- Provider configuration matrix: `references/platforms/auth-provider-configuration.md`
 - AGS + EOS positioning: `https://accelbyte.io/ags-eos`

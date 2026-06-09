@@ -161,6 +161,7 @@ ags/
       web/
         typescript.md            — TypeScript SDK for web apps (standalone)
     platforms/
+      auth-provider-configuration.md — Per-provider login setup gates and required values
       pc-steam-epic.md           — Steam, Epic Games Store specifics
       console.md                 — PlayStation, Xbox, Switch specifics
       mobile.md                  — iOS, Android specifics

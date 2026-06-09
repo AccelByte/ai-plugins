@@ -6,7 +6,7 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -21,6 +21,7 @@ see-also:
 - '[social.md](../references/modules/social.md)'
 - '[analytics.md](../references/modules/analytics.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
+- '[auth-provider-configuration.md](../references/platforms/auth-provider-configuration.md)'
 - '[lobby-session.md](../references/integrate/lobby-session.md)'
 - '[crossplay-identity.md](../references/integrate/crossplay-identity.md)'
 - '[live-ops-rollout.md](../references/cookbook/live-ops-rollout.md)'
@@ -233,7 +234,7 @@ When the requested module is IAM/auth/login, treat it as a focused auth integrat
 2. **Confirm related service** — IAM is the only AGS service in scope for the first auth slice. Defer Lobby, Matchmaking, Store, and other module wiring until login is verified.
 3. **Confirm SDK prerequisite** — use `/ags install-sdk` for Unreal, Unity, Godot, Roblox, Web SDK, and custom-engine REST fallback. Do not call the Unreal SDK MCP `install_unreal_sdk` tool from this integration flow.
 4. **Read the auth docs** — read `references/modules/iam.md` and `references/integrate/auth-flow.md` before editing. If a login attempt already fails, also read `references/debug/auth-failures.md`.
-5. **Check platform credentials** — identify the requested login method (Steam, PSN, Xbox, Epic, Apple, Google, Facebook, device/headless, email/password, etc.), then verify the namespace, public IAM client, login-method enablement, redirect/config values, and engine config are real rather than placeholders. Route to `/ags connect-portal` for missing or unclear AGS-side IAM setup.
+5. **Check platform credentials** — identify the requested login method (Steam, PSN, Xbox, Epic, Apple, Google, Google Play Games, Facebook, Discord, Twitch, Snapchat, Oculus, Microsoft, OIDC, AWS Cognito, Nintendo, device/headless, email/password, etc.), read `references/platforms/auth-provider-configuration.md`, then verify the namespace, public IAM client, login-method enablement, provider-owned values, redirect/config values, and engine config are real rather than placeholders. Route to `/ags connect-portal` for missing or unclear AGS-side IAM setup. If provider-owned values are missing, stop and ask the user for the exact values listed in the provider reference instead of adding login code.
 6. **Wire game login logic** — locate the existing login/bootstrap/auth handler, add the minimal SDK login call using the engine's idioms, and keep token/session handling aligned with the project.
 7. **Run the smoke test** — build or run the smallest available auth path. IAM is wired only when login returns an AGS token and a second authenticated call, such as current-user/profile lookup, succeeds.
 

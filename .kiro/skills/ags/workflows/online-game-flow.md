@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-26
+last-verified: 2026-06-08
 sources:
 - https://docs.accelbyte.io/
 ---
@@ -119,6 +119,8 @@ The plan file should follow the existing AGS wizard/integration plan shape and i
 - Non-goals.
 - Affected areas.
 - AGS modules.
+- Required AGS Admin Portal setup when a requested third-party login provider
+  is not already active.
 - Implementation steps.
 - Verification.
 - Risks and open questions.
@@ -156,6 +158,7 @@ Before drafting the Game Flow Plan, perform codebase and AGS tooling discovery. 
 - Follow `../references/observe/cli-commands.md` for generated command discovery. Use `ags describe` before unfamiliar service/resource commands and prefer JSON output when the CLI exposes it.
 - Do not create, update, delete, enable, grant, revoke, or otherwise mutate AGS state before the Game Flow Plan is approved.
 - If CLI is unavailable, unauthenticated, or cannot verify the namespace/client/login method, record that blocker or gap in the Game Flow Plan instead of silently skipping it.
+- For third-party login providers, read `../references/platforms/auth-provider-configuration.md` before asking for plan approval. If the provider is missing or inactive, construct the manual Admin Portal URL from the discovered AGS base URL and namespace and include the provider-specific field checklist from that reference.
 - Do not force an interactive AGS CLI login while planning. Ask only when the user must authenticate or choose between conflicting namespace/client/config sources.
 
 ## Game Flow Plan Gate
@@ -169,6 +172,13 @@ Use the `Game Flow Plan` as internal planning state before game-code edits. Trac
 Treat these fields as a planning scaffold, not a fixed questionnaire or hardcoded option list. Adapt, rename, combine, omit, or add fields based on what the codebase, AGS config, and requested feature actually reveal.
 
 Separate discovered facts from user choices. After discovery, show a short research digest with facts such as AGS modules involved, AGS config/tooling status, and the existing code path or likely entry points. Do not ask the user to reconfirm discovered facts unless evidence conflicts or multiple plausible paths exist.
+
+Third-party provider setup is a pre-approval gate. When a requested login provider is not already active in AGS, do not ask the user to approve the Game Flow Plan yet. Instead, show a `Required AGS Admin Portal Setup` block that includes:
+
+- Direct Admin Portal URL: `<ags-base-url>/admin/namespaces/<namespace>/login-methods` after trimming any trailing slash from the base URL. Example: `https://development.accelbyte.io/admin/namespaces/bitwars/login-methods`.
+- Portal action: add the requested third-party provider manually under the login-methods / Auth & Account Linking page, then activate or save it.
+- Fields to populate: copy the exact provider-specific list from `../references/platforms/auth-provider-configuration.md`. For confidentiality-limited providers such as PSN, Xbox, or Nintendo, explicitly say the public docs do not expose the field names and ask the user to fill every required field from the confidential AccelByte/platform-holder guide or paste the portal field labels for review.
+- Approval blocker: state that Game Flow Plan approval is blocked until the user completes this Admin Portal setup, or confirms the provider is already active, and a read-only CLI/provider check can be run.
 
 Use progressive confirmation when several meaningful decisions remain. Do not present every Game Flow Plan field in one approval block when more than one decision or evidence contract is still open.
 
