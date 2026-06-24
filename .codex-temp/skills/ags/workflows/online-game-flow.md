@@ -15,6 +15,7 @@ This workflow owns player-facing game integration. Read module and capability fi
 - `../maps/capability-map.md`
 - `../maps/dependency-map.md`
 - `../subskills/integrate.md`
+- `../references/security/iam-authorization-preflight.md`
 - `../subskills/generate-ui.md` when the flow adds or patches visible game UI
 
 ## Supporting Context
@@ -105,6 +106,7 @@ After the user confirms the first slice, perform codebase and AGS tooling discov
 
 - Find the engine, SDK/plugin, AGS config source, existing game path, and target files relevant to the confirmed slice.
 - Run read-only AGS CLI checks only when they affect the confirmed slice.
+- Run the authorization preflight from `../references/security/iam-authorization-preflight.md` for the confirmed slice. Classify caller type, token source, IAM client type, planned AGS calls, and required permissions. Use AGS CLI discovery first when the current CLI exposes operation or permission metadata.
 - Read supporting module/capability files only for the confirmed slice.
 
 After observation, write a plan file under:
@@ -119,6 +121,7 @@ The plan file should follow the existing AGS wizard/integration plan shape and i
 - Non-goals.
 - Affected areas.
 - AGS modules.
+- Authorization Plan.
 - Required AGS Admin Portal setup when a requested third-party login provider
   is not already active.
 - Implementation steps.
@@ -167,11 +170,27 @@ Before any code edit, inspect the codebase and maintain a `Game Flow Plan` insid
 
 The plan gate is user-facing, but the full field list is internal. Present approvals progressively instead of listing every field at once.
 
-Use the `Game Flow Plan` as internal planning state before game-code edits. Track: In-game trigger, Requested end state, AGS modules involved, Existing code path, AGS config/tooling, UI surface, Work scope, Success state, Error/cancel state, Service evidence, and Game-flow evidence.
+Use the `Game Flow Plan` as internal planning state before game-code edits. Track: In-game trigger, Requested end state, AGS modules involved, Existing code path, AGS config/tooling, Authorization Plan, UI surface, Work scope, Success state, Error/cancel state, Service evidence, and Game-flow evidence.
 
 Treat these fields as a planning scaffold, not a fixed questionnaire or hardcoded option list. Adapt, rename, combine, omit, or add fields based on what the codebase, AGS config, and requested feature actually reveal.
 
 Separate discovered facts from user choices. After discovery, show a short research digest with facts such as AGS modules involved, AGS config/tooling status, and the existing code path or likely entry points. Do not ask the user to reconfirm discovered facts unless evidence conflicts or multiple plausible paths exist.
+
+The research digest must include an Authorization Plan when the slice calls any AGS API:
+
+```text
+Authorization Plan
+
+  Caller:               <game client | game server | backend service | trusted tool | web app/admin UI>
+  Token source:          <user access token | service/server token | unknown>
+  IAM client type:       <public | confidential | unknown>
+  AGS calls:             <SDK methods or REST endpoints, including secondary lookup calls>
+  Permission discovery:  <AGS CLI evidence, docs fallback, or gap>
+  Required permissions:  <exact permissions or "not exposed by current CLI">
+  Verified access:       <yes | no | blocked>
+```
+
+If the Authorization Plan says a game server, backend service, or trusted tool would use a Public IAM client, block Game Flow Plan approval and route to `/ags connect-portal` before implementation. If required permission discovery is unavailable, record the gap and do not imply the client is properly configured.
 
 Third-party provider setup is a pre-approval gate. When a requested login provider is not already active in AGS, do not ask the user to approve the Game Flow Plan yet. Instead, show a `Required AGS Admin Portal Setup` block that includes:
 
@@ -274,6 +293,7 @@ For service evidence, collect the backend proof that matches the requested AGS m
 - Matchmaking: ticket submitted, match found or expected queue state, and failure/cancel handling.
 - Session: session joined, roster or member lookup works, and session state is visible.
 - AMS DS: server claim or local registration evidence, plus watchdog/claim state when local DS is in scope.
+- Authorization: caller type, token source, IAM client type, required permissions, and verified access from the Authorization Plan.
 
 For game-flow evidence, identify and verify the player path:
 
@@ -295,6 +315,7 @@ Game-flow integration status
   - Game trigger:       <UI/input/gameplay/approved console path/not implemented>
   - UI evidence:        <visible widget/control/state path or approved fallback with reason>
   - Intended end state: <state>
+  - Authorization:     <caller, token source, IAM client type, required permissions, verified access>
   - Service evidence:   <backend/API/log/CLI proof>
   - Game-flow evidence: <player-path proof or missing proof>
   - Remaining gap:      <none or exact next step>

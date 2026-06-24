@@ -21,6 +21,7 @@ see-also:
 - '[social.md](../references/modules/social.md)'
 - '[analytics.md](../references/modules/analytics.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
+- '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[auth-provider-configuration.md](../references/platforms/auth-provider-configuration.md)'
 - '[lobby-session.md](../references/integrate/lobby-session.md)'
 - '[crossplay-identity.md](../references/integrate/crossplay-identity.md)'
@@ -60,6 +61,8 @@ When the detected project is Unreal and this subskill edits or verifies C++ file
 
 Auth integration is a specialization inside this subskill. For IAM work, always ground the flow in `references/modules/iam.md`, `references/integrate/auth-flow.md`, and, when login fails, `references/debug/auth-failures.md`.
 
+For every AGS API integration, read `references/security/iam-authorization-preflight.md` and complete the authorization preflight before code edits. Caller type decides the token/client strategy; AGS CLI discovery is the preferred source for operation permissions.
+
 Don't fabricate SDK method signatures. When the user needs a specific signature, point at the SDK's docs / GitHub.
 
 Do not treat backend/API/log success alone as player-flow completion. For game-facing integration requests, completion requires both service evidence and game-flow evidence from the player-facing trigger named in `../workflows/online-game-flow.md`.
@@ -74,7 +77,7 @@ Do not declare game integration complete from SDK calls, backend state, CLI outp
 - `Read` any referenced wizard plan document under `docs/ags-plans/` before reading module references.
 - `Glob` to locate the right files in the project (e.g. find the existing auth handler to wire AGS auth into).
 - `Edit` / `Write` for code changes - summarize the intended edit scope before applying. Show a full diff only when the user asks, a harness approval flow requires it, or the change is too broad to summarize safely.
-- `Bash` for build / smoke-test commands the user explicitly approves (compile, run, hit a test endpoint).
+- `Bash` for read-only AGS CLI authorization discovery and for build / smoke-test commands the user explicitly approves (compile, run, hit a test endpoint).
 - Don't read other subskills.
 
 </tool_usage_rules>
@@ -84,9 +87,16 @@ Do not declare game integration complete from SDK calls, backend state, CLI outp
 Before wiring a module:
 
 1. The SDK is installed and the test login passes (the selected AGS SDK subskill completed).
-2. The IAM client has the scopes the module requires (Lobby needs lobby scopes, Matchmaking needs matchmaking scopes, etc.).
-3. If the module depends on another (Sessions on Matchmaking on Lobby on IAM), confirm the dependency is wired first.
-4. For game projects, an approved Game Flow Plan exists unless the user explicitly requested smoke-only work.
+2. The authorization preflight from `references/security/iam-authorization-preflight.md` is complete:
+   - caller type is known (`game client`, `game server`, `backend service`, `trusted tool`, or `web app/admin UI`);
+   - token source is known (`user access token` for game-client calls, service/server token for game server / backend / trusted tooling);
+   - IAM client kind matches the caller (`Public client` only for game-client login/bootstrap or browser-safe user flows; `Confidential` for game server / backend / trusted tooling);
+   - planned SDK methods or REST endpoints are listed, including secondary calls such as profile/display-name lookups;
+   - required permissions were discovered with AGS CLI when the current CLI exposes them, or the gap/fallback is recorded;
+   - configured client/token access is verified or the missing permission is named.
+3. If the flow is game server / backend / trusted tooling and the configured client is Public, stop before implementation and route to `/ags connect-portal`.
+4. If the module depends on another (Sessions on Matchmaking on Lobby on IAM), confirm the dependency is wired first.
+5. For game projects, an approved Game Flow Plan exists unless the user explicitly requested smoke-only work.
 
 If a precondition fails, surface it and route appropriately (`/ags connect-portal` for missing/placeholder IAM settings, login-method enablement, or IAM client scope changes; `/ags install-sdk` if the SDK isn't healthy).
 
@@ -117,6 +127,7 @@ End each module with a "wired" mini-summary:
   Files touched:    <list>
   Flow status:      <Smoke-verified | Game-flow integrated | Complete>
   Game trigger:     <UI action, input, console command, gameplay path, or "not implemented">
+  Authorization:    <caller, token source, IAM client type, required permissions, verified access>
   Verification:     <service evidence and game-flow evidence>
   Module-specific:  <module-specific notes>
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-08
+last-verified: 2026-06-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/accounts/how-account-works/
@@ -84,6 +84,7 @@ For the headless-account-linking variant (which underpins the EOS coexistence st
 - **Token refresh races** — don't fire two API calls during a refresh; the SDK handles serialization but custom code that bypasses the SDK can break this.
 - **Login method not enabled backend-side** — if the Unreal/Unity code compiles, the SDK login call reaches AGS, and login returns HTTP 400 `invalid_request`, the attempted login method may be disabled, unimplemented, or misconfigured in IAM. Diagnose with `references/debug/auth-failures.md` and route to `/ags connect-portal` to enable the login method via AGS CLI or Admin Portal.
 - **Public client used by a server build** — the server-side calls fail to mint the token type they need.
+- **Public client used for a resource call with no user token** — a public client can only mint the user token (login); any other AGS call over it must carry that token. A display-name, profile, or cross-player lookup with no logged-in user is not a public-client call. See the tokenless public-client gate in `references/security/iam-authorization-preflight.md`.
 - **Confidential client secret leaked to a game client** — the secret is leaked publicly; rotate it immediately and switch the build to a public client.
 - **Wrong namespace claim** — using a dev token against a prod namespace fails; the JWT carries the namespace claim.
 - **Platform-credential expiry** — Steam tickets etc. have short windows; if your refresh logic outlives the platform credential, you can't re-auth without re-prompting the player.

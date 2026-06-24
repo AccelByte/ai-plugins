@@ -6,6 +6,7 @@ see-also:
 - '[glossary.md](../glossary.md)'
 - '[headless-account-linking.md](../cookbook/headless-account-linking.md)'
 - '[auth-flow.md](../integrate/auth-flow.md)'
+- '[iam-authorization-preflight.md](../security/iam-authorization-preflight.md)'
 - '[access.md](../ecosystem/access.md)'
 ---
 
@@ -33,7 +34,7 @@ Game servers use **confidential** IAM clients with a client secret to obtain ser
 
 Admin tools and web portals use AccelByte IAM clients (higher-trust admin operations).
 
-For end-to-end auth flow patterns, see `references/integrate/auth-flow.md`. For crossplay identity bridging (including the EOS coexistence story), see `references/cookbook/headless-account-linking.md`.
+For end-to-end auth flow patterns, see `references/integrate/auth-flow.md`. For caller classification, token source, and AGS CLI permission discovery before module calls, see `references/security/iam-authorization-preflight.md`. For crossplay identity bridging (including the EOS coexistence story), see `references/cookbook/headless-account-linking.md`.
 
 ## Standalone packaging
 

@@ -60,13 +60,14 @@ Matchmaking, Session, AMS, Statistics, and engine-specific references are suppor
 | 5  | `subskills/install-sdk.md` | scaffold | Detect the target SDK and install/scaffold Unreal, Unity, Godot, Roblox, Web SDK, or custom-engine REST fallback | wizard (typically) |
 | 6  | `subskills/install-cli.md` | scaffold | Install the AGS CLI for namespace + IAM management | — |
 | 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Shared Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
-| 8  | `subskills/generate-ui.md` | build | Detect the game engine and route AGS UI generation to the engine-specific UI workflow; Unreal is supported through AccelByteUITools | install-sdk |
+| 8  | `subskills/generate-ui.md` | build | Detect the game engine and route AGS UI generation to the engine-specific UI workflow; Unreal and Unity are supported | install-sdk |
 | 9  | `subskills/init.md` | scaffold | Orchestrates wizard + connect-portal + install-sdk + install-cli + optional install-mcp | — |
 | 10 | `subskills/integrate.md` | build | Module-by-module SDK integration guide (auth, lobby, matchmaking, store, etc.) | install-sdk |
 | 11 | `subskills/debug.md` | build | Run a game locally against AGS and trace integration failures | install-sdk |
 | 12 | `subskills/observe.md` | operate | Pull logs, metrics, and event signals from a deployed namespace | connect-portal |
 | 13 | `subskills/doctor.md` | operate | Read-only symptom → likely cause diagnosis; hands off to the subskill that owns the fix | — |
 | 14 | `subskills/handoff.md` | any | Decide when AGS isn't the right tool, when to add Extend or ADT, when to use the internal `/ags ams ...` capability, whether Access packaging fits, or whether AccelByte support is needed | — |
+| 15 | `subskills/manage-permissions.md` | operate | Add, update, or delete IAM/OAuth client permissions on an existing client via the AGS CLI or AGS API MCP, under a confirmation gate | connect-portal (typically) |
 
 Phases run roughly in order but loop (scaffold → build → operate → back to build). `ask`, `explore`, `doctor`, and `handoff` are phase-free: they answer questions or diagnose without mutating anything.
 
@@ -81,6 +82,12 @@ Phases run roughly in order but loop (scaffold → build → operate → back to
 5. Use only the tools listed in frontmatter. Subskills may further restrict; respect their restrictions.
 
 </tool_usage_rules>
+
+### Authorization preflight gate
+
+For any IAM client, OAuth client, permission, permission group, `groupId`, resource/action, role, scope, `401`, `403`, `insufficient_permission`, or forbidden-call question, the selected workflow or subskill must read `references/security/iam-authorization-preflight.md` before answering. This is a cross-cutting rule, not a separate subskill.
+
+Environment detection controls the answer format. Shared Cloud answers must use the module / group / `groupId` / action shape. Private Cloud / BYOC answers use the discovered resource/action string as the final permission. If the environment cannot be identified from project config, AGS CLI profile/config, or the permission catalog behavior, report it as unknown and name the missing evidence instead of choosing a Shared Cloud group.
 
 ### Decision procedure
 
@@ -101,9 +108,12 @@ Apply these checks in order. Stop at the first match.
    - Login -> matchmaking -> session/DS travel, Play Online, online play end-to-end, or "make the game join a dedicated server through the UI" → `workflows/online-game-flow.md`.
 8. **Is the message a decision about adding or leaving AGS capability scope?** ("should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to Private Cloud", "is AGS right for this", "is AGS even right", "do I need AMS", "do I need Extend".) → Route to `subskills/handoff.md`. This check runs before generic conceptual `ask`.
 9. **Is there a direct subskill cue?** (Table below.) → Route to that subskill.
-10. **Is the message conceptual** ("what", "how does", "which module", "should I use" after the handoff decisions above, "vs", "compared to")? → Route to `subskills/ask.md`.
-11. **Does the message span multiple phases?** → Route to the earliest phase; announce the later steps as follow-ups.
-12. **No match** → Ask the disambiguation question.
+10. **Is the message permission-shaped?** ("what permission", "which permission", "client permission", "OAuth permission", "IAM permission", "permission group", `groupId`, "resource/action", "scope", `401`, `403`, `insufficient_permission`, "forbidden".) Split by intent, and apply the Authorization preflight gate above before answering or mutating:
+    - **Change request** — add, grant, give, remove, revoke, delete, edit, update, change, configure, set, or assign a permission / scope / permission group on an *existing* IAM or OAuth client → Route to `subskills/manage-permissions.md`.
+    - **Question or diagnosis** — "what/which permission", a `401`/`403`/forbidden failure, or any other read-only permission question → Route to `subskills/ask.md`.
+11. **Is the message conceptual** ("what", "how does", "which module", "should I use" after the handoff decisions above, "vs", "compared to")? → Route to `subskills/ask.md`.
+12. **Does the message span multiple phases?** → Route to the earliest phase; announce the later steps as follow-ups.
+13. **No match** → Ask the disambiguation question.
 
    Note on SDKs — AGS has three SDK families:
    - **Game Engine SDKs** (Unreal, Unity, Godot, Roblox) — game clients/servers. Owned by `/ags`.
@@ -119,6 +129,8 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 | Cue | Route |
 |---|---|
 | `handoff`, "should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to private cloud", "do I need AMS", "is AGS even right", "is AGS right for this" | `subskills/handoff.md` |
+| `manage-permissions`, "add permission", "grant permission", "remove permission", "revoke permission", "delete permission", "edit permission", "update permission", "change permission", "configure permission", "set permission", "assign permission", "grant scope", "add scope", "edit client permissions", "update client permissions", "manage permissions" | `subskills/manage-permissions.md` with `references/security/iam-authorization-preflight.md` |
+| "what permission", "which permission", "client permission", "OAuth permission", "IAM permission", "permission group", `groupId`, "resource/action", "scope", `401`, `403`, `insufficient_permission`, "forbidden" | `subskills/ask.md` with `references/security/iam-authorization-preflight.md` |
 | `ask`, "what is", "what does AGS", "which module", "how does", "should I use" without an add / leave-scope decision, "vs", "compared to", "explain" | `subskills/ask.md` |
 | `explore`, "what's in my namespace", "show me my setup", "what modules am I using", "which clients exist" | `subskills/explore.md` |
 | `init`, "set up everything", "from scratch", "bootstrap", "start a new AGS project", "new namespace from zero" | `subskills/init.md` |

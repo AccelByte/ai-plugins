@@ -10,7 +10,7 @@ see-also:
 
 # Unreal SDK MCP
 
-The AccelByte Unreal SDK MCP Server provides Unreal SDK lookup, SDK symbols, snippets, and Unreal-specific tooling. It is the only supported Game Engine SDK MCP today.
+The AccelByte Unreal SDK MCP Server provides Unreal SDK lookup, SDK symbols, snippets, and Unreal-specific tooling.
 
 ## Behavior Constraints
 

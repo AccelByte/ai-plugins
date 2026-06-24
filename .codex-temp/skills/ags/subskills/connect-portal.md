@@ -6,16 +6,20 @@ description: Bootstrap or repair AGS namespace/IAM client/login-method config fo
   / engine config.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-06-08
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
+- https://github.com/AccelByte/ags-api-mcp-server
 - https://github.com/AccelByte/accelbyte-unreal-oss
 see-also:
 - '[iam.md](../references/modules/iam.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
+- '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[auth-provider-configuration.md](../references/platforms/auth-provider-configuration.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
+- '[manage-permissions.md](manage-permissions.md)'
 - '[install-cli.md](install-cli.md)'
+- '[install-mcp.md](install-mcp.md)'
 - '[install-sdk.md](install-sdk.md)'
 ---
 
@@ -29,6 +33,8 @@ Bootstrap the connection between an AccelByte namespace and a project on disk: d
 
 Operate against information the user provides, files on disk, AGS CLI results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe`, `ags <service> --help`, and `--skeleton` / `--dry-run` where available to discover the exact generated command and request body before mutating AGS.
 
+When the handoff comes from an authorization preflight, follow `references/security/iam-authorization-preflight.md`: game clients use Public IAM clients for login/bootstrap and user-token calls; game server / backend / trusted tooling uses a Confidential IAM client; permission changes must be based on AGS CLI discovery or explicit user/Admin Portal evidence, not guessed strings.
+
 </grounding_rules>
 
 <tool_usage_rules>
@@ -36,6 +42,7 @@ Operate against information the user provides, files on disk, AGS CLI results, a
 - `Read` / `Glob` to find existing config files.
 - `Write` / `Edit` only for project-side files (`.env`, SDK config, `.gitignore` updates).
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery freely; use state-changing commands only after showing the command/body and receiving explicit confirmation.
+- When the AGS API MCP server is configured for this environment, its `search-apis` / `describe-apis` / `run-apis` tools are an alternative to the AGS CLI for discovering and applying IAM client and permission changes — useful when the CLI is not installed or authenticated. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate as CLI mutations; the tool itself also prompts for consent.
 - `Read` `references/platforms/auth-provider-configuration.md` before configuring any platform/login provider such as Steam, Epic, PSN, Xbox, Apple, Google, Google Play Games, Facebook, Discord, Twitch, Snapchat, Oculus, Microsoft, OIDC, AWS Cognito, Nintendo, or Device ID.
 - Don't read other subskills.
 
@@ -68,7 +75,7 @@ This subskill writes to disk and can call AccelByte APIs. Specifically:
 - **Never creates a namespace** — that's an Admin Portal operation with a human in the loop.
 - **Never creates production IAM clients** without explicit confirmation that the target is intentionally production.
 
-If the CLI isn't available or the user doesn't want to script it, fall back to the Admin Portal: print the manual steps and stop.
+If the CLI isn't available or the user doesn't want to script it, the AGS API MCP server's `run-apis` tool can perform the same IAM client and permission mutations when it's configured for this environment (under the same confirmation gate). If neither is available, fall back to the Admin Portal: print the manual steps and stop.
 
 For Unreal projects, treat `Config/DefaultEngine.ini` as a project config file covered by these write-safety rules. `.env` is optional for Unreal local tooling and does not replace the engine runtime config.
 
@@ -141,6 +148,8 @@ Ask:
 > • Dedicated server → confidential IAM client.
 > • Web app → public IAM client (PKCE flow).
 
+If the target is backend service, CI automation, dedicated server tooling, or any trusted server-side integration, treat it like dedicated-server authorization: use a confidential IAM client and do not continue with a public client.
+
 For platform login methods in game clients, required setup is:
 
 - Public IAM client for the game client.
@@ -186,6 +195,15 @@ If a required platform/login method is disabled or missing and the CLI exposes t
 4. Run the CLI update.
 
 If the CLI does not expose the needed mutation, stop and give the exact Admin Portal action. Do not leave placeholder config and continue as if runtime verification can succeed.
+
+If the authorization preflight identified missing permissions for an AGS API call during this bootstrap, apply the fix here. For a standalone permission change on a client that already exists outside a setup flow, `/ags manage-permissions` is the dedicated path; this in-flow handling mirrors it.
+
+1. Discover the exact IAM client read/update operation and its request body. Use `ags describe` and generated help, or — when the AGS API MCP server is configured for this environment — its `search-apis` / `describe-apis` tools against the IAM admin client and permission endpoints (`POST` / `PUT` `/iam/v3/admin/namespaces/{namespace}/clients/{clientId}/permissions`, `DELETE .../permissions/{resource}/{action}`).
+2. Show the current client kind and permission gap.
+3. For game server / backend / trusted tooling, require a confidential IAM client before any permission update.
+4. Show the permission change and request body. Use `--skeleton` and `--dry-run` (CLI) where available.
+5. Get explicit user confirmation before running any client update or permission grant — whether the mutation runs through the CLI or through the MCP server's `run-apis` tool. This subskill's confirmation gate applies regardless of which path executes it.
+6. If neither the CLI nor the MCP server is available, or neither exposes the needed permission mutation, stop and give the Admin Portal owner the exact permission/evidence to add.
 
 #### Platform credential runbook
 

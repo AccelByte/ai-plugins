@@ -1,8 +1,12 @@
 ---
-last-verified: 2026-05-28
+last-verified: 2026-06-24
+sources:
+- https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[install-cli.md](../../subskills/install-cli.md)'
+- '[install-mcp.md](../../subskills/install-mcp.md)'
 - '[observe.md](../../subskills/observe.md)'
+- '[shared-cloud-client-permission-groups.md](../synthetic/shared-cloud-client-permission-groups.md)'
 ---
 
 # Observe - CLI Commands
@@ -47,6 +51,7 @@ For game projects, derive the target `--namespace` from the project's runtime co
 - **Run local diagnostics** with `ags doctor`.
 - **List IAM clients, users, sessions, matchmaking objects, and other AGS resources** when the generated service command exposes that operation and the authenticated client has permission.
 - **Inspect command metadata** with `ags describe` instead of parsing human-readable help.
+- **Map Shared Cloud IAM client permission groups** with `ags iam client-config list-permissions --exclude-permissions false --output -`; follow `../synthetic/shared-cloud-client-permission-groups.md` for the permission group catalog shape and action-bit mapping.
 - **Trigger admin actions** that the Admin Portal also supports - useful for scripts and automation, with explicit confirmation for mutations.
 - **Provision integration prerequisites** such as IAM clients and login-method settings when the generated IAM command surface exposes those operations. Use `ags describe` and `--skeleton` / `--dry-run` where available; do not hardcode guessed command names or JSON body shapes.
 
@@ -68,6 +73,9 @@ ags session game-sessions list --namespace <namespace>
 
 # Discover the stable command and parameter contract as JSON
 ags describe iam clients list
+
+# List Shared Cloud client permission groups and their resource permissions
+ags iam client-config list-permissions --exclude-permissions false --output -
 ```
 
 The actual command surface depends on the bundled OpenAPI specs. Run `ags --help` for top-level commands and `ags describe` for machine-readable discovery. Automation must use `--format json`; do not parse human-readable output. For LLM/agent usage, follow the rules above before relying on a generated command.
@@ -84,6 +92,15 @@ The actual command surface depends on the bundled OpenAPI specs. Run `ags --help
 - **Visual debugging** - when you want to see relationships (player to entitlements to orders) at a glance.
 - **Live event streams or dashboards** - when the desired signal is not exposed by the current `ags` command surface.
 - **Unfamiliar territory** - the Admin Portal has UI that disambiguates options the CLI lists as flags.
+
+## When the AGS API MCP server is an alternative
+
+If the AGS API MCP server is configured for the target environment, it runs the same discover-then-execute flow as the CLI — against the same live AGS API — without a local CLI install:
+
+- `search-apis` / `describe-apis` to find an operation and its parameters, request/response shapes, and auth requirements (the MCP equivalent of `ags describe`).
+- `run-apis` to execute it. Write operations (`POST` / `PUT` / `PATCH` / `DELETE`) prompt for consent before running, so the "confirm mutations" rule above still holds.
+
+Good fit when the CLI is not installed or authenticated, or when the work is already happening inside an MCP-host IDE. The IAM admin client and permission endpoints (`/iam/v3/admin/namespaces/{namespace}/clients/...`) are reachable this way, so permission discovery *and* permission configuration can both run through the MCP server. Set its URL with `/ags install-mcp`. The rules of engagement above apply unchanged: discover before executing, and confirm every mutation.
 
 ## When Extend's CLI is the right answer instead
 

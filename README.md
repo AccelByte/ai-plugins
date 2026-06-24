@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.2.1-blue)
+![version](https://img.shields.io/badge/version-0.4.0-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -122,6 +122,13 @@ Gives your AI assistant direct access to AccelByte Extend SDK types, functions, 
 Instead of hallucinating API shapes, your assistant can look them up — making AI-generated Extend code significantly more accurate.
 
 
+### AccelByte Unity MCP
+
+Adds Unity-specific AccelByte tooling, starting with deterministic AGS uGUI prefab generation.
+
+Your assistant can discover project style, inspect AGS kit/spec drift, validate shared AGS recipes, resolve Unity prefab specs, and generate typed TMP/uGUI screens through the live editor bridge or Unity batch mode.
+
+
 ### AccelByte Unreal SDK MCP Server
 
 Indexes the AccelByte Unreal SDK - classes, methods, code snippets, and ready-made Slate UI panels for Login, Achievements, and Matchmaking.
@@ -193,4 +200,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler `v0.2.1`.
+Built with AccelByte External Marketplace compiler `v0.3.0`.

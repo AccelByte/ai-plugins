@@ -5,15 +5,17 @@ description: Read-only symptom → cause diagnosis. Use when something is off bu
   via the diagnosis trees, then hands off to the subskill that owns the fix.
 allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[auth-failures.md](../references/debug/auth-failures.md)'
+- '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[lobby-disconnects.md](../references/debug/lobby-disconnects.md)'
 - '[matchmaking-timeouts.md](../references/debug/matchmaking-timeouts.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[debug.md](debug.md)'
+- '[manage-permissions.md](manage-permissions.md)'
 - '[observe.md](observe.md)'
 ---
 
@@ -28,6 +30,7 @@ Read-only symptom-to-cause walk. Differs from `subskills/debug.md` by being expl
 Diagnosis trees trace to:
 
 - `references/debug/auth-failures.md`
+- `references/security/iam-authorization-preflight.md`
 - `references/debug/lobby-disconnects.md`
 - `references/debug/matchmaking-timeouts.md`
 
@@ -50,7 +53,8 @@ Don't fabricate causes. If the symptom doesn't fit a known signature, say so and
 Doctor is read-only by contract. **No edits, no installs, no API mutations.** If a fix is needed, hand off:
 
 - Auth fix → `/ags debug` (which is allowed to mutate).
-- IAM client fix → `/ags connect-portal`.
+- IAM client *permission* fix (add/update/delete a permission on an existing, correctly-typed client) → `/ags manage-permissions`.
+- IAM client *kind* / new client / login-method fix → `/ags connect-portal`.
 - SDK config fix → `/ags install-sdk` or `/ags integrate`.
 - Observability lookup → `/ags observe`.
 - AMS / Matchmaking / Extend / ADT operations → the matching peer skill.
@@ -100,6 +104,7 @@ Pick a starting reference based on the symptom:
 | Symptom shape | Reference |
 |---|---|
 | Auth / login / token issues | `references/debug/auth-failures.md` |
+| Permission errors, forbidden calls, or missing enriched fields such as display name | `references/security/iam-authorization-preflight.md` |
 | Lobby drops / WebSocket issues | `references/debug/lobby-disconnects.md` |
 | Matchmaking timeouts / no matches | `references/debug/matchmaking-timeouts.md` |
 | Generic "something's wrong" | Walk the user through the symptom triage from the top |
@@ -111,10 +116,13 @@ Apply the reference's tree to the symptom. Use read-only tools to gather evidenc
 - Decode tokens.
 - Tail logs.
 - List IAM clients.
+- Run read-only AGS CLI permission discovery for the generated service/resource/method when the current CLI exposes it.
 - Check `.env` against expected values.
 - Check engine version against SDK version compatibility.
 
 For auth/login issues where the code compiles and the login call path exists, treat backend config as a first-class hypothesis before blaming client code. HTTP 400 `invalid_request` on login commonly means the attempted login method is not enabled/implemented, the IAM client is the wrong kind, or the namespace/client values point at the wrong backend.
+
+For permission-shaped symptoms, run the authorization preflight in read-only mode. Classify caller type, token source, IAM client type, and the exact AGS call. For game server / backend / trusted tooling, a Public client is a wrong-client-kind diagnosis. For missing display name in leaderboard or other UI results, verify whether a separate profile/display-name lookup is needed and whether that lookup permission is present.
 
 Use read-only AGS CLI discovery when available:
 
@@ -136,6 +144,8 @@ Name the subskill / peer skill that owns the fix:
 | Cause | Hand off |
 |---|---|
 | Wrong IAM client kind | `/ags connect-portal` |
+| Missing IAM client permission (client kind is correct) | `/ags manage-permissions` |
+| Missing display-name/profile lookup permission | `/ags manage-permissions` |
 | Login method disabled/missing/unimplemented (`400 invalid_request`) | `/ags connect-portal` |
 | Namespace mismatch in `.env` | `/ags connect-portal` |
 | SDK version drift | `/ags install-sdk` |

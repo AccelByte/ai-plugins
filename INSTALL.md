@@ -203,6 +203,21 @@ Requires Docker. Set `CONFIG_DIR` to your SDK language:
 - `config/csharp`
 ```
 
+### AccelByte Unity MCP
+
+Use when integrating AccelByte into a Unity project. Provides Unity-specific AGS UI prefab generation now and is structured for Unity SDK symbols, snippets, and installer assistance as the server evolves.
+
+```
+Requires `uvx` (https://docs.astral.sh/uv/) and a matching Unity editor installation.
+Add the embedded UI tools package to your Unity project's `Packages/manifest.json`:
+
+```json
+"com.accelbyte.ui-tools": "https://github.com/AccelByte/accelbyte-unity-mcp.git?path=data/com.accelbyte.ui-tools#main"
+```
+
+Unity Package Manager resolves and downloads the package automatically on next editor open.
+```
+
 ### AccelByte Unreal SDK MCP Server
 
 Use when integrating AccelByte into an Unreal Engine project. Indexes real SDK symbols, code snippets, and Slate UI examples (Login, Achievements, Matchmaking) so lookups use actual SDK content instead of guesses. For SDK installation flows, use `/ags install-sdk`.

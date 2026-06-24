@@ -183,7 +183,8 @@ For AGS CLI:
 For Engine SDK MCP:
 
 - Unreal -> read `references/sdks/game-engine/unreal/mcp.md` and follow that workflow when the user is running an IDE that supports MCP, or record "skipped" with the exact reason.
-- Unity, Godot, Roblox, Web, or other/custom -> record "unsupported - no engine SDK MCP is available for this project type"; do not run Unreal SDK MCP setup.
+- Unity -> read `references/sdks/game-engine/unity/mcp.md` and follow that workflow when the user is running an IDE that supports MCP, or record "skipped" with the exact reason.
+- Godot, Roblox, Web, or other/custom -> record "unsupported - no engine SDK MCP is available for this project type"; do not run Unreal or Unity SDK MCP setup.
 - AGS API MCP is handled later in Step 5 and remains available for every project type.
 
 

@@ -1,11 +1,11 @@
 ---
 name: ags-generate-ui
 description: Detect the game engine and route AGS UI generation to the engine-specific
-  UI workflow. Supports Unreal through AccelByteUITools; Unity and Godot UI generation
-  are not supported yet.
+  UI workflow. Supports Unreal through AccelByteUITools and Unity through the AccelByte
+  Unity MCP server; Godot UI generation is not supported yet.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-25
+last-verified: 2026-06-17
 sources:
 - https://github.com/AccelByte/unreal-sdk-mcp-server
 see-also:
@@ -43,7 +43,7 @@ Do not infer an engine from a requested UI feature alone. A "leaderboard widget"
 ## Routing
 
 - **Unreal**: read `references/sdks/game-engine/unreal/ui/generate-ui.md` start to finish, then follow that workflow. If the Unreal AccelByteUITools project plugin is missing or stale, read `references/sdks/game-engine/unreal/ui/install-ui-tools.md` and complete or report that install step before generation.
-- **Unity**: read `references/sdks/game-engine/unity/ui/generate-ui.md`, report that Unity UI generation is not supported yet, and stop.
+- **Unity**: read `references/sdks/game-engine/unity/ui/generate-ui.md` start to finish, then follow that workflow. If the embedded `com.accelbyte.ui-tools` package is missing, read `references/sdks/game-engine/unity/mcp.md` and complete or report that install step before generation.
 - **Godot**: read `references/sdks/game-engine/godot/ui/generate-ui.md`, report that Godot UI generation is not supported yet, and stop.
 
 ## Behavior Constraints
@@ -61,13 +61,13 @@ Do not infer an engine from a requested UI feature alone. A "leaderboard widget"
 
 When routing succeeds, state the detected engine and the engine-specific reference being used.
 
-When Unity or Godot is selected, end with:
+When Godot is selected, end with:
 
 ```text
-AGS UI generation is not supported for <Unity/Godot> yet.
+AGS UI generation is not supported for Godot yet.
 
-  Engine:      <Unity/Godot>
+  Engine:      Godot
   Status:      unsupported
-  Reference:   references/sdks/game-engine/<unity/godot>/ui/generate-ui.md
-  Supported:   Unreal via AccelByte UI Tools
+  Reference:   references/sdks/game-engine/godot/ui/generate-ui.md
+  Supported:   Unreal via AccelByte UI Tools; Unity via AccelByte Unity MCP
 ```

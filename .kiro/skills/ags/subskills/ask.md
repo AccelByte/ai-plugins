@@ -4,9 +4,9 @@ description: Knowledge-base entrypoint for AccelByte Gaming Services. Use when t
   user asks conceptual questions about AGS — what it is, which modules cover what,
   how it compares to EOS / PlayFab / DIY, what deployment models exist, what AGS does
   and doesn't include.
-allowed-tools: Read Glob
+allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -16,6 +16,9 @@ see-also:
 - '[modules.md](../references/catalogs/modules.md)'
 - '[sdks.md](../references/catalogs/sdks.md)'
 - '[marketing-to-service.md](../references/catalogs/marketing-to-service.md)'
+- '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
+- '[manage-permissions.md](manage-permissions.md)'
+- '[shared-cloud-client-permission-groups.md](../references/synthetic/shared-cloud-client-permission-groups.md)'
 ---
 
 # AGS Knowledge-Base Advisor
@@ -34,6 +37,8 @@ For pricing specifically: in-repo numbers are illustrative. Always direct custom
 
 For customer citations: only cite customers per `docs/internal/accelbyte-customer-roster.md` rules — Public Case Study or Named Reference only. Never invent metrics for TBD outcomes.
 
+Permission-shaped questions are not purely conceptual. Any answer about IAM client permissions, OAuth client permissions, permission groups, `groupId`, resource/action strings, scopes, or `401` / `403` / `insufficient_permission` failures must be grounded in `references/security/iam-authorization-preflight.md` before module or synthetic permission references. Do not use `references/synthetic/shared-cloud-client-permission-groups.md` until environment detection resolves to Shared Cloud.
+
 </grounding_rules>
 
 <tool_usage_rules>
@@ -45,6 +50,8 @@ For customer citations: only cite customers per `docs/internal/accelbyte-custome
 - Read `references/catalogs/modules.md` or `references/catalogs/sdks.md` for fast scans when the user asks "what modules exist?" / "what SDKs exist?".
 - Read `references/catalogs/marketing-to-service.md` whenever the user mixes marketing names (Foundations / Online / Multiplayer / "Identity & Access" / "Wallets & Payments" / etc.) with SDK or spec names (`iam`, `platform`, `lobby`, `social.json`, etc.), or asks which spec backs a given module/feature, or is confused by a filename like `social.json` or `platform.json`.
 - Read `references/ecosystem/<name>.md` when the question is about when to bring in a peer skill / product (Extend / AMS / ADT / Matchmaking / Access).
+- For permission-shaped questions, read `references/security/iam-authorization-preflight.md` before any module or synthetic permission reference. Use `Bash` only for read-only evidence gathering: locating project runtime config, reading AGS base URLs, checking `ags config`, `ags profile`, `ags auth status`, `ags describe`, generated command help, and `ags iam client-config list-permissions --exclude-permissions false --output -`. Do not run `ags auth login`, create, update, delete, grant, revoke, or any other mutation from `ask`.
+- If the user actually wants to **apply** a permission change (add / update / delete a permission on an existing IAM or OAuth client) rather than understand one, scope it with the preflight as usual, then hand off: tell them to run `/ags manage-permissions` to apply it. `ask` explains and scopes; it never mutates.
 - Never read subskill files. Those are for other subskills.
 - Never read peer skill files directly, including `content/skills/ags-extend/`. For deep Matchmaking or AMS questions, route to `capabilities/matchmaking/router.md` or `capabilities/ams/router.md` rather than answering from memory. For ADT operations, hand off to `/adt`.
 
@@ -63,6 +70,7 @@ Match the answer shape to the question shape:
 | Pricing | Point at `https://accelbyte.io/pricing`. Don't quote in-repo bands as authoritative. Mention the calculator. |
 | "How is AGS different from Y?" (EOS / PlayFab / in-house) | Short prose grounded in `references/faq.md`. If a comparison table already exists there, point at it rather than redrawing. |
 | "Can I do X with AGS?" | Yes / no + one sentence. If yes, name the module. If no, name the alternative (Extend / your own backend / out of scope). Maximum two sentences. |
+| Permission-shaped | Authorization preflight block plus a concise recommendation. Include caller, environment evidence, target AGS call, required resource/action, and Shared Cloud group only when Shared Cloud is confirmed. |
 | Compound | Answer each part in the shape that fits it, in the order asked. Don't merge into one sprawling answer. |
 | "Should I add Extend / AMS / ADT?" | Route to `subskills/handoff.md` instead of answering here. |
 
@@ -84,6 +92,7 @@ The response is complete when:
 
 - Every factual claim is traceable to a specific section in the references.
 - Module recommendations name the specific modules; deployment recommendations name a specific model.
+- Permission-shaped answers classify the environment as Shared Cloud, Private Cloud / BYOC, or unknown before choosing group format versus resource/action format.
 - Pricing answers always direct to `https://accelbyte.io/pricing` for current numbers.
 - The answer doesn't volunteer facts the developer didn't ask for.
 - If a clarifying question was asked, you waited for the answer before recommending.
@@ -107,15 +116,22 @@ Do not fabricate a plausible-sounding answer.
 
 1. **Read `references/overview.md`.** Every response, without exception.
 2. **Classify the question** — "what is" / "which module" / "which deployment" / "compare to X" / "can I" / "scope" / "term definition" / "pricing". The classification decides answer shape and supplementary references.
-3. **Conditional reads.** Only what the question needs:
+3. **If permission-shaped, run the authorization preflight.**
+   - Read `references/security/iam-authorization-preflight.md`.
+   - Identify caller type and target AGS API/SDK operation from the user's wording and project files.
+   - Detect environment from project runtime config before CLI defaults. For Godot, read `project.godot`; for Unreal, read `Config/DefaultEngine.ini`; for Unity, read the AccelByte SDK config asset/json if present; for Web/custom apps, read `.env` or app config.
+   - Check AGS CLI profile/config only as read-only supporting evidence. If project config and CLI target disagree, stop and report the mismatch.
+   - Use `ags describe` or generated command help when available to discover the required resource/action. If the environment is Shared Cloud, map that resource through `references/synthetic/shared-cloud-client-permission-groups.md`; otherwise do not use Shared Cloud groups.
+   - If the environment or permission cannot be verified, report the exact evidence gap instead of guessing.
+4. **Conditional reads.** Only what the question needs:
    - Cost / scope / vs.-alternatives → `references/faq.md`.
    - Term definitions → `references/glossary.md`.
    - Module specifics → `references/modules/<name>.md`.
    - "What modules exist?" / "What SDKs exist?" → `references/catalogs/modules.md` / `sdks.md`.
    - "Where does Friends/Wallets/Presence live in the SDK?" / "What does `social.json` actually contain?" / "Which spec backs Wallets & Payments?" → `references/catalogs/marketing-to-service.md`.
    - Should-add-X questions about Extend / AMS / Matchmaking / ADT → handoff to `handoff.md`.
-4. **Disambiguate if needed.** Ask at most one clarifying question. Pick the most decisive axis (game shape, target platforms, current backend stack).
-5. **Answer in the matching template.** Tight; no padding.
+5. **Disambiguate if needed.** Ask at most one clarifying question. Pick the most decisive axis (game shape, target platforms, current backend stack, caller type, or exact AGS operation).
+6. **Answer in the matching template.** Tight; no padding.
 
 ## Ambiguity resolution
 

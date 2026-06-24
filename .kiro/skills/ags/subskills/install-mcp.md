@@ -4,7 +4,7 @@ description: Set up AGS-related MCP entries in the user's AI IDE. Handles the en
   AGS API MCP URL workflow and routes engine SDK MCP requests to engine-specific references.
 allowed-tools: Read Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-25
+last-verified: 2026-06-17
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 - https://prod.gamingservices.accelbyte.io/mcp
@@ -44,7 +44,8 @@ For Game Engine SDK MCP requests:
 - Detect the engine from project files when possible: `.uproject` for Unreal, `Assets/` plus `ProjectSettings/` for Unity, and `project.godot` for Godot.
 - If no engine or multiple engines are detected, ask whether to target Unreal, Unity, or Godot.
 - Unreal SDK MCP setup is documented in `references/sdks/game-engine/unreal/mcp.md`.
-- Unity and Godot SDK MCPs are not supported yet; read their placeholder MCP references and report the unsupported status.
+- Unity MCP setup is documented in `references/sdks/game-engine/unity/mcp.md`.
+- Godot SDK MCP is not supported yet; read its placeholder MCP reference and report the unsupported status.
 - Do not install AccelByteUITools from this generic MCP router. Unreal UI generation and generator install are owned by `/ags generate-ui` and the Unreal UI references.
 
 </grounding_rules>
@@ -144,7 +145,7 @@ The Game Engine SDK MCP path is complete when:
 Determine the requested MCP setup before editing anything:
 
 - If the user asks for AGS API MCP, AGS API URL setup, namespace/studio/private-cloud MCP URL, or a generic `/ags install-mcp` after `connect-portal`, use the AGS API MCP URL workflow.
-- If the user asks for Game Engine SDK MCP, Unreal SDK MCP, Unity SDK MCP, Godot SDK MCP, SDK symbol/snippet lookup, `unreal_sdk`, or engine-specific MCP setup, use the Game Engine SDK MCP router.
+- If the user asks for Game Engine SDK MCP, Unreal SDK MCP, Unity MCP, Godot SDK MCP, SDK symbol/snippet lookup, `unreal_sdk`, or engine-specific MCP setup, use the Game Engine SDK MCP router.
 - If the user asks for Extend SDK MCP, route to `/ags-extend install-mcp`.
 - If the user asks for more than one, handle one at a time and start with AGS API MCP unless a missing engine SDK MCP blocks the current task.
 
@@ -161,9 +162,9 @@ Determine the requested MCP setup before editing anything:
 
 2. Route based on the confirmed engine:
    - Unreal -> read `references/sdks/game-engine/unreal/mcp.md`.
-   - Unity -> read `references/sdks/game-engine/unity/mcp.md`.
+   - Unity -> read `references/sdks/game-engine/unity/mcp.md` and follow its setup flow.
    - Godot -> read `references/sdks/game-engine/godot/mcp.md`.
-3. Follow that reference's result contract. For Unity and Godot, report unsupported and remind the user AGS API MCP remains available.
+3. Follow that reference's result contract. For Godot, report unsupported and remind the user AGS API MCP remains available.
 
 ### AGS API MCP URL Workflow
 
@@ -218,5 +219,5 @@ Print the relevant block from `output_contract`.
 - **Plugin installed but the AGS API MCP entry is gone or renamed** - surface the discrepancy. Do not auto-add a new AGS API MCP entry unless the user asks for that config creation flow.
 - **User-supplied AGS API MCP URL does not match any supported pattern** - explain the supported patterns. If the user insists on a custom URL, apply it only after warning that it may not be a supported AccelByte endpoint.
 - **Reachability check fails** - surface DNS, 5xx, timeout, or unexpected status details.
-- **Unity or Godot SDK MCP requested** - report unsupported using the engine MCP placeholder reference.
+- **Godot SDK MCP requested** - report unsupported using the engine MCP placeholder reference.
 - **User wants the Extend SDK MCP** - route to `/ags-extend install-mcp`.

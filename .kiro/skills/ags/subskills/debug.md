@@ -6,15 +6,17 @@ description: 'Run a game / app locally against AGS and trace integration failure
   whether it''s their code, the SDK, or AGS-side.'
 allowed-tools: Read Bash Glob Edit Write
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[auth-failures.md](../references/debug/auth-failures.md)'
+- '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[lobby-disconnects.md](../references/debug/lobby-disconnects.md)'
 - '[matchmaking-timeouts.md](../references/debug/matchmaking-timeouts.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[doctor.md](doctor.md)'
+- '[manage-permissions.md](manage-permissions.md)'
 - '[observe.md](observe.md)'
 ---
 
@@ -33,6 +35,7 @@ Diagnosis trees trace to:
 - `references/debug/auth-failures.md` for auth issues.
 - `references/debug/lobby-disconnects.md` for lobby connection issues.
 - `references/debug/matchmaking-timeouts.md` for match-formation issues.
+- `references/security/iam-authorization-preflight.md` for caller type, token source, IAM client kind, AGS CLI permission discovery, and missing-permission diagnosis.
 
 Don't fabricate error signatures or make up causes. When something doesn't fit a known signature, say so and escalate (AccelByte support, or `subskills/observe.md` for a deeper look at namespace state).
 
@@ -65,7 +68,7 @@ Edits user code and config. Specifically:
 
 - For each candidate fix, show the diff and confirm with the user before applying.
 - Don't restart / kill long-running processes (game servers, dev servers) without confirmation.
-- If a fix changes IAM client config or `.env`, route to `/ags connect-portal` for the change rather than editing here.
+- If a fix is a permission change on an existing, correctly-typed IAM client, tell the user `/ags manage-permissions` can apply it and route there. If a fix changes the IAM client kind, creates a client, or edits `.env`, route to `/ags connect-portal`. Either way, advise and confirm before changing AGS state.
 
 </action_safety>
 
@@ -125,6 +128,8 @@ Pick a starting reference:
 | Symptom shape | Reference |
 |---|---|
 | Auth errors (401, 403, "invalid_token", login failures) | `references/debug/auth-failures.md` |
+| Permission errors (`forbidden`, `insufficient_permission`, 403 after login) | `references/security/iam-authorization-preflight.md` |
+| Response has `userId` but UI expects display name | `references/security/iam-authorization-preflight.md` first, then the module/API call that should enrich the user display data |
 | Lobby disconnects, WebSocket resets, presence drops | `references/debug/lobby-disconnects.md` |
 | Matchmaking timeouts, no matches forming | `references/debug/matchmaking-timeouts.md` |
 | Store call failures | `references/debug/auth-failures.md` first (most common cause), then look at the call specifically |
@@ -136,6 +141,10 @@ Apply the reference's diagnosis tree to the user's specific symptom. Generate hy
 
 For auth/login failures after SDK install and code integration are complete, classify backend configuration before editing code again. In particular, if login code compiles and runtime login returns HTTP 400 `invalid_request`, check IAM client kind, namespace, and whether the attempted login method is enabled/implemented via AGS CLI read-only discovery. If the backend setting is missing or unclear, route to `/ags connect-portal`; do not keep adding client-side error guards as the main fix.
 
+For permission-shaped failures after login succeeds, run the authorization preflight before editing code. Identify caller type, token source, IAM client type, exact SDK method or REST endpoint, and secondary calls. Use AGS CLI discovery to query the generated command/API permission when exposed. If the client is the right kind but lacks the permission, tell the user you can add it via `/ags manage-permissions` and route there instead of retrying code changes. If the client *kind* is wrong (e.g. a public client doing server-side work), route to `/ags connect-portal`. Don't reflexively add a permission to fix a wrong-client-kind problem.
+
+For leaderboard, ranking, friends, party, or session UI that only shows `userId` when it should show display name, treat the display-name/profile lookup as a separate AGS call. Verify that the code actually performs the lookup and that the caller has permission for that lookup; do not assume leaderboard/query permission also covers profile enrichment.
+
 Common testing patterns:
 
 - **Decode the JWT** — `echo "<token>" | cut -d. -f2 | base64 -d` (Linux) or `base64 -D` (macOS) to see the namespace, scope, exp claims.
@@ -143,6 +152,7 @@ Common testing patterns:
 - **Tail logs** during a reproducer run.
 - **Use the CLI** to confirm namespace / IAM client state matches what the SDK is sending.
 - **Use CLI command discovery** — `ags describe iam`, `ags describe iam clients list`, and generated read-only IAM/login-method queries with `--format json`.
+- **Use CLI permission discovery** — start from the planned AGS service/resource/method, run `ags describe` and generated command help, and capture the required permission when the current CLI exposes it.
 
 ### Step 4: Apply the fix
 
@@ -243,6 +253,7 @@ Skill: Evidence:    No background-foreground reconnect logic.
 ## Error handling
 
 - **Symptom is intermittent / can't reproduce** — route to `subskills/observe.md` to look at namespace-level events; without a reproducer, debugging is observation rather than fix-and-verify.
+- **A permission is missing on an existing, correctly-typed client** — let the user know `/ags manage-permissions` can add or update it, and route there.
 - **Fix exceeds local debug scope** (e.g. an IAM client kind or login method needs to change) — route to `/ags connect-portal`.
 - **AccelByte-side incident suspected** — check AccelByte support channels or the Admin Portal for incident notifications; open a support ticket if confirmed.
 - **User insists the cause is something the diagnosis doesn't support** — surface the inconsistency. Don't apply a fix you can't justify.
