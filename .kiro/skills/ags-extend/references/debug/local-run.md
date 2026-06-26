@@ -17,11 +17,19 @@ How to start each Extend app type locally by language.
 
 ## Default Ports
 
-| App Type | Default Local Port |
+| App Type | Default Local Ports |
 |---|---|
-| Override | 8080 (gRPC) |
-| Event Handler | 8080 (gRPC) |
-| Service Extension | 8080 (gRPC) + 8081 (HTTP gateway) |
+| Override | 6565 (gRPC), 8080 (Prometheus `/metrics`) |
+| Event Handler | 6565 (gRPC), 8080 (Prometheus `/metrics`) |
+| Service Extension | 6565 (gRPC), 8000 (HTTP/REST gateway + Swagger), 8080 (Prometheus `/metrics`) |
+
+These three ports are an Extend platform convention and are the same across all four languages (confirmed in every template's `Dockerfile` `EXPOSE` lines):
+
+- **6565** — the gRPC server ("Plugin Arch gRPC Server Port"). This is where you point `grpcurl`.
+- **8000** — the gRPC-Gateway HTTP server (REST proxy + Swagger UI), **Service Extension only**. This is where you `curl` REST endpoints and open `/apidocs/`. The REST paths sit under the app's base path (set by the `BASE_PATH` env var, e.g. `/guild`).
+- **8080** — the Prometheus `/metrics` endpoint, present on every pattern. **It is not the app's gRPC or REST port** — a common source of "why doesn't my request work on :8080?" confusion.
+
+**Ready signal:** watch the startup stream for the app binding those ports. Exact log wording varies by language and template version, so trust the port binding over a specific string. In the Go templates the relevant lines are `serving prometheus metrics` (`:8080`), `starting gRPC-Gateway HTTP server` (`:8000`, Service Extension), and `app server started`. There is no `gRPC server listening on :8080` line — if you're waiting for that, you'll wait forever.
 
 ## Override
 
@@ -34,10 +42,7 @@ Startup command (from the app directory):
 go run main.go
 ```
 
-Ready signal in logs:
-```
-gRPC server listening on :8080
-```
+Ready: the gRPC server binds `:6565` and the metrics server comes up on `:8080`. Test gRPC with `grpcurl -plaintext localhost:6565 list`.
 
 ### Python
 
@@ -53,10 +58,7 @@ Startup command:
 python main.py
 ```
 
-Ready signal:
-```
-gRPC server listening on [::]:8080
-```
+Ready: the gRPC server binds `[::]:6565`; metrics on `:8080`.
 
 ### Java
 
@@ -67,10 +69,7 @@ Startup command:
 ./gradlew run
 ```
 
-Ready signal:
-```
-Started Application in
-```
+Ready: the gRPC server binds `:6565`; metrics on `:8080`. (Spring Boot also logs a `Started … in` line.)
 
 ### C#
 
@@ -81,18 +80,15 @@ Startup command:
 dotnet run
 ```
 
-Ready signal:
-```
-Now listening on:
-```
+Ready: the gRPC server binds `:6565`; metrics on `:8080`.
 
 ## Event Handler
 
-Same commands as Override per language — the template structure is identical. Uses the same default port (8080).
+Same commands as Override per language — the template structure is identical. Same ports: gRPC on `:6565`, metrics on `:8080`. No HTTP gateway (Event Handlers receive events over gRPC; they don't expose REST).
 
 ## Service Extension
 
-Service Extension runs two servers: a gRPC server and an HTTP gateway (REST proxy).
+Service Extension runs a gRPC server (`:6565`) plus an HTTP gateway (REST proxy + Swagger UI) on `:8000`, and the metrics server on `:8080`.
 
 ### Go
 
@@ -101,17 +97,13 @@ Startup command:
 go run main.go
 ```
 
-Ready signals:
-```
-gRPC server listening on :8080
-HTTP gateway listening on :8081
-```
+Ready: look for `starting gRPC-Gateway HTTP server` (`:8000`), `serving prometheus metrics` (`:8080`), and `app server started`. The gRPC server binds `:6565`.
 
-Use port 8081 for REST calls, port 8080 for direct gRPC.
+Use port `8000` for REST calls (under the base path, e.g. `http://localhost:8000/guild/...`) and Swagger UI (`/apidocs/`); port `6565` for direct gRPC.
 
 ### Python / Java / C#
 
-Same pattern as Go — see the Override section per language. Service Extension templates typically export both ports.
+Same ports as Go — gRPC `:6565`, REST/Swagger gateway `:8000`, metrics `:8080` (confirmed in each template's `Dockerfile`). Startup commands per language follow the Override section. The exact ready-signal log line varies by language; rely on the port bindings.
 
 ## Environment Variables
 

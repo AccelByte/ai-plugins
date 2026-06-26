@@ -6,6 +6,7 @@ sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-lifecycle/
 see-also:
 - '[signal-guide.md](signal-guide.md)'
+- '[grafana-guide.md](grafana-guide.md)'
 - '[cli-commands.md](../deploy/cli-commands.md)'
 ---
 
@@ -47,11 +48,11 @@ See `signal-guide.md` for interpreting log patterns once an app is running.
 
 ## Grafana Cloud (Logs and Metrics)
 
-The CLI does **not** have `logs`, `status`, or `list` subcommands. All log and metric observability is through **Grafana Cloud**, provided by AccelByte as part of the Extend package.
+The CLI does **not** have `logs`, `status`, or `list` subcommands. All log and metric observability is through **Grafana Cloud**, provided by AccelByte as part of the Extend package. For the full walkthrough — access by deployment tier, how Grafana is organized, LogQL filters, and a "find the last error" recipe — see `grafana-guide.md`. The essentials:
 
 ### Access
 
-Open Grafana Cloud from the Extend app's detail page in the Admin Portal → click "Open Grafana Cloud" → sign in with Admin Portal credentials.
+Open Grafana Cloud from the Extend app's detail page in the Admin Portal → click "Open Grafana Cloud" → sign in with "Sign in with Admin Portal" (your Admin Portal credentials over SSO). Access scope differs by tier — Shared Cloud is scoped to your AMS/Extend resources; Private Cloud is unrestricted. See `grafana-guide.md#access`.
 
 ### What's available
 
@@ -59,7 +60,7 @@ Open Grafana Cloud from the Extend app's detail page in the Admin Portal → cli
 
 **Service metrics:** gRPC total requests, requests per status code, request latency, error rates; HTTP total requests, 2xx/4xx/5xx counts, request latency; incoming Kafka events (Event Handler); app creation and deployment duration.
 
-**Logs:** your app's stdout is forwarded to Grafana Cloud automatically. Use the Explore section in Grafana with the `log-<studio>` data source and `namespace: extend-accelbyte-custom-service` label filter.
+**Logs:** your app's stdout is forwarded to Grafana Cloud automatically — but **asynchronously**, so lines lag the app by seconds to a couple of minutes (longer right after a deploy). Use the Explore section in Grafana with the Loki logs data source (`log-<studio>`, or `grafanacloud-logs` in AccelByte's central Grafana), scoped by the `app_name` label. An empty view is usually too-soon or too-narrow a time range, not broken logging — widen and refresh first. See `grafana-guide.md`.
 
 ### Retention
 

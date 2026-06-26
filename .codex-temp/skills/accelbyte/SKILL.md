@@ -19,6 +19,7 @@ Use this as the AccelByte skill-family preflight. Keep it small: route to the ri
 
 - Read the selected AccelByte skill and its selected subskill before acting.
 - Prefer bundled references over memory for product facts, CLI commands, SDK behavior, and setup contracts.
+- When a step fetches a git repository (clone, submodule, or a package manager resolving a git URL) and the naive command fails, follow `references/git.md` — try the command, then authenticate via `gh` or SSH, then a user-provided local copy — before falling back to manual steps.
 - If a live AGS namespace, CLI, MCP server, or project file is required, inspect it directly or state the blocker.
 
 ## Host-Native Progress Tracking

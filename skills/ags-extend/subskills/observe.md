@@ -7,6 +7,7 @@ see-also:
 - '[deploy-cli-commands.md](../references/deploy/cli-commands.md)'
 - '[observe-cli-commands.md](../references/observe/cli-commands.md)'
 - '[signal-guide.md](../references/observe/signal-guide.md)'
+- '[grafana-guide.md](../references/observe/grafana-guide.md)'
 ---
 
 # AGS Extend Observer
@@ -20,6 +21,7 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 - Read `references/deploy/cli-commands.md` and `references/observe/cli-commands.md` before quoting any CLI command, flag, or env var. Do not restate flags from memory — link instead.
 - Read `references/observe/signal-guide.md` for status meanings, log-pattern classification, and common fixes. Do not invent diagnostic advice.
 - The CLI cannot tail logs and cannot list apps. The only observability command is `extend-helper-cli get-app-info` (returns `appStatus`, image tag, etc.). Logs and metrics live in Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud).
+- Read `references/observe/grafana-guide.md` before coaching the user on opening Grafana, finding logs, or writing a log query. Logs are forwarded to Grafana **asynchronously** — an empty log view right after a deploy or a request is almost always ingestion lag (or too-narrow a time range / wrong filter), not broken logging. Never tell a user their logging is broken until they've widened the time range, confirmed lines still aren't arriving, and ruled out no-traffic.
 - Distinguish carefully between `Deploying`, `Degraded`, `Stopped`, and `Failed` — they imply different next actions. The signal guide has the mapping.
 
 </grounding_rules>
@@ -82,7 +84,7 @@ The CLI cannot enumerate apps, so there is no multi-app list shape. If the user 
 
 <user_updates_spec>
 
-There is no live log stream from the CLI. If the user asks to "follow" or "tail" logs, point them at Grafana Cloud Explore (Admin Portal → app detail → Open Grafana Cloud → Explore with `log-<studio>` data source and `namespace: extend-accelbyte-custom-service` label). Grafana itself supports live-tail. See `references/observe/cli-commands.md`.
+There is no live log stream from the CLI. If the user asks to "follow" or "tail" logs, point them at Grafana Cloud Explore (Admin Portal → app detail → Open Grafana Cloud → Explore with the Loki logs data source, scoped by the `app_name` label). Grafana itself supports live-tail. Note: ingestion is asynchronous, so a freshly-deployed app's stream can start empty — have them wait 60–120s and widen the time range before concluding nothing is flowing. See `references/observe/grafana-guide.md`.
 
 </user_updates_spec>
 
@@ -92,7 +94,7 @@ Several "empty" cases to handle explicitly, not silently:
 
 - **`get-app-info` returns "app not found"** → the app named in the invocation isn't registered in the namespace. Say: "`{name}` is not deployed to `{namespace}` (or the name doesn't match). Verify in the Admin Portal, or run `/ags-extend deploy` to push it."
 - **App dir exists locally but `get-app-info` returns 404** → it was never deployed or was removed. Say: "`{name}` exists in your repo but isn't deployed to `{namespace}`. Run `/ags-extend deploy` to push it."
-- **Grafana Cloud shows no logs for a Running app** → "App is running with no recent logs. Either no traffic, or logging isn't wired up. Check the app's logger config or trigger a call." (User must look in Grafana themselves.)
+- **Grafana Cloud shows no logs for a Running app** → rule out the cheap causes first, in order: (1) **ingestion lag** — logs arrive seconds-to-minutes late, so wait ~60–120s and refresh; (2) **time range too narrow** — widen the Explore time picker; (3) **filter doesn't match** — check available labels in Grafana's label browser; (4) **no traffic** — trigger a call to the app; (5) only then suspect the app's logger config. See `references/observe/grafana-guide.md`. Do not tell the user their logging is broken before (1)–(4) are ruled out.
 - **`get-app-info` returns zero or unexpected fields** → CLI version mismatch or transient API issue. Show the raw output and suggest retrying.
 
 </empty_result_recovery>
@@ -151,12 +153,20 @@ The CLI cannot tail logs. Direct the user to Grafana Cloud:
 ```
 Logs and metrics for {app-name} live in Grafana Cloud:
   1. Open the Admin Portal → Extend → app detail → "Open Grafana Cloud".
-  2. Sign in with Admin Portal credentials.
-  3. Explore section → log-<studio> data source.
-  4. Filter by `namespace: extend-accelbyte-custom-service` and your app name.
+  2. Sign in with "Sign in with Admin Portal" (your Admin Portal credentials).
+  3. Explore section → the Loki logs data source (log-<studio>, or grafanacloud-logs).
+  4. Filter by the app_name label (your app's registered name).
+  5. Set the time range to Last 30 minutes (widen it if you just deployed).
+
+Heads-up: logs are ingested asynchronously — they show up seconds to a
+couple of minutes after the app emits them, longer right after a deploy.
+If the view is empty, widen the time range and refresh before assuming
+anything is broken.
 
 Retention: logs 30 days, metrics 13 months. See references/observe/cli-commands.md.
 ```
+
+For the full walkthrough — access by deployment tier (Shared vs Private Cloud), how Grafana is organized, LogQL filters, and a "find the last error in the last 30 minutes" recipe — read `references/observe/grafana-guide.md` and walk the user through the relevant steps inline. Don't tell them to open the reference file; relay the steps.
 
 If the user pastes log lines from Grafana into the chat, scan them against `references/observe/signal-guide.md`:
 
@@ -234,8 +244,8 @@ Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod). Reading .env�
          Likely cause:        —
          Suggested next step: For continuous visibility, open Grafana Cloud
                               Explore (Admin Portal → app detail →
-                              "Open Grafana Cloud") and live-tail the
-                              extend-accelbyte-custom-service namespace.
+                              "Open Grafana Cloud") and live-tail filtered
+                              by app_name="matchmaking-override".
 ```
 
 ### User pasted Grafana log lines suggesting a panic

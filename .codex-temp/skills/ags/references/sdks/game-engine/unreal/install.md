@@ -2,7 +2,7 @@
 description: Install or scaffold the AGS Unreal plugin set in an Unreal Engine project.
   Defaults to OnlineSubsystemAccelByte plus AccelByteUe4Sdk and AccelByteNetworkUtilities,
   with pinned official sources and OSS identity verification.
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
 - https://docs.accelbyte.io/gaming-services/tutorials/byte-wars/unreal-engine/learning-modules/general/module-initial-setup/unreal-module-initial-setup-install-the-accelbyte-game-sdk/
@@ -58,6 +58,7 @@ Before installing:
 - Never copy plugins from arbitrary local checkouts or another workspace.
 - Never search whole local drives (`D:\`, `E:\`, home directories, engine source trees, or other workspaces) for missing AccelByte plugin directories. A missing `Plugins/AccelByte/*` directory or a missing `.uproject` plugin dependency means "install from official source", not "discover a local copy".
 - If network access is restricted, ask for permission to run the official `git submodule add`, `git clone`, or release download command. Do not replace the network install with local-drive discovery.
+- If a `git submodule add` or `git clone` fails to authenticate against a private or invite-only plugin repo, authenticate via `gh` or an SSH key and retry. A private repo reports this as `Repository not found` — that is an access problem, not a missing repo, a wrong URL, or a cue to search local drives. This plugin install keeps its no-local-copy rule: if access still can't be established, the last resort is a user-confirmed official release archive at a pinned version, not an arbitrary local copy. The AccelByte preflight's git-acquisition guidance covers the full ladder.
 - Show config/code diffs before applying project edits.
 
 </action_safety>
@@ -113,6 +114,8 @@ For exact commits, clone the official repo, then check out the confirmed commit 
 If Git is unavailable or the user explicitly chooses a manual plugin workflow, download official GitHub release/source archives with an available platform tool (`curl`, `wget`, or PowerShell `Invoke-WebRequest`), extract each archive into the matching `Plugins/AccelByte/<PluginName>` directory, and record the pinned archive URL or tag.
 
 If any install command requires network access and the environment blocks it, request approval for that official command. The fallback is a user-confirmed official release archive, not a recursive local filesystem search.
+
+If a submodule/clone fails to authenticate (the repo is private or invite-only), authenticate with `gh` (it bootstraps git's credentials, so `git submodule add` then works) or SSH, then retry the same command. Do not switch to a different repo URL or search local drives. The AccelByte preflight's git-acquisition guidance has the full ladder, including installing `gh`.
 
 ### Step 4: Configure
 

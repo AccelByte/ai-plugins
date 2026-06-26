@@ -1,7 +1,7 @@
 ---
 description: Set up the AccelByte Unity MCP for Unity-specific AGS UI prefab generation
   and future Unity SDK integration tooling.
-last-verified: 2026-06-17
+last-verified: 2026-06-24
 sources:
 - https://github.com/AccelByte/accelbyte-unity-sdk
 see-also:
@@ -20,6 +20,7 @@ alongside it for live namespace and service context.
 
 - The published MCP declaration is `content/mcps/unity-mcp.yaml`.
 - For Codex, prefer a project-local `.codex/mcp/accelbyte-unity-mcp` clone.
+- If the MCP server `git clone` or a UPM Git-URL resolve fails, authenticate (via `gh` or SSH) and retry before giving up — see the AccelByte preflight's git-acquisition guidance for the full ladder.
 - Install `com.accelbyte.ui-tools` via Unity Package Manager by adding it to `Packages/manifest.json` before generating UI (see workflow below).
 - The Unity UI package uses component specs under `Specs/Components/ags/` as the production source of truth for package-owned AGS kit prefabs.
 - Use `unity_ui_kit_inspect` to check kit/spec drift before rebuilding or generating from manually edited package prefabs.

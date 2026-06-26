@@ -19,9 +19,9 @@ An Override app intercepts gRPC calls from AGS. To test locally, you need to eit
 **Option A: Use the AGS Test Environment**
 
 Configure your AGS namespace to route override calls to your local machine. This requires:
-1. A tunnel tool like `ngrok` to expose localhost to the internet:
+1. A tunnel tool like `ngrok` to expose localhost to the internet (the gRPC server is on `:6565`):
    ```bash
-   ngrok tcp 8080
+   ngrok tcp 6565
    ```
 2. Register the forwarding address in the Admin Portal under your Override app settings.
 
@@ -36,12 +36,12 @@ brew install grpcurl
 
 List available RPC methods:
 ```bash
-grpcurl -plaintext localhost:8080 list
+grpcurl -plaintext localhost:6565 list
 ```
 
 Call a method:
 ```bash
-grpcurl -plaintext -d '{"input": "value"}' localhost:8080 {ServiceName}/{MethodName}
+grpcurl -plaintext -d '{"input": "value"}' localhost:6565 {ServiceName}/{MethodName}
 ```
 
 Use the proto files in the app directory to find the service and method names.
@@ -84,7 +84,7 @@ curl -X POST http://localhost:8000/{base_path}/{your-endpoint} \
   -d '{"key": "value"}'
 ```
 
-> **Note:** Ports vary by template and configuration. Check the `docker-compose.yaml` in your app directory for the actual port mappings. When running without Docker, the raw gRPC server port may differ (e.g. 6565 for Go).
+> **Note:** The standard Extend ports are `6565` (gRPC), `8000` (HTTP/REST gateway + Swagger, Service Extension only), and `8080` (Prometheus `/metrics`) — the same whether or not you run under Docker. Confirm against the `docker-compose.yaml` / `Dockerfile` in your app directory if in doubt. So `{grpc_port}` below is `6565`.
 
 **gRPC (direct):**
 
@@ -99,7 +99,7 @@ Check the app's proto files or Swagger spec (if generated) for available endpoin
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| `bind: address already in use` | Port 8080 or 8081 is occupied | `lsof -i :8080` to find the process, then kill it |
+| `bind: address already in use` | Port 6565 (gRPC), 8000 (gateway), or 8080 (metrics) is occupied | `lsof -i :6565` (or `:8000` / `:8080`) to find the process, then kill it |
 | `no such file or directory: main.go` | Running from wrong directory | `cd` into the app directory |
 | `connection refused` (when calling gRPC) | Server not yet ready | Wait a moment and retry; check logs for the ready signal |
 | `proto: not found` | Proto files not generated | Run `make proto` or the proto generation step in the app README |

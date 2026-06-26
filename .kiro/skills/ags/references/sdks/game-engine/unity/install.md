@@ -1,7 +1,7 @@
 ---
 description: Install or scaffold the AGS Unity SDK packages in a Unity project. Uses
   Unity Package Manager Git URLs for accelbyte-unity-sdk and, when needed, accelbyte-unity-networking.
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://github.com/AccelByte/accelbyte-unity-sdk
 - https://github.com/AccelByte/accelbyte-unity-networking
@@ -41,6 +41,7 @@ Before installing:
 
 - Confirm package versions or tags before editing `Packages/manifest.json`.
 - Prefer UPM Git URL dependencies from official AccelByte repos.
+- If Unity Package Manager fails to resolve a Git URL because the repo is private or invite-only, authenticate rather than copy locally. UPM resolves through the system `git`, so authenticating with `gh` (which configures git's credential helper) or adding an SSH key and using the SSH-form URL lets the same manifest entry resolve. The AccelByte preflight's git-acquisition guidance covers the full ladder.
 - Do not copy package directories from arbitrary local checkouts or another workspace.
 - Show the manifest/config diff before applying edits.
 

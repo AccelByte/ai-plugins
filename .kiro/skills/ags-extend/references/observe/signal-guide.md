@@ -4,6 +4,7 @@ sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
 - '[cli-commands.md](cli-commands.md)'
+- '[grafana-guide.md](grafana-guide.md)'
 - '[slo.md](../production/slo.md)'
 ---
 
@@ -23,14 +24,15 @@ How to interpret app statuses and log patterns from deployed Extend apps.
 
 ## Healthy Log Signals
 
-These lines indicate the app started successfully and is ready to serve:
+These lines indicate the app started successfully. Exact wording varies by language and template version — anchor on the **ports** (gRPC `:6565`, Prometheus metrics `:8080`, HTTP/REST gateway `:8000` for Service Extension), not a specific string. The Go templates emit:
 
-| Pattern | App Type | Meaning |
+| Log pattern (Go) | App Type | Meaning |
 |---|---|---|
-| `gRPC server listening on :8080` | Override, Event Handler | Server is up |
-| `HTTP gateway listening on :8081` | Service Extension | REST gateway is up |
-| `serving requests` | Any | App is handling traffic |
-| `connected to AGS` | Any | Successfully authenticated with AGS |
+| `serving prometheus metrics` (`:8080`) | Any | Metrics server up — app reached startup |
+| `starting gRPC-Gateway HTTP server` (`:8000`) | Service Extension | REST / Swagger gateway up |
+| `app server started` | Any | Initialization finished |
+
+There is **no** `gRPC server listening on :8080` line. The gRPC server binds `:6565`; `:8080` is the metrics endpoint. Don't wait on a "listening on :8080" string — it never prints.
 
 ## Warning Signals
 
@@ -69,7 +71,8 @@ Ignore `runtime/` and `google.golang.org/grpc/` lines — focus on your own pack
 
 If the app shows `error` (Portal: "Degraded") but logs look clean:
 
-1. Open Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud) and expand the time range or increase the line limit in Explore to see more log output
-2. Check if the health check endpoint is failing — the app may be alive but not responding on the expected port
-3. Check the app's status and recent state with `extend-helper-cli get-app-info --namespace {ns} --app {app}` — `OOMKilled` may not always appear in app logs (see `references/observe/cli-commands.md`)
-4. If still unclear, redeploy with `/ags-extend deploy` and monitor the fresh startup
+1. **Rule out "the logs just aren't there yet."** Logs are ingested into Grafana asynchronously — they lag the app by seconds to a couple of minutes, longer right after a deploy. Widen the Explore time range and refresh before trusting an empty or clean view. See `grafana-guide.md`.
+2. Open Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud) and expand the time range or increase the line limit in Explore to see more log output
+3. Check if the health check endpoint is failing — the app may be alive but not responding on the expected port
+4. Check the app's status and recent state with `extend-helper-cli get-app-info --namespace {ns} --app {app}` — `OOMKilled` may not always appear in app logs (see `references/observe/cli-commands.md`)
+5. If still unclear, redeploy with `/ags-extend deploy` and monitor the fresh startup

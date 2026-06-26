@@ -5,6 +5,7 @@ sources:
 see-also:
 - '[signal-guide.md](../references/observe/signal-guide.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
+- '[grafana-guide.md](../references/observe/grafana-guide.md)'
 - '[common-errors.md](../references/deploy/common-errors.md)'
 ---
 
@@ -21,7 +22,8 @@ Read-only diagnosis for an Extend app that's misbehaving. Ingests the developer'
 - Read `references/deploy/common-errors.md` for deploy-time failure modes.
 - Read `references/debug/local-run.md` for local startup failure modes.
 - Read `references/overview.md` for architecture-level limits (replica ceiling, override latency, request size, retention).
-- Do not invent log patterns, error codes, or causes not listed in those references. If the symptom doesn't map to anything documented, say so and point the developer at Grafana Cloud Explore (logs are NOT in the CLI — see `references/observe/cli-commands.md`) plus AccelByte support.
+- Read `references/observe/grafana-guide.md` for any symptom about *log access itself* — "can't find the logs", "the logs link doesn't work", "Grafana is empty", "no logs showing", or "works locally but I can't see why it fails when deployed". Logs are ingested into Grafana **asynchronously**: an empty view is usually ingestion lag or a too-narrow time range, not broken logging. Surface that before sending the developer down a misconfiguration hunt.
+- Do not invent log patterns, error codes, or causes not listed in those references. If the symptom doesn't map to anything documented, say so and point the developer at Grafana Cloud Explore (logs are NOT in the CLI — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`) plus AccelByte support.
 
 </grounding_rules>
 
@@ -86,7 +88,8 @@ Match the developer's description to a symptom category:
 | App status is `Failed` / `Stopped` | "won't start", "crashed", "keeps restarting" | `signal-guide.md#error-signals` + `common-errors.md` |
 | App is `Running` but wrong | "slow", "timeouts", "users complaining", "works intermittently" | `signal-guide.md#warning-signals` + `overview.md#infrastructure` (latency, replica ceiling) |
 | App fails to deploy | "deploy stuck", "deploy failed", "image push failed" | `common-errors.md` + `faq.md#deployment-and-updates` |
-| Local works, prod doesn't | "works on my machine", "fine in dev, broken in prod" | `faq.md#local-vs-production-gotchas` |
+| Can't see / access the logs | "can't find the logs", "logs link doesn't work", "Grafana is empty", "no logs showing", "how do I read the deployed logs" | `grafana-guide.md` (ingestion lag → time range → filter → no-traffic → misconfig, in that order) |
+| Local works, prod doesn't | "works on my machine", "fine in dev, broken in prod" | `faq.md#local-vs-production-gotchas` + `grafana-guide.md` (to actually reach the deployed logs for comparison) |
 | Events not arriving | "event handler not triggering", "handler not called" | `faq.md#events-fire-locally-but-not-in-production` + `signal-guide.md` |
 | Override not called | "override registered but nothing happens" | `faq.md#override-works-in-dev-but-isnt-being-called-in-production` |
 | Authentication errors | "401", "unauthorized", "token failed" | `signal-guide.md#warning-signals` token refresh entry; `faq.md#credentials-and-permissions` |
@@ -196,6 +199,53 @@ Local run succeeds and serves requests. Deploy succeeds. Production endpoint ret
 
 ## Next step
 Pull logs from Grafana Cloud Explore (Admin Portal → app detail → Open Grafana Cloud — see `references/observe/cli-commands.md`). If you see `permission denied` or `token refresh failed`, it's causes 1–2. If you see DB connection errors, it's cause 3.
+```
+
+### Works locally, can't see deployed logs
+
+```
+User: /ags-extend doctor
+  My Service Extension works fine locally but not on shared cloud, and I
+  can't figure out why — getting at the logs is painful, the Grafana view
+  is empty.
+
+Skill: [reads grafana-guide.md and faq.md#local-vs-production-gotchas]
+
+## Symptoms
+App behaves correctly in local run but misbehaves once deployed to a Shared
+Cloud namespace. Developer is blocked upstream of diagnosis: the deployed
+logs appear empty in Grafana, so there's nothing to compare against local.
+
+## Likely causes
+
+1. **Logs haven't been ingested yet / time range too narrow** (high)
+   Evidence: Grafana ingestion is asynchronous (grafana-guide.md) — an empty
+   view right after a deploy or a request is far more often lag or a narrow
+   Explore window than missing logs.
+   Check: In Grafana Explore, select the Loki logs data source, set the
+   time range to Last 30 minutes (wider if you just deployed), query
+   `{app_name="<your-app-name>"}` and confirm ANY lines arrive before
+   adding an error filter.
+
+2. **Credential / config drift between local .env and the deployed app** (high)
+   Evidence: classic local-vs-prod pattern (faq.md#local-test-works-production-fails-immediately).
+   The deployed process does NOT read your local .env — it reads what
+   update-var / Admin Portal set.
+   Check: once logs are visible, look for `token refresh failed`,
+   `permission denied`, or DB connection errors and map them via signal-guide.md.
+
+## Next step
+Get the logs visible first — that unblocks everything else. Open Grafana
+Cloud (Admin Portal → app detail → Open Grafana Cloud), go to Explore → the
+Loki logs data source, set the range to Last 30 minutes (wider if you
+just deployed), and run
+`{app_name="<your-app-name>"} |~ "(?i)error|panic|fatal|traceback|exception"`.
+Read the newest matching line, then re-run /ags-extend doctor (or
+/ags-extend observe) with it and I'll map it to a cause.
+
+If this doesn't resolve it or you need help interpreting the output, contact
+AccelByte support with your namespace, app name, symptom description, and the
+relevant log lines.
 ```
 
 ### No match

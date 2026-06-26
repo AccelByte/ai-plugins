@@ -125,12 +125,15 @@ Expect silence — a successful build prints nothing. If you get errors, read th
 go run main.go
 ```
 
-You should see log lines ending with something like:
+You should see log lines like:
 
 ```
-gRPC server listening on :8080
-HTTP gateway listening on :8081
+starting gRPC-Gateway HTTP server   port=8000
+serving prometheus metrics          port=8080
+app server started
 ```
+
+The gRPC server itself binds `:6565`, the REST gateway + Swagger UI are on `:8000`, and `:8080` is the Prometheus metrics endpoint. (There's no "listening on :8080" line — that port is metrics, not your service.)
 
 Leave this terminal running. Open a second terminal.
 
@@ -140,13 +143,13 @@ If startup fails immediately with a credential error, your `.env` has garbage th
 
 ## Step 7 — Hit it with curl
 
-The template ships with at least one example REST endpoint. Check `proto/*.proto` for the HTTP annotations, or the README for example curls. A typical starter endpoint looks like:
+The template ships with at least one example REST endpoint, served by the gRPC-Gateway on port `8000` under the app's base path (the `BASE_PATH` env var — the guild template uses `/guild`). The easiest way to find the real endpoints is the Swagger UI at `http://localhost:8000/guild/apidocs/`. To curl one directly it looks like:
 
 ```bash
-curl -s -X GET http://localhost:8081/v1/example | jq
+curl -s -X GET http://localhost:8000/guild/v1/... | jq
 ```
 
-Expected: a JSON response (possibly `{"message":"hello"}` or similar — depends on the template's example handler).
+Expected: a JSON response (shape depends on the template's example handler).
 
 **If that curl works, your first app is alive.** That's the finish line for this tutorial.
 
@@ -215,7 +218,7 @@ For anything confusing along the way, `/ags-extend ask` for concept questions an
 ## Common first-timer snags
 
 - **`go run` errors "no Go files"** — you're not in the app directory. Check `pwd`; you should see `main.go` in the current directory.
-- **Ports 8080/8081 already in use** — some other server is running locally. Kill it (`lsof -iTCP:8080 -sTCP:LISTEN`) or set alternate ports if the template supports it.
+- **Ports 6565 / 8000 / 8080 already in use** — some other server is running locally. Find it (`lsof -iTCP:6565 -sTCP:LISTEN`) and kill it, or set alternate ports if the template supports it.
 - **"Reading env: file not found"** — you didn't create `.env` from `.env.template`. See Step 3.
-- **Everything seems fine but no endpoints respond** — you're curling the gRPC port (8080) instead of the HTTP gateway port (8081). Service Extension REST lives on 8081.
+- **Everything seems fine but no endpoints respond** — you're curling the wrong port. Service Extension REST lives on `8000` (under the base path); `6565` is raw gRPC and `8080` is the Prometheus metrics endpoint, neither of which serves your REST routes.
 - **Template is a different pattern than you wanted** — the template you cloned is the pattern you get. For Override, `extend-override-go`; for Event Handler, `extend-event-handler-go`. Service Extension is the recommended starter because it doesn't need AGS round-tripping to verify.

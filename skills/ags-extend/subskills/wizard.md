@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte
@@ -52,6 +52,7 @@ Never offer an integration whose slug isn't compatible with the chosen pattern. 
 <tool_usage_rules>
 
 - Use `Bash` for `git clone` and any shell steps inside patch files.
+- The template repos are public, so the clone-failure rows in **Error Handling** apply first. For the general repo-acquisition ladder — authentication on other hosts, or a user-provided local copy when a clone can't be reached — see the AccelByte preflight's git-acquisition guidance.
 - Use `Read` to load the templates reference, patch files, and anything the patch instructs you to read first.
 - Use `Edit` and `Write` for file modifications — always read a file before editing it. Never overwrite a file you haven't read.
 - Use `Glob` to locate files inside the cloned template when a patch step references a path that isn't exact.

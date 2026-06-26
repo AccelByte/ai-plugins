@@ -1,7 +1,7 @@
 ---
 description: Set up the AccelByte Unreal SDK MCP Server for Unreal SDK symbols, snippets,
   and Unreal-specific AGS tooling.
-last-verified: 2026-05-25
+last-verified: 2026-06-24
 sources:
 - https://github.com/AccelByte/unreal-sdk-mcp-server
 see-also:
@@ -18,6 +18,7 @@ The AccelByte Unreal SDK MCP Server provides Unreal SDK lookup, SDK symbols, sni
 - The published MCP declaration is `content/mcps/unreal-sdk.yaml`.
 - For Codex, prefer a project-local `.codex/mcp/unreal-sdk-mcp-server` clone when present.
 - For other IDEs, discover the Unreal SDK MCP checkout/cache from the IDE's MCP status, configured command, or targeted cache search.
+- If the MCP server `git clone` fails, authenticate (via `gh` or SSH) and retry before giving up — see the AccelByte preflight's git-acquisition guidance for the full ladder.
 - This reference covers Unreal SDK MCP setup only.
 
 ## Workflow

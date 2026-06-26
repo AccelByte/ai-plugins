@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 - https://github.com/AccelByte/accelbyte-unity-sdk
@@ -46,7 +46,7 @@ Default to pinned UPM Git URLs in `Packages/manifest.json`:
 }
 ```
 
-Only add `com.accelbyte.unitynetworking` when the project needs it or the user requests the full Unity networking setup. Pin tags, branches, or commits compatible with the project's Unity version. Do not copy package directories from arbitrary local checkouts.
+Only add `com.accelbyte.unitynetworking` when the project needs it or the user requests the full Unity networking setup. Pin tags, branches, or commits compatible with the project's Unity version. Do not copy package directories from arbitrary local checkouts. If UPM cannot resolve a Git URL because the repo is private or invite-only, authenticate rather than substituting a local copy — UPM uses the system `git`, so `gh` or an SSH key unblocks the same URL (see the AccelByte preflight's git-acquisition guidance).
 
 ## Common gotchas
 

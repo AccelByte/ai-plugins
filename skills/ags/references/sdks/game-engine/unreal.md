@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
@@ -60,7 +60,7 @@ After adding the submodules, check out tags or branches compatible with the proj
 
 For non-Git projects, use pinned `git clone` installs into `Plugins/AccelByte/<PluginName>`. Manual release/source archives are the fallback when Git is unavailable or the team uses Marketplace/manual plugin workflows. Do not copy plugin directories from arbitrary local checkouts or another workspace; that is not reproducible and hides the source version.
 
-Do not search whole local drives or engine source trees for `AccelByteUe4Sdk`, `OnlineSubsystemAccelByte`, or `AccelByteNetworkUtilities` when a project plugin is missing. A missing plugin directory under the target project's `Plugins/AccelByte/` path should be fixed by installing from the official repos or a user-confirmed official release archive. If the environment blocks Git/network access, ask for permission to run the official install command instead of substituting a local copy.
+Do not search whole local drives or engine source trees for `AccelByteUe4Sdk`, `OnlineSubsystemAccelByte`, or `AccelByteNetworkUtilities` when a project plugin is missing. A missing plugin directory under the target project's `Plugins/AccelByte/` path should be fixed by installing from the official repos or a user-confirmed official release archive. If the environment blocks Git/network access, ask for permission to run the official install command instead of substituting a local copy. If the install command itself fails to authenticate against a private or invite-only repo (reported as `Repository not found`), that is an access problem — authenticate via `gh` or SSH and retry (see the AccelByte preflight's git-acquisition guidance), not a cue to search for a local copy.
 
 Enable all three plugins in the `.uproject`, add the modules to the relevant target/build files when required by the current docs, regenerate project files, and compile.
 

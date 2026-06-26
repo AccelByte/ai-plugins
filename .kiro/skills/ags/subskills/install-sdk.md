@@ -4,7 +4,7 @@ description: Detect the target engine/runtime and install the matching AGS SDK. 
   Unreal, Unity, Godot, Roblox, the TypeScript Web SDK, and custom-engine REST fallback.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -47,6 +47,7 @@ Do not fabricate version compatibility, package names, repository tags, config k
 - `Glob` to detect engine/runtime.
 - `Read` references and existing project config.
 - `Bash` for SDK install commands (`git submodule add`, `git clone`, `npm install`, etc.) **after explicit user confirmation**.
+- If a `git clone`, `git submodule add`, or package-manager git fetch fails to authenticate, treat it as an access problem, not a wrong URL: a private or invite-only SDK repo reports this as `Repository not found`, not access-denied. Authenticate via `gh` (it configures git's credential helper, so submodule/UPM fetches then work) or an SSH key, then retry the same command. Do not search local drives. If access still can't be established, follow the per-engine reference's pinned fallback — for the Unreal/Unity plugin sets that means a user-confirmed official release archive, not an arbitrary local copy. The AccelByte preflight's git-acquisition guidance has the full ladder, including installing `gh`.
 - `Write` / `Edit` for project-side config after showing the planned diff.
 - Do not read other subskills to perform SDK installation. References own engine-specific details.
 

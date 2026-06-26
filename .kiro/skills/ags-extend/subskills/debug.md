@@ -41,7 +41,7 @@ Before starting the server, verify:
 3. For Go apps: `go.sum` exists, meaning dependencies have been fetched. If not, direct the user to `/ags-extend install-dep`.
 4. For Python/Java/C#: equivalent signals (`__pycache__` or `.venv` for Python, `build/` or `target/` for Java, `bin/` or `obj/` for C#).
 5. The app's `.env` file exists. If not, check for `.env.template` and offer to copy it.
-6. The default port (usually 8080, plus 8081 for Service Extension) isn't already in use.
+6. The default ports aren't already in use: `6565` (gRPC) and `8080` (Prometheus metrics) for every pattern, plus `8000` (HTTP/REST gateway) for Service Extension.
 7. Docker is running if the app uses integrations that bring up sidecars (mongodb container, kafka container) via `docker-compose`.
 
 </dependency_checks>
@@ -117,10 +117,11 @@ Run checks in parallel:
 docker --version 2>&1
 docker info 2>/dev/null | grep "Server Version"
 
-# Port occupation
+# Port occupation (gRPC + metrics, every pattern)
+lsof -i :6565 2>/dev/null | head -2
 lsof -i :8080 2>/dev/null | head -2
-# For Service Extension only, also:
-lsof -i :8081 2>/dev/null | head -2
+# For Service Extension only, also the REST gateway:
+lsof -i :8000 2>/dev/null | head -2
 
 # .env sanity
 ls {app-path}/.env 2>/dev/null
@@ -134,7 +135,7 @@ Report:
 Prerequisites for matchmaking-override (override, go):
   ✓ go 1.22.0
   ✓ docker running                (skip if no docker-compose.yaml)
-  ✓ port 8080 free
+  ✓ ports 6565, 8080 free
   ✓ .env found
   ⚠ AB_BASE_URL = "<fill in>"     — set this to your AGS base URL, or calls to AGS will fail
   ⚠ AB_NAMESPACE = ""
@@ -143,7 +144,7 @@ Prerequisites for matchmaking-override (override, go):
 If the runtime is missing or at wrong version, stop — direct to `/ags-extend install-dep` or to the language's install URL. If the port is taken, show the occupier:
 
 ```
-✗ port 8080 is in use
+✗ port 6565 is in use
   PID  1234 — process: go-build-dev (started 14:02)
   kill it with: kill 1234
 ```
@@ -159,7 +160,7 @@ Ready to start matchmaking-override locally.
 
   Working dir: ./matchmaking-override
   Command:     go run main.go
-  Port:        8080 (gRPC)
+  Ports:       6565 (gRPC), 8080 (metrics)
 
 To connect this to real AGS traffic, tunnel the port with ngrok and register
 the endpoint in the Admin Portal — see the "Option A" flow in
@@ -168,7 +169,7 @@ references/debug/test-guide.md. Otherwise use grpcurl locally (Option B).
 Start now? (yes/no)
 ```
 
-Service Extension is two ports — mention both (`8080 gRPC + 8081 REST gateway`).
+Service Extension adds the REST gateway — mention all three (`6565 gRPC + 8000 REST gateway + 8080 metrics`).
 
 Do not start until yes.
 
@@ -176,7 +177,7 @@ Do not start until yes.
 
 Launch the command as a foreground process streaming output.
 
-Watch stdout for the ready signal from `references/debug/local-run.md` (e.g. `gRPC server listening on :8080`). Once seen, print:
+Watch stdout for the ready signal from `references/debug/local-run.md` (the app binding gRPC on `:6565` and metrics on `:8080`; Service Extension also logs the gateway on `:8000` — exact wording varies by language). Once seen, print:
 
 ```
 {app-name} is up on localhost:{port}.
@@ -200,7 +201,7 @@ Last 30 lines:
   …
 
 Likely causes:
-  • bind: address already in use → another process grabbed port 8080 after the pre-check
+  • bind: address already in use → another process grabbed port 6565 (or 8000 / 8080) after the pre-check
   • missing env var → check the error above against the required vars in references/debug/local-run.md
   • proto: not found → run `make proto` in the app directory
   • missing dependency → run /ags-extend install-dep
@@ -228,7 +229,7 @@ What next?
 | `go.sum` missing (or equivalent for other languages) | Deps never installed. Direct to `/ags-extend install-dep`. |
 | `.env` missing but `.env.template` exists | Offer: "Run `cp .env.template .env`? (yes/no)". Do not edit either file beyond that copy. |
 | `.env` missing and `.env.template` missing | Surface the issue — the app was scaffolded oddly or the template changed. Tell the user to check the template README. |
-| Port 8080 (or 8081) in use | Show the occupier (PID, process name) and how to kill it. Offer to retry after they kill it. |
+| Port 6565 / 8000 / 8080 in use | Show the occupier (PID, process name) and how to kill it. Offer to retry after they kill it. |
 | Process starts but never prints the ready signal | After ~30s, print: "No ready signal yet. Is the app hitting a startup blocker? Check logs above for errors." Let the user decide to wait longer or stop. |
 | App crashes with `panic:` | Print last 30 lines. Do not try to fix the code. Suggest reading the stack trace from top to find the line in their package. |
 | App logs `SIGSEGV` or immediate container crash | Same as above — stop and surface the raw log. These are usually runtime mismatches or corrupted binary. |
@@ -248,28 +249,28 @@ Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod).
 
        Prerequisites for matchmaking-override (go):
          ✓ go 1.22.0
-         ✓ port 8080 free
+         ✓ ports 6565, 8080 free
          ✓ .env found, AB_BASE_URL set, AB_NAMESPACE set
 
        Ready to start matchmaking-override locally.
          Working dir: ./matchmaking-override
          Command:     go run main.go
-         Port:        8080 (gRPC)
+         Ports:       6565 (gRPC), 8080 (metrics)
        Start now? (yes/no)
 
 User: yes
 
 Skill: [launches]
-       2026-04-18T10:22:01 initializing services
-       2026-04-18T10:22:02 gRPC server listening on :8080
+       2026-04-18T10:22:01 serving prometheus metrics  port=8080
+       2026-04-18T10:22:02 app server started
 
-       matchmaking-override is up on localhost:8080.
+       matchmaking-override is up — gRPC on localhost:6565, metrics on localhost:8080.
 
        Test it (override):
          # List available RPCs
-         grpcurl -plaintext localhost:8080 list
+         grpcurl -plaintext localhost:6565 list
          # Call a method
-         grpcurl -plaintext -d '{"request_id":"test"}' localhost:8080 \
+         grpcurl -plaintext -d '{"request_id":"test"}' localhost:6565 \
            accelbyte.extend.matchmaking.MatchmakingOverride/GetPriority
 
        To connect this to real AGS traffic, see Option A in
@@ -284,12 +285,12 @@ Skill: [launches]
 ```
 Skill: Prerequisites for guild-service (service-extension, go):
          ✓ go 1.22.0
-         ✗ port 8080 is in use
+         ✗ port 6565 is in use
            PID 9412 — process: another-go-app (started 09:45)
-         ✓ port 8081 free
+         ✓ ports 8000, 8080 free
          ✓ .env found
 
-       Stopping. Free port 8080 (`kill 9412`) and re-run /ags-extend debug.
+       Stopping. Free port 6565 (`kill 9412`) and re-run /ags-extend debug.
 ```
 
 ### `.env` missing, template present
@@ -297,7 +298,7 @@ Skill: Prerequisites for guild-service (service-extension, go):
 ```
 Skill: Prerequisites for match-event-handler (event-handler, go):
          ✓ go 1.22.0
-         ✓ port 8080 free
+         ✓ ports 6565, 8080 free
          ✗ .env not found
            found .env.template — copy it with:
              cp ./match-event-handler/.env.template ./match-event-handler/.env
@@ -338,16 +339,18 @@ Skill: [launches]
 
 ```
 Skill: [launches]
-       gRPC server listening on :8080
-       HTTP gateway listening on :8081
+       starting gRPC-Gateway HTTP server  port=8000
+       serving prometheus metrics         port=8080
+       app server started
 
-       guild-service is up on localhost:8080 (gRPC) and localhost:8081 (REST).
+       guild-service is up — gRPC on localhost:6565, REST + Swagger on
+       localhost:8000 (base path /guild), metrics on localhost:8080.
 
        Test it (service-extension):
-         # Health
-         curl http://localhost:8081/healthz
-         # Custom endpoint
-         curl -X POST http://localhost:8081/guild/create \
+         # Browse the endpoints in Swagger UI
+         open http://localhost:8000/guild/apidocs/
+         # Call a REST endpoint (path sits under the base path — confirm in Swagger)
+         curl -X POST http://localhost:8000/guild/v1/... \
            -H "Content-Type: application/json" \
            -d '{"name":"test-guild"}'
 
