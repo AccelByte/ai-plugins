@@ -910,7 +910,7 @@ The widget generator has four distinct validation layers that run in sequence. E
 | Bridge backing check (C++) | During generation | C++ class reflection vs spec's `expected_property_class` and `bind_meta` | `backing_binding_mismatch`, `project_button_required`, `verify_failed` |
 | Blueprint compiler | After generation | Placed widget type vs C++ `BindWidget` property type | Unreal compile errors in editor |
 
-**When layers 3 and 4 contradict:** the root cause is always a spec `type` whose binding contract maps to an AGS class that the placed project widget does not extend. Resolution: change spec `type` to `UserWidget` — see [Project button widgets — spec type vs class_path](#project-button-widgets--spec-type-vs-classpath).
+**When layers 3 and 4 contradict:** the root cause is always a spec `type` whose binding contract maps to an AGS class that the placed project widget does not extend. Resolution: change spec `type` to `UserWidget` — see [Project button widgets — spec type vs class_path](#project-specific-widgets--read-c-header-before-spec-authoring).
 
 ---
 

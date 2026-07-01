@@ -7,6 +7,7 @@ see-also:
 - '[install-mcp.md](../../subskills/install-mcp.md)'
 - '[observe.md](../../subskills/observe.md)'
 - '[shared-cloud-client-permission-groups.md](../synthetic/shared-cloud-client-permission-groups.md)'
+- '[ui-execution.md](../cli/ui-execution.md)'
 ---
 
 # Observe - CLI Commands
@@ -15,7 +16,7 @@ Operational commands via the **AGS CLI** (`ags`) for namespace, IAM, auth, profi
 
 > **Note on CLI families.** AGS uses `ags` for namespace / IAM / operational API work. Extend uses a different CLI (`extend-helper-cli`) - those commands are owned by `/ags-extend`, not `/ags`. This file covers the AGS CLI only.
 
-> **Verify before relying.** The AGS CLI generates service commands from bundled OpenAPI specs. Use `ags describe`, `ags <service> --help`, and `ags <service> <resource> --help` to discover the exact command shape before running it.
+> **Verify before relying.** The AGS CLI generates service commands from bundled OpenAPI specs. Use `ags describe` as the primary, structured discovery mechanism for exact command shapes before running them. Use `--help` only as a fallback for non-generated commands or when `describe` is unavailable for that command family.
 
 ---
 
@@ -28,7 +29,11 @@ When operating the AGS CLI on a user's behalf:
 3. Use `--dry-run` where available before mutating operations so the user can inspect the resolved command/body.
 4. Use `--format json` for automation and evidence gathering. Do not parse human-readable output when JSON output is available.
 5. Treat create, update, delete, kick, ban, grant, revoke, and similar operations as mutations. Show the discovered command/body and get explicit user confirmation before running them. (LLM safety layer — not in the CLI's source documentation; complements the four source-documented rules above.)
-6. Do not hardcode guessed service, resource, method, flag, `--api-scope`, or `--api-version` values. Discover them from `ags describe` or CLI help, then report when the current CLI does not expose the needed operation.
+6. Do not hardcode guessed service, resource, method, flag, `--api-scope`, or `--api-version` values. Discover them from `ags describe` first; use CLI help only as a fallback when `describe` does not cover the command family, then report when the current CLI does not expose the needed operation.
+
+### Executing a mutation once the command is resolved
+
+Once a subskill has discovered the exact command/body for a mutation (rules 1-3 above) and is ready to run it, follow `references/cli/ui-execution.md` for the execution step — it owns the fullscreen-vs-plain choice and both execution paths (a spawned TUI window, or an inline plain run with CLI-driven discovery of any still-missing values). Don't invent a different execution flow per subskill.
 
 ### AGS CLI auth gate
 
@@ -78,7 +83,7 @@ ags describe iam clients list
 ags iam client-config list-permissions --exclude-permissions false --output -
 ```
 
-The actual command surface depends on the bundled OpenAPI specs. Run `ags --help` for top-level commands and `ags describe` for machine-readable discovery. Automation must use `--format json`; do not parse human-readable output. For LLM/agent usage, follow the rules above before relying on a generated command.
+The actual command surface depends on the bundled OpenAPI specs. Run `ags describe` for structured command discovery, including top-level service/resource exploration where available. Use `ags --help` only as a fallback for non-generated commands or when `describe` is unavailable. Automation must use `--format json`; do not parse human-readable output. For LLM/agent usage, follow the rules above before relying on a generated command.
 
 ## When the CLI is the right answer
 

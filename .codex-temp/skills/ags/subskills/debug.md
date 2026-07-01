@@ -152,7 +152,7 @@ Common testing patterns:
 - **Tail logs** during a reproducer run.
 - **Use the CLI** to confirm namespace / IAM client state matches what the SDK is sending.
 - **Use CLI command discovery** — `ags describe iam`, `ags describe iam clients list`, and generated read-only IAM/login-method queries with `--format json`.
-- **Use CLI permission discovery** — start from the planned AGS service/resource/method, run `ags describe` and generated command help, and capture the required permission when the current CLI exposes it.
+- **Use CLI permission discovery** — start from the planned AGS service/resource/method, run `ags describe` first, use generated command help only as a fallback, and capture the required permission when the current CLI exposes it.
 
 ### Step 4: Apply the fix
 

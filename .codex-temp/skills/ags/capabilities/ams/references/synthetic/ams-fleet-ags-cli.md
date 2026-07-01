@@ -11,13 +11,13 @@ sources:
 Use this synthetic reference for terminal-driven AMS fleet configuration with the `ags` CLI.
 This is separate from the AMS binary (`ams`) and is not a replacement for SDK build steps.
 
-This reference includes observed AGS CLI command help and discovery output (`ags --help`, `ags describe`, and `ags ams ... --help`) from May 26, 2026. Re-run discovery in the user's environment before mutating fleet state.
+This reference includes observed AGS CLI structured discovery output (`ags describe`) and fallback command help from May 26, 2026. Re-run discovery in the user's environment before mutating fleet state.
 
 ## Scope and Constraints
 
 - `ags` is the AGS CLI (`ags <service> <resource> <method>`). It can create and update fleets through `ams` service commands.
 - Use this when a user wants CLI commands for fleet lifecycle operations and not only portal clicks.
-- Do not rely on memory for flags or payload fields. Use `ags describe` and command help in the user environment before mutating anything.
+- Do not rely on memory for flags or payload fields. Use `ags describe` in the user environment before mutating anything; fall back to command help only when `describe` does not expose the needed detail.
 - If a method is missing in discovery output, stop and switch to Admin Portal-guided steps.
 
 ## Discovery-First Workflow
@@ -25,7 +25,6 @@ This reference includes observed AGS CLI command help and discovery output (`ags
 Run discovery first in this order:
 
 ```bash
-ags --help
 ags auth status --format json
 ags describe ams --format json
 ags describe ams fleets --format json
@@ -72,9 +71,9 @@ Ensure QoS is enabled for at least one region before creating or updating fleets
 4. Verify the command surface you will use:
 
 ```bash
-ags ams fleets create --help
-ags ams fleets update --help
-ags ams fleets get --help
+ags describe ams fleets create --format json
+ags describe ams fleets update --format json
+ags describe ams fleets get --format json
 ```
 
 ## Fleet Create Payload Template

@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.6.0-blue)
+![version](https://img.shields.io/badge/version-0.6.1-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -13,7 +13,23 @@ For connecting your assistant to a live AccelByte environment, each skill can co
 
 ## Skills
 
-- **accelbyte** — Use before working with AccelByte skills or when a request mentions AccelByte, AGS, AMS, Extend, Matchmaking, ADT, IAM, namespaces, SDKs, AccelByte CLI, or AccelByte MCP servers. Establishes AccelByte skill routing, grounding rules, and host-native progress tracking across harnesses.
+### accelbyte
+
+The `accelbyte` skill is the lightweight entry point for the AccelByte plugin. It helps your assistant recognize AccelByte-related prompts, choose the right AGS or Extend workflow, and keep answers grounded in the plugin's bundled references.
+
+#### When it activates
+
+You usually do not need to call this skill directly. It activates when your prompt mentions AccelByte, AGS, AMS, Matchmaking, IAM, namespaces, SDKs, the AccelByte CLI, or AccelByte MCP servers.
+
+#### What it does
+
+- Routes AGS game and backend work to `/ags`.
+- Routes custom server-side logic and Extend SDK work to `/ags-extend`.
+- Keeps product claims grounded in bundled references.
+- Uses the host assistant's native progress tracking when work has multiple steps.
+
+For most hands-on work, start with `/ags init`, `/ags <your goal>`, or `/ags-extend <your goal>`.
+
 ### ags
 
 AccelByte Gaming Services (AGS) is the managed backend that handles player accounts, sessions, matchmaking, leaderboards, achievements, the item store, wallet, and more — so you can focus on building your game.
@@ -25,46 +41,47 @@ The full AGS platform: player authentication (IAM), real-time lobby and presence
 #### Examples
 
 ```
-/ags matchmaking plan
+/ags what AGS modules do I need for a co-op shooter?
 ```
 ```
-/ags matchmaking debug
+/ags init
 ```
 ```
-/ags ams fleet
+/ags help me add login and matchmaking to this Unreal project
 ```
 ```
-/ags ams debug
+/ags debug why matchmaking tickets are timing out
 ```
 ```
-/ags integrate
+/ags check my namespace setup before I change anything
 ```
 ```
-/ags doctor
+/ags do I need AMS or Extend for this?
+```
+```
+/ags add AGS login to this game
+```
+```
+/ags set up matchmaking for a 4-player co-op mode
+```
+```
+/ags help me add achievements and leaderboards
 ```
 
-#### What you can do
+#### Start here
 
-- **Set up a new project** — `/ags init` walks you through namespace setup, SDK install, and IAM client config from scratch.
-- **Integrate a feature** — `/ags integrate` guides you module by module: auth, lobby, matchmaking, store, achievements, and more.
-- **Install the SDK** — `/ags install-sdk` detects your engine (Unreal, Unity, Godot, web) and runs the right installer.
-- **Debug a live issue** — `/ags debug` traces auth errors, lobby disconnects, matchmaking timeouts, and store failures.
-- **Diagnose without touching anything** — `/ags doctor` walks from symptom to root cause, then hands off to the right fix.
-- **Explore your namespace** — `/ags explore` gives you a read-only overview of what's configured in your AGS environment.
-- **Plan your next feature** — `/ags wizard` helps you decide what to build next and produces an implementation plan.
-- **Plan and debug matchmaking** — `/ags matchmaking plan` and `/ags matchmaking debug` cover rules, tickets, MMR, pools, and X-Ray.
-- **Operate dedicated servers** — `/ags ams fleet` and `/ags ams debug` cover fleet sizing, uploads, AMS Simulator, and claimability.
+- **New project** - run `/ags init` from your project directory. It scans the current project, detects the engine or app type, and guides the setup for AGS configuration, SDKs, the AGS CLI, MCP servers, namespace access, and IAM client settings.
+- **Anything else** - run `/ags` with your goal, question, or symptom. The skill routes the request to the right AGS workflow.
 
-Legacy Matchmaking and AMS compatibility shims remain for one release. New prompts should use `/ags matchmaking ...` and `/ags ams ...`.
+#### What `/ags` can help with
 
-#### Intended workflow
-
-1. **New to AGS?** `/ags ask` explains what AGS is and which modules cover your needs.
-2. **Starting a project** — `/ags init` does the full setup: picks modules, bootstraps your namespace and IAM client, installs the SDK and CLI. Or step through it manually: `/ags wizard` → `/ags connect-portal` → `/ags install-sdk` → `/ags install-cli`.
-3. **Taking stock of an existing namespace** — `/ags explore` gives you a read-only overview of what's already configured before you touch anything.
-4. **Wiring AGS into your game** — `/ags integrate` walks you module by module: auth, lobby, matchmaking, store, achievements, and more.
-5. **Something broken?** `/ags doctor` narrows the symptom to a cause, then `/ags debug` traces the failure in your running game.
-6. **Checking live state** — `/ags observe` pulls logs and signals from a deployed namespace. Pair it with the AGS API MCP server for real-time data.
+- **Understand AGS** - choose the right modules for auth, lobby, matchmaking, sessions, store, achievements, live ops, and more.
+- **Set up a project** - bootstrap namespace access, IAM client config, SDK install, CLI setup, and optional MCP configuration.
+- **Integrate game features** - wire AGS into Unreal, Unity, Godot, Roblox, web, or a custom engine.
+- **Debug issues** - trace auth failures, lobby disconnects, matchmaking timeouts, store problems, and namespace/config mistakes.
+- **Review safely** - inspect an existing namespace or diagnose a symptom before changing anything.
+- **Plan multiplayer depth** - design or troubleshoot matchmaking rules, ticket flow, region routing, sessions, and dedicated-server use.
+- **Decide boundaries** - know when to stay in AGS, use AMS, add Extend, consider ADT, or involve AccelByte support.
 
 ### ags-extend
 

@@ -50,8 +50,7 @@ Rules for CLI-based setup:
 ```bash
 ags auth status --format json
 ags describe iam
-ags iam --help
-ags iam clients --help
+ags describe iam clients
 ags describe iam clients list
 ```
 

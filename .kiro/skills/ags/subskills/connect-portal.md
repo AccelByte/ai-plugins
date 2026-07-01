@@ -31,7 +31,7 @@ Bootstrap the connection between an AccelByte namespace and a project on disk: d
 
 <grounding_rules>
 
-Operate against information the user provides, files on disk, AGS CLI results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe`, `ags <service> --help`, and `--skeleton` / `--dry-run` where available to discover the exact generated command and request body before mutating AGS.
+Operate against information the user provides, files on disk, AGS CLI results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe` as the primary structured discovery path, plus `--skeleton` / `--dry-run` where available, to discover the exact generated command and request body before mutating AGS. Use `--help` only as a fallback when `describe` does not cover the command family.
 
 When the handoff comes from an authorization preflight, follow `references/security/iam-authorization-preflight.md`: game clients use Public IAM clients for login/bootstrap and user-token calls; game server / backend / trusted tooling uses a Confidential IAM client; permission changes must be based on AGS CLI discovery or explicit user/Admin Portal evidence, not guessed strings.
 
@@ -52,7 +52,7 @@ When the handoff comes from an authorization preflight, follow `references/secur
 
 Before writing anything, confirm:
 
-1. The AGS CLI is installed (`ags --version` or `ags --help`). If not, route to `/ags install-cli` and stop here.
+1. The AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback). If not, route to `/ags install-cli` and stop here.
 2. The CLI is authenticated to the right Admin Portal (`ags auth status`). If not, point at `ags auth login`.
 3. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
 4. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
@@ -127,7 +127,7 @@ Also inspect what is already configured:
 ```bash
 ags auth status --format json
 ags doctor --format json
-ags config --help
+ags describe config
 ags describe iam clients list
 ```
 
@@ -171,8 +171,7 @@ Discover login-method / identity-provider commands rather than guessing names:
 
 ```bash
 ags describe iam
-ags iam --help
-ags iam clients --help
+ags describe iam clients
 ```
 
 If the generated CLI exposes login-method, platform, identity-provider, or namespace auth-settings resources, inspect them with `--format json` before deciding to create/update anything.
@@ -198,7 +197,7 @@ If the CLI does not expose the needed mutation, stop and give the exact Admin Po
 
 If the authorization preflight identified missing permissions for an AGS API call during this bootstrap, apply the fix here. For a standalone permission change on a client that already exists outside a setup flow, `/ags manage-permissions` is the dedicated path; this in-flow handling mirrors it.
 
-1. Discover the exact IAM client read/update operation and its request body. Use `ags describe` and generated help, or — when the AGS API MCP server is configured for this environment — its `search-apis` / `describe-apis` tools against the IAM admin client and permission endpoints (`POST` / `PUT` `/iam/v3/admin/namespaces/{namespace}/clients/{clientId}/permissions`, `DELETE .../permissions/{resource}/{action}`).
+1. Discover the exact IAM client read/update operation and its request body. Use `ags describe` first and generated help only as a fallback, or — when the AGS API MCP server is configured for this environment — its `search-apis` / `describe-apis` tools against the IAM admin client and permission endpoints (`POST` / `PUT` `/iam/v3/admin/namespaces/{namespace}/clients/{clientId}/permissions`, `DELETE .../permissions/{resource}/{action}`).
 2. Show the current client kind and permission gap.
 3. For game server / backend / trusted tooling, require a confidential IAM client before any permission update.
 4. Show the permission change and request body. Use `--skeleton` and `--dry-run` (CLI) where available.
@@ -264,7 +263,7 @@ If the user approves CLI mutation:
 
    Other platforms require their own fields, such as client ID, client secret, app ID, publisher keys, organization IDs, issuer/JWKS URLs, or provider metadata. Get those fields from `references/platforms/auth-provider-configuration.md` and user/provider-console input before mutating.
 
-3. On PowerShell, write the body to a file and use `--json @file` rather than inline JSON to avoid quoting failures. Verify `--json @file` is a supported flag with `ags iam platform-credentials create --help` before using it.
+3. On PowerShell, write the body to a file and use `--json @file` rather than inline JSON to avoid quoting failures. Verify `--json @file` is a supported flag with `ags describe iam platform-credentials create` before using it; use `--help` only if `describe` does not expose flag details.
 4. Run the confirmed create command.
 5. Verify with:
 

@@ -59,7 +59,7 @@ Before implementation or diagnosis, produce an authorization preflight:
 1. Identify the caller type.
 2. Identify the SDK method or REST endpoint for every AGS API call the flow will make. Include secondary lookups such as user profile, display name, entitlement, or statistic readback calls.
 3. Discover the generated command/API metadata and required permission rather than guessing service/resource/method names. Two equivalent discovery paths:
-   - **AGS CLI** — follow `../observe/cli-commands.md`: `ags describe`, generated command `--help`, `--skeleton`, `--dry-run`, and JSON output.
+   - **AGS CLI** — follow `../observe/cli-commands.md`: `ags describe` first, generated command `--help` only as a fallback, `--skeleton`, `--dry-run`, and JSON output.
    - **AGS API MCP server** — when it is configured for this environment, its `search-apis` and `describe-apis` tools return the matching operation and its auth requirements straight from the live API spec, with no local CLI install. See `../../subskills/install-mcp.md`.
 4. Verify the configured IAM client or user-token flow can access those operations. For Confidential clients, check the client has the required permission. For game-client calls, check the Public client/login flow can issue the player token used by the SDK and that the user-token call is expected for that API.
 5. If neither the CLI nor the MCP server exposes permission metadata for the operation, say that explicitly and fall back to official docs, SDK/OpenAPI references, or AccelByte support. Do not invent permission strings.

@@ -25,7 +25,7 @@ This subskill **never modifies state**. For mutating fixes based on what observa
 
 <grounding_rules>
 
-CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims trace to `references/observe/event-catalog.md`. Don't fabricate command names; use `ags describe`, `ags <service> --help`, and `ags <service> <resource> --help` before running service-specific commands.
+CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims trace to `references/observe/event-catalog.md`. Don't fabricate command names; use `ags describe` as the primary structured discovery path before running service-specific commands. Use `--help` only as a fallback when `describe` does not cover the command family.
 
 </grounding_rules>
 
@@ -41,7 +41,7 @@ CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims
 
 Before observing:
 
-1. The AGS CLI is installed (`ags --version` or `ags --help`). If not, route to `/ags install-cli`.
+1. The AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback). If not, route to `/ags install-cli`.
 2. The CLI is authenticated (`ags auth status`).
 3. The namespace name is known from project runtime config for game projects, or from explicit user input for pure ops contexts. Do not use memory, previous sessions, or CLI defaults as the namespace source of truth.
 

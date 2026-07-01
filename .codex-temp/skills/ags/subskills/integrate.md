@@ -241,7 +241,7 @@ For specific cross-module flows (Lobby → Matchmaking → Session → AMS), see
 
 When the requested module is IAM/auth/login, treat it as a focused auth integration inside this subskill:
 
-1. **Confirm required tool** — use the approved Game Flow Plan's AGS config/tooling result. The AGS CLI binary `ags` must be available (`ags --version` or `ags --help`) before relying on CLI-backed IAM checks; route to `/ags install-cli` when the CLI is missing.
+1. **Confirm required tool** — use the approved Game Flow Plan's AGS config/tooling result. The AGS CLI binary `ags` must be available (`ags --version` or `ags describe`; use `ags --help` only as a fallback) before relying on CLI-backed IAM checks; route to `/ags install-cli` when the CLI is missing.
 2. **Confirm related service** — IAM is the only AGS service in scope for the first auth slice. Defer Lobby, Matchmaking, Store, and other module wiring until login is verified.
 3. **Confirm SDK prerequisite** — use `/ags install-sdk` for Unreal, Unity, Godot, Roblox, Web SDK, and custom-engine REST fallback. Do not call the Unreal SDK MCP `install_unreal_sdk` tool from this integration flow.
 4. **Read the auth docs** — read `references/modules/iam.md` and `references/integrate/auth-flow.md` before editing. If a login attempt already fails, also read `references/debug/auth-failures.md`.

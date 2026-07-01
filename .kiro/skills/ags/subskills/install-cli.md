@@ -104,7 +104,7 @@ Next step: /ags connect-portal (if you haven't done it yet)
 The install is complete when:
 
 1. The user can run `ags` from `PATH`, or knows the exact binary path and the exact PATH step still needed.
-2. `ags --version` returns a version string, or `ags --help` prints the AGS CLI help.
+2. `ags --version` returns a version string, or `ags describe` returns structured AGS CLI discovery output. Use `ags --help` only as a final fallback if `describe` is unavailable.
 3. The user knows the next step: authenticate via `ags auth login` (interactive; don't run the browser flow for them) or use `ags auth login --grant client-credentials` for headless environments.
 4. The "installed" block is printed.
 
