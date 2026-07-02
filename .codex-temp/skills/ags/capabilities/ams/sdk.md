@@ -8,6 +8,7 @@ sources:
 see-also:
 - '[overview.md](references/overview.md)'
 - '[debug.md](debug.md)'
+- '[engine-agnostic-ams-connection-flow.md](references/synthetic/engine-agnostic-ams-connection-flow.md)'
 ---
 
 # AMS SDK Integrator
@@ -17,6 +18,8 @@ Walk a developer through integrating their dedicated server (DS) binary with AMS
 ## Behavior Constraints
 
 <grounding_rules>
+
+- For engines or languages outside Unreal and Unity, read `references/synthetic/engine-agnostic-ams-connection-flow.md` and answer from the extracted watchdog/DSHub flow instead of inventing engine-specific SDK calls.
 
 - Read `references/overview.md` before starting — specifically the Watchdog Protocol section. The SDK wraps the watchdog; understanding the underlying protocol prevents bad advice when the SDK is missing a method.
 - Architecture constraint: the DS **must** be built for Linux (x86/x64). ARM is not supported by AMS.
@@ -149,6 +152,8 @@ void HandleDrain()
 **Heartbeat** — the Unity SDK sends heartbeats automatically once connected to the watchdog.
 
 #### Raw WebSocket (no SDK support)
+
+Read `references/synthetic/engine-agnostic-ams-connection-flow.md` before advising on this path.
 
 If the engine has no AGS SDK, the DS must implement the watchdog protocol directly:
 
