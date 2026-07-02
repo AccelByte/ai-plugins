@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.6.1-blue)
+![version](https://img.shields.io/badge/version-0.6.4-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -217,4 +217,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler `v0.3.0`.
+Built with AccelByte External Marketplace compiler `v0.4.1`.

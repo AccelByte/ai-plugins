@@ -7,6 +7,8 @@ see-also:
 - '[lobby.md](lobby.md)'
 - '[ams.md](../ecosystem/ams.md)'
 - '[lobby-session.md](../integrate/lobby-session.md)'
+- '[turn-stun-p2p.md](turn-stun-p2p.md)'
+- '[webrtc-p2p.md](../sdks/web/webrtc-p2p.md)'
 - '[unreal-p2p.md](../sdks/game-engine/unreal-p2p.md)'
 ---
 
@@ -20,7 +22,7 @@ Session lifecycle, server assignment, reconnection. The thing that wraps a match
 
 - **Session lifecycle states** — created, joined, in-game, finished (verify exact state names against current AGS Session SDK/API reference). Game clients move between these.
 - **Server assignment** — when a match confirms, Session Management triggers server allocation. AGS routes allocation to AMS by default.
-- **P2P sessions** — P2P game sessions are modeled in Session V2 with server type `P2P`; in Unreal OSS projects, the client-side setup lives in `references/sdks/game-engine/unreal-p2p.md`.
+- **P2P sessions** — P2P game sessions are modeled in Session V2 with server type `P2P`. Read `references/modules/turn-stun-p2p.md` for the generic AGS STUN/TURN model. In Unreal OSS projects, the client-side setup lives in `references/sdks/game-engine/unreal-p2p.md`. In browser games, the client-side setup uses WebRTC; read `references/sdks/web/webrtc-p2p.md`.
 - **Game session vs. party session** — a party session is a group hanging out before/between matches; a game session is the in-progress game with a server. Related but tracked separately.
 - **Reconnection** — a dropped player remains in inactive state for the configured inactive timeout duration before being removed from the session.
 - **Roster management** — tracks who's in the session, who's left, who's been kicked.
@@ -42,7 +44,7 @@ Session Management triggers server allocation when a match confirms. The default
 
 For the SDK side (how a game client gets the allocated server's endpoint from a session), the integration belongs in `/ags integrate`. For the AMS side (fleet config, warmed pools, watchdog), route to `/ags ams`.
 
-For P2P sessions, do not assume AMS allocation. The game clients join the P2P game session, identify the P2P host, and travel through the AccelByte Network Utilities net driver.
+For P2P sessions, do not assume AMS allocation. The game clients join the P2P game session, identify the P2P host or peer set, and connect through the platform-appropriate P2P transport. Unreal uses the AccelByte Network Utilities net driver; browser games use WebRTC with ICE/STUN/TURN.
 
 ## Where Session ends
 

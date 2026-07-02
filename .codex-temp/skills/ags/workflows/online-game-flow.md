@@ -24,7 +24,7 @@ Read these only when the confirmed player-facing slice needs them:
 
 - Skill-based matchmaking, MMR, ratings, ranked state, win/loss history, or role performance -> `../references/modules/statistics.md` plus `../capabilities/matchmaking/router.md`.
 - Dedicated-server matchmaking, Play Online, or session join that must claim AMS -> `../capabilities/matchmaking/router.md`, `../capabilities/ams/router.md`, and `../references/modules/session.md`.
-- P2P or listen-server matchmaking -> `../capabilities/matchmaking/router.md` and `../references/modules/session.md`; for Unreal P2P/listen-server networking, also read `../references/sdks/game-engine/unreal-p2p.md`.
+- P2P or listen-server matchmaking -> `../capabilities/matchmaking/router.md`, `../references/modules/session.md`, and `../references/modules/turn-stun-p2p.md`; for Unreal P2P/listen-server networking, also read `../references/sdks/game-engine/unreal-p2p.md`; for browser/web games, also read `../references/sdks/web/webrtc-p2p.md`.
 
 ## Routing Rule
 
@@ -48,7 +48,7 @@ For skill-based matchmaking, the Game Flow Plan must identify the stat codes use
 
 For dedicated-server matchmaking through AMS, the Game Flow Plan must capture the match pool, session template, session type and join policy, expected `ServerName` or equivalent DS name, client `server_name` attribute when used, Unreal `SETTING_GAMESESSION_SERVERNAME` when used, AMS claim keys, local AMS Simulator command/config path when local verification is requested, and local DS evidence state (`configured but unverified` or `claim verified`).
 
-For P2P or listen-server matchmaking, the Game Flow Plan must capture the match pool, ruleset, session template, party behavior, joinability/session visibility, and the network path after match-found: lobby notification, session join, travel, and in-game success.
+For P2P or listen-server matchmaking, the Game Flow Plan must capture the match pool, ruleset, session template, party behavior, joinability/session visibility, and the network path after match-found: lobby notification, session join, travel or WebRTC connection, and in-game success. If the target is a web game, explicitly check whether AGS TURN/STUN support and browser WebRTC are part of the solution before proposing dedicated-server or custom relay alternatives.
 
 Do not route these outcomes to separate workflow files. `online-game-flow.md` owns the player-facing contract; capability routers and references provide supporting detail.
 

@@ -8,6 +8,7 @@ see-also:
 - '[godot.md](game-engine/godot.md)'
 - '[roblox.md](game-engine/roblox.md)'
 - '[typescript.md](web/typescript.md)'
+- '[webrtc-p2p.md](web/webrtc-p2p.md)'
 ---
 
 # SDKs — Index
@@ -35,6 +36,7 @@ All three families wrap the same underlying **AGS REST + OpenAPI surface**. Cust
 | An admin / live-ops web dashboard | TypeScript Web SDK |
 | A web companion app to a game already on AGS | TypeScript Web SDK |
 | A browser-based Extend App UI | TypeScript Web SDK |
+| A browser game that needs P2P transport | TypeScript SDK for AGS APIs plus browser WebRTC APIs for transport; read `web/webrtc-p2p.md` |
 | A custom backend service running inside AGS infra (Override / Service Extension / Event Handler) | An **Extend SDK** (Go / Python / C# / Java) — owned by `/ags-extend` |
 | A backend service running *outside* AGS | REST + OpenAPI directly |
 | A game on a custom (non-Unreal/Unity/Godot/Roblox) engine | REST + OpenAPI directly; most studios wrap a thin C++ layer over it |
@@ -42,11 +44,12 @@ All three families wrap the same underlying **AGS REST + OpenAPI surface**. Cust
 ## Common confusion points
 
 - **"Should I use the Go SDK?"** — In the AGS context, the Go SDK is an **Extend SDK**, not a Game Engine SDK. Game servers in Go would integrate via REST directly (or use the Go Extend SDK if the game server is itself an Extend app, which is unusual). For most studios the question is "use the Unreal / Unity / Godot / Roblox SDK in the game, and use an Extend SDK in any custom backend service that lives in AGS infra."
-- **"Can I use the TypeScript SDK in my game?"** — Only if the game runs in a browser context. For native games on Unreal / Unity / Godot / Roblox, use the engine SDK.
+- **"Can I use the TypeScript SDK in my game?"** — Only if the game runs in a browser context. For native games on Unreal / Unity / Godot / Roblox, use the engine SDK. For browser P2P, the TypeScript SDK can help with AGS APIs, but WebRTC owns the peer transport.
 - **"What about Native C++ / non-engine projects?"** — REST + OpenAPI. There isn't a separate "Native C++ Game SDK" — the four supported game engines are the only Game Engine SDKs.
 
 ## See also
 
 - `references/sdks/game-engine/unreal.md`, `unity.md`, `godot.md`, `roblox.md`
 - `references/sdks/web/typescript.md`
+- `references/sdks/web/webrtc-p2p.md`
 - `/ags-extend` for Extend SDK conversations
