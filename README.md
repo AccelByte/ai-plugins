@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.6.5-blue)
+![version](https://img.shields.io/badge/version-0.6.6-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -15,24 +15,17 @@ For connecting your assistant to a live AccelByte environment, each skill can co
 
 ### accelbyte
 
-The `accelbyte` skill is the lightweight entry point for the AccelByte plugin. It helps your assistant recognize AccelByte-related prompts, choose the right AGS or Extend workflow, and keep answers grounded in the plugin's bundled references.
+The `accelbyte` skill is the main router for this plugin. It recognizes AccelByte-related prompts, sends AGS work to `/ags`, sends Extend work to `/ags-extend`, and keeps answers grounded in bundled references.
 
-#### When it activates
-
-You usually do not need to call this skill directly. It activates when your prompt mentions AccelByte, AGS, AMS, Matchmaking, IAM, namespaces, SDKs, the AccelByte CLI, or AccelByte MCP servers.
-
-#### What it does
-
-- Routes AGS game and backend work to `/ags`.
-- Routes custom server-side logic and Extend SDK work to `/ags-extend`.
-- Keeps product claims grounded in bundled references.
-- Uses the host assistant's native progress tracking when work has multiple steps.
-
-For most hands-on work, start with `/ags init`, `/ags <your goal>`, or `/ags-extend <your goal>`.
+Use the AGS and Extend sections below for the actual start commands and workflow details.
 
 ### ags
 
 AccelByte Gaming Services (AGS) is the managed backend that handles player accounts, sessions, matchmaking, leaderboards, achievements, the item store, wallet, and more — so you can focus on building your game.
+
+> [!NOTE]
+> - **/ags init** - start here for a clean-slate setup. It scans the current project, detects the engine or app type, and guides the setup for AGS configuration, SDKs, the AGS CLI, MCP servers, namespace access, and IAM client settings
+> - **/ags <prompt>** - use this for every question, goal, or symptom after that, such as `/ags help me add login and matchmaking` or `/ags debug why tickets are timing out`.
 
 #### What it covers
 
@@ -67,11 +60,6 @@ The full AGS platform: player authentication (IAM), real-time lobby and presence
 ```
 /ags help me add achievements and leaderboards
 ```
-
-#### Start here
-
-- **New project** - run `/ags init` from your project directory. It scans the current project, detects the engine or app type, and guides the setup for AGS configuration, SDKs, the AGS CLI, MCP servers, namespace access, and IAM client settings.
-- **Anything else** - run `/ags` with your goal, question, or symptom. The skill routes the request to the right AGS workflow.
 
 #### What `/ags` can help with
 

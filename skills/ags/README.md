@@ -18,6 +18,14 @@ For new Matchmaking and AMS work, use `/ags matchmaking ...` and `/ags ams ...`.
 
 ---
 
+## Quick Start
+
+> [!NOTE]
+> - **/ags init** - start here for a clean-slate setup. It scans the current project, detects the engine or app type, and guides the setup for AGS configuration, SDKs, the AGS CLI, MCP servers, namespace access, and IAM client settings
+> - **/ags <prompt>** - use this for every question, goal, or symptom after that, such as `/ags help me add login and matchmaking` or `/ags debug why tickets are timing out`.
+
+---
+
 ## Intended Workflow
 
 ```

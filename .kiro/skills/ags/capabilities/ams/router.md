@@ -1,5 +1,7 @@
 ---
 last-verified: 2026-05-26
+see-also:
+- '[init.md](init.md)'
 ---
 
 # AGS AMS Capability Router
