@@ -113,36 +113,9 @@ Picking the right Extend pattern, scaffolding a new service, defining its API, r
 
 ## AGS CLI
 
-The AGS CLI (binary: `ags`) is AccelByte's command-line tool for operating a live AGS environment from the terminal. Several `/ags` subskills install and drive it on your behalf — but you can use it directly too.
+Gives your AI assistant a scriptable interface to your live AGS environment. The `/ags` skills install the CLI (`/ags install-cli`) and drive it on your behalf: authenticating, discovering exact API contracts with `ags describe`, managing IAM clients and permissions, and running guided setup workflows like `competitive-multiplayer`.
 
-> [!NOTE]
-> The AGS CLI is **not** `extend-helper-cli`. Extend builds and deploys use a separate CLI owned by `/ags-extend`.
-
-### Goal
-
-Give developers, scripts, and AI assistants a single scriptable interface for namespace, IAM, authentication, diagnostics, and AGS API operations — the same actions the Admin Portal supports, but usable from a shell, CI pipeline, or coding agent. Service commands are generated from bundled OpenAPI specs, so the CLI tracks the real AGS API surface instead of a hand-maintained subset.
-
-### Usability
-
-- **Install** — run `/ags install-cli` (or let `/ags init` handle it). The CLI ships as prebuilt archives from the official [GitHub releases](https://github.com/AccelByte/accelbyte-ags-cli/releases/latest) for macOS, Linux, and Windows.
-- **Authenticate** — `ags auth login` opens an interactive browser flow; `ags auth login --grant client-credentials` supports headless CI and service-to-service use. Check state anytime with `ags auth status`.
-- **Discover before running** — `ags describe` returns structured metadata for any generated command, and `--skeleton` prints the request body schema, so you (or your assistant) never have to guess flags or JSON shapes.
-- **Run safely** — `--dry-run` shows the resolved command and body before a mutation executes.
-- **Pick your interface** — interactive prompts via `--ui plain`, `--ui inline`, or `--ui fullscreen` (a full TUI), or fully non-interactive with explicit flags and `--format json` for scripting and automation.
-
-### What you can use on the CLI
-
-| Command | What it does |
-|---|---|
-| `ags auth login` / `status` / `logout` | Authenticate to an AGS environment and inspect session state |
-| `ags profile ...` / `ags config ...` | Manage CLI profiles and configuration |
-| `ags doctor` | Run local diagnostics on the CLI setup and connectivity |
-| `ags describe <service> <resource> <method>` | Discover the exact contract of any generated command as structured output |
-| `ags <service> <resource> <method>` | Generated AGS API commands — e.g. `ags iam clients list`, `ags session game-sessions list` — for listing, creating, and managing IAM clients, users, sessions, matchmaking objects, and other AGS resources |
-| `ags iam client-config list-permissions` | Map Shared Cloud IAM client permission groups |
-| `ags workflow list` / `ags workflow run <workflow-id>` | Multi-step setup templates — e.g. `competitive-multiplayer` provisions a matchmaking ruleset, session template, match pool, and AMS fleet in one guided run |
-
-The exact command surface depends on the specs bundled with your installed version — `ags workflow list` and `ags describe` are always the authoritative view.
+Because its commands are generated from real AGS OpenAPI specs, your assistant runs actual backend operations instead of guessing at API shapes. Everything it runs is a plain `ags` command you can inspect, re-run, or script yourself. For installation, authentication, and the full command reference, see the [AGS CLI documentation](https://github.com/AccelByte/accelbyte-ags-cli).
 
 ## MCP Servers
 
