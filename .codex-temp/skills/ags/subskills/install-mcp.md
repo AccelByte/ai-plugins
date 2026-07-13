@@ -64,6 +64,7 @@ For Game Engine SDK MCP requests:
 - `Read` exactly one engine MCP reference for Game Engine SDK MCP requests.
 - `Edit` to change the `url` field for the `AGS API MCP Server` entry only; never touch unrelated MCP entries.
 - `Bash` to confirm the chosen AGS API MCP URL is reachable (`curl -sIL <url>` returns 200 / a sane status).
+- If the active IDE already exposes the AGS API MCP tools, run one lightweight read-only MCP call after URL setup to confirm auth is fresh. If it reports expired auth, unauthenticated, consent required, or re-auth needed, report setup as blocked on re-auth instead of ready.
 - Don't read other subskills except when redirecting the user to `/ags-extend install-mcp`.
 
 </tool_usage_rules>
@@ -102,6 +103,7 @@ AGS API MCP URL set
   URL:               <URL>
   Config file:       <path>
   Reachability:      OK / unreachable (note details)
+  Auth check:        OK / blocked - <re-auth required> / not available until IDE restart
 
 Next step:
   Restart the IDE if MCP servers do not auto-reload.
@@ -128,7 +130,8 @@ The AGS API MCP URL path is complete when:
 
 1. The IDE config's `AGS API MCP Server` entry has the correct URL for the user's deployment.
 2. A reachability check has been attempted and reported.
-3. The AGS API MCP URL set block is printed.
+3. If the active IDE exposes the MCP tools before restart, an auth freshness check has been attempted and reported.
+4. The AGS API MCP URL set block is printed.
 
 The Game Engine SDK MCP path is complete when:
 
@@ -208,7 +211,11 @@ curl -sIL -o /dev/null -w "%{http_code}\n" "<the URL>"
 
 Treat 200, 401, and 405 as reachable. Other 4xx, 5xx, DNS failure, or timeout should be reported as unreachable or inconclusive with details.
 
-#### Step 5: Print the result block
+#### Step 5: Auth freshness check
+
+If the active IDE already exposes the AGS API MCP tools after setup, run a lightweight read-only MCP call before reporting ready. Use capability discovery, search/describe, or a harmless read operation. If the tool reports expired auth, unauthenticated, login required, consent required, or re-auth needed, stop and tell the user to re-authenticate/reload the MCP server. If the MCP tools are not available until restart, report `Auth check: not available until IDE restart`.
+
+#### Step 6: Print the result block
 
 Print the relevant block from `output_contract`.
 

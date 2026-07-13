@@ -20,6 +20,7 @@ see-also:
 - '[achievements.md](../references/modules/achievements.md)'
 - '[social.md](../references/modules/social.md)'
 - '[analytics.md](../references/modules/analytics.md)'
+- '[marketing-to-service.md](../references/catalogs/marketing-to-service.md)'
 - '[auth-flow.md](../references/integrate/auth-flow.md)'
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[auth-provider-configuration.md](../references/platforms/auth-provider-configuration.md)'
@@ -54,6 +55,8 @@ If AGS namespace/IAM settings are missing or placeholder-only, do not add code t
 Module behavior must trace to `references/modules/<name>.md`. Cross-module flows (Lobby ↔ Matchmaking ↔ Sessions ↔ AMS) trace to `references/integrate/lobby-session.md`. Auth flow specifics trace to `references/integrate/auth-flow.md`.
 
 Read `../workflows/online-game-flow.md` for player-facing login, matchmaking, session join, or DS/P2P travel requests.
+
+Before implementing storage for player/game data, choose the most purpose-built AGS service first. Read `../references/catalogs/marketing-to-service.md` when the right service is not obvious, then prefer native modules such as Statistics, Leaderboards, Achievements, Store/Entitlements, Inventory, Rewards, Challenges, Legal, GDPR, Lobby/Friends/Presence, Session, Matchmaking, Analytics, UGC, or Chat when the requested behavior matches them. Treat Cloud Save as a generic key-value fallback for save blobs, player preferences, drafts, snapshots, or custom data that does not need native AGS behavior. Do not create Cloud Save records to emulate stats, rankings, achievements, legal agreements, inventory/economy state, rewards, matchmaking inputs, analytics events, social state, or session/lobby state unless you have first recorded why the native service cannot satisfy the requirement.
 
 Per-engine code idioms (delegate vs. callback vs. coroutine vs. Promise) trace to the matching `references/sdks/game-engine/<engine>.md` or `references/sdks/web/typescript.md`.
 
@@ -94,9 +97,13 @@ Before wiring a module:
    - planned SDK methods or REST endpoints are listed, including secondary calls such as profile/display-name lookups;
    - required permissions were discovered with AGS CLI when the current CLI exposes them, or the gap/fallback is recorded;
    - configured client/token access is verified or the missing permission is named.
-3. If the flow is game server / backend / trusted tooling and the configured client is Public, stop before implementation and route to `/ags connect-portal`.
-4. If the module depends on another (Sessions on Matchmaking on Lobby on IAM), confirm the dependency is wired first.
-5. For game projects, an approved Game Flow Plan exists unless the user explicitly requested smoke-only work.
+3. The Service Selection check is recorded:
+   - desired player/game state or behavior is named;
+   - the purpose-built AGS service is selected when one exists;
+   - Cloud Save is selected only for generic key-value/save-blob storage, or when the native service is unavailable or insufficient and the reason is written down.
+4. If the flow is game server / backend / trusted tooling and the configured client is Public, stop before implementation and route to `/ags connect-portal`.
+5. If the module depends on another (Sessions on Matchmaking on Lobby on IAM), confirm the dependency is wired first.
+6. For game projects, an approved Game Flow Plan exists unless the user explicitly requested smoke-only work.
 
 If a precondition fails, surface it and route appropriately (`/ags connect-portal` for missing/placeholder IAM settings, login-method enablement, or IAM client scope changes; `/ags install-sdk` if the SDK isn't healthy).
 
@@ -232,6 +239,19 @@ If the plan includes multiple modules, execute only the approved feature slice u
 ```
 
 This order respects dependencies — IAM is the basis for everything; Matchmaking depends on Session (when a match is found, Matchmaking requests a game session from AGS Session), and Session depends on Lobby; Leaderboards depend on Statistics statcodes, while cycles apply only for seasonal leaderboards. Achievements depend on Statistics statcodes for incremental/global criteria.
+
+Cloud Save is intentionally absent from the default order. Add it only after the service-selection check proves the requested data is generic save data or a purpose-built module cannot model it. When in doubt, use this bias:
+
+- Scores, XP, MMR, counters, seasonal progress, ranked inputs, match results -> Statistics first.
+- Rankings -> Leaderboards backed by Statistics where applicable.
+- Milestones and unlocks -> Achievements or Challenges, often backed by Statistics.
+- Purchases, wallet, catalog, grants, entitlements, rewards, season-pass progress -> Store/Entitlements, Rewards, or Season Pass.
+- Items owned or acquired by a player -> Inventory or Store/Entitlements.
+- Terms, EULA, privacy, age gate, consent, data export/erasure -> Legal or GDPR.
+- Friends, blocks, presence, party state, notifications -> Lobby-backed social/multiplayer services.
+- Session membership, joinability, reconnect, server allocation -> Session, Matchmaking, or AMS.
+- Telemetry and product analytics -> Analytics / Game Telemetry.
+- Free-form save slots, local-game snapshots, player settings, unstructured drafts, or custom opaque JSON with no native AGS integration -> Cloud Save.
 
 When the prompt combines progression, Statistics, and Achievements, wire Statistics as the source of progression first. For counter-style progression, prefer the native statistic-backed achievement path: configure or confirm an incrementing stat, update that stat from gameplay, then configure the achievement criterion to unlock from the stat value or threshold. Do not skip this option or route to custom achievement logic unless the requested rule cannot be represented by a statistic/cycle/event criterion.
 

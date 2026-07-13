@@ -10,6 +10,7 @@ sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[modules-checklist.md](../references/init/modules-checklist.md)'
+- '[marketing-to-service.md](../references/catalogs/marketing-to-service.md)'
 - '[sdk-quickstart.md](../references/init/sdk-quickstart.md)'
 - '[_index.md](../references/sdks/_index.md)'
 - '[init.md](init.md)'
@@ -39,6 +40,7 @@ This subskill is mostly read-only, but it may write the final approved plan docu
 - Start from the actual project, not a generic AGS module tour.
 - Recommendations must trace to:
   - `references/init/modules-checklist.md` for module selection.
+  - `references/catalogs/marketing-to-service.md` for purpose-built service selection when a feature could otherwise be modeled as generic storage.
   - `references/sdks/_index.md` for SDK/project type fit.
   - `references/init/sdk-quickstart.md` for verification expectations.
 - Do not fabricate module behavior, SDK calls, or code architecture. If project code is unclear, state the uncertainty and ask.
@@ -232,6 +234,8 @@ When the context is confirmed, mark `Confirm game context` completed and `Sugges
 
 Use the project evidence and user confirmation to suggest one or two practical first AGS feature slices. Keep suggestions small and executable.
 
+Prefer a purpose-built AGS service before Cloud Save. If the project evidence shows scores, XP, MMR, wins/losses, counters, milestones, rewards, inventory, entitlements, legal consent, analytics, friends/presence, sessions, or matchmaking inputs, suggest the matching native module first. Suggest Cloud Save only for save slots, opaque save blobs, preferences, drafts, or custom unstructured data that does not need Statistics, Leaderboards, Achievements, Store/Entitlements, Inventory, Rewards, Legal/GDPR, Analytics, Lobby, Session, Matchmaking, or another native AGS workflow.
+
 Examples:
 
 - Device ID login for an Unreal game client.
@@ -240,7 +244,7 @@ Examples:
 - A simple leaderboard around an existing score value.
 - Achievements only if the project already has clear milestones.
 - Challenges if the project has quest-style milestones or daily/weekly goals.
-- Cloud Save for any single-player project that already has saveable state.
+- Cloud Save for single-player save slots or opaque save blobs only after native modules are ruled out.
 - Lobby/session only if multiplayer flow exists or the user confirmed multiplayer.
 
 Ask the user to approve one suggestion or name another feature they want instead.

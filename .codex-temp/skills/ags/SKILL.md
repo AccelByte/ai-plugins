@@ -81,7 +81,11 @@ Phases run roughly in order but loop (scaffold → build → operate → back to
 2. Read that subskill file start to finish before taking any action. Do not answer from memory of a subskill's contents — subskills change, and the file on disk is the source of truth.
 3. Do not mix instructions across two subskills in one response. If a handoff is needed, finish the current subskill, then tell the user which one to invoke next.
 4. If the user's message spans multiple phases ("set up a namespace and integrate auth"), route to the earliest phase and announce the next step; do not auto-chain into the next subskill.
-5. Use only the tools listed in frontmatter. Subskills may further restrict; respect their restrictions.
+5. Before starting any routed work that will rely on a live AGS namespace through the AGS API MCP server or AGS CLI, run the cheapest read-only auth freshness check for that tool:
+   - MCP path: call a lightweight read-only MCP tool first, such as capability discovery or a harmless search/describe/read operation. If it reports expired auth, unauthenticated, login required, consent required, or re-auth needed, stop and ask the user to re-authenticate/reload the MCP server before doing more work.
+   - CLI path: run `ags auth status` before other AGS CLI commands. If the session is expired, unauthenticated, or pointed at the wrong profile/portal, stop and ask the user to run `ags auth login` or select the correct profile before continuing.
+   - Skip this for conceptual/local-only answers that do not need live AGS data, and say live verification was not required when relevant.
+6. Use only the tools listed in frontmatter. Subskills may further restrict; respect their restrictions.
 
 </tool_usage_rules>
 

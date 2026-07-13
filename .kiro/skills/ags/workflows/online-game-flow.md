@@ -107,6 +107,7 @@ After the user confirms the first slice, perform codebase and AGS tooling discov
 - Find the engine, SDK/plugin, AGS config source, existing game path, and target files relevant to the confirmed slice.
 - Run read-only AGS CLI checks only when they affect the confirmed slice.
 - Run the authorization preflight from `../references/security/iam-authorization-preflight.md` for the confirmed slice. Classify caller type, token source, IAM client type, planned AGS calls, and required permissions. Use AGS CLI discovery first when the current CLI exposes operation or permission metadata.
+- Run the service-selection check from `../subskills/integrate.md` for any slice that stores or updates player/game data. Prefer purpose-built AGS services over Cloud Save and record Cloud Save only when the data is generic save/blob/preference/custom JSON, or when a native service cannot model the requirement.
 - Read supporting module/capability files only for the confirmed slice.
 
 After observation, write a plan file under:
@@ -121,6 +122,7 @@ The plan file should follow the existing AGS wizard/integration plan shape and i
 - Non-goals.
 - Affected areas.
 - AGS modules.
+- Service Selection: chosen AGS service(s), rejected native alternatives, and Cloud Save justification if Cloud Save is selected.
 - Authorization Plan.
 - Required AGS Admin Portal setup when a requested third-party login provider
   is not already active.
@@ -158,6 +160,7 @@ Before drafting the Game Flow Plan, perform codebase and AGS tooling discovery. 
 
 - Find the engine, SDK/plugin, AGS config source, existing login/bootstrap/menu/gameplay path, and target files/classes/functions.
 - Run read-only AGS CLI checks when AGS-side config affects the request. Start with `Get-Command ags` on Windows or `command -v ags` on macOS/Linux, then use `ags --version`, `ags auth status`, `ags doctor`, and `ags describe` when available.
+- If using the AGS API MCP server for live namespace evidence, make a lightweight read-only MCP call before deeper local discovery or plan drafting. If MCP auth is expired, unauthenticated, consent-blocked, or requires re-auth, stop and ask the user to re-authenticate/reload the MCP server before continuing.
 - Follow `../references/observe/cli-commands.md` for generated command discovery. Use `ags describe` before unfamiliar service/resource commands and prefer JSON output when the CLI exposes it.
 - Do not create, update, delete, enable, grant, revoke, or otherwise mutate AGS state before the Game Flow Plan is approved.
 - If CLI is unavailable, unauthenticated, or cannot verify the namespace/client/login method, record that blocker or gap in the Game Flow Plan instead of silently skipping it.
@@ -170,7 +173,7 @@ Before any code edit, inspect the codebase and maintain a `Game Flow Plan` insid
 
 The plan gate is user-facing, but the full field list is internal. Present approvals progressively instead of listing every field at once.
 
-Use the `Game Flow Plan` as internal planning state before game-code edits. Track: In-game trigger, Requested end state, AGS modules involved, Existing code path, AGS config/tooling, Authorization Plan, UI surface, Work scope, Success state, Error/cancel state, Service evidence, and Game-flow evidence.
+Use the `Game Flow Plan` as internal planning state before game-code edits. Track: In-game trigger, Requested end state, AGS modules involved, Service Selection, Existing code path, AGS config/tooling, Authorization Plan, UI surface, Work scope, Success state, Error/cancel state, Service evidence, and Game-flow evidence.
 
 Treat these fields as a planning scaffold, not a fixed questionnaire or hardcoded option list. Adapt, rename, combine, omit, or add fields based on what the codebase, AGS config, and requested feature actually reveal.
 

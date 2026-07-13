@@ -43,6 +43,7 @@ When the handoff comes from an authorization preflight, follow `references/secur
 - `Write` / `Edit` only for project-side files (`.env`, SDK config, `.gitignore` updates).
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery freely; use state-changing commands only after showing the command/body and receiving explicit confirmation.
 - When the AGS API MCP server is configured for this environment, its `search-apis` / `describe-apis` / `run-apis` tools are an alternative to the AGS CLI for discovering and applying IAM client and permission changes — useful when the CLI is not installed or authenticated. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate as CLI mutations; the tool itself also prompts for consent.
+- If choosing the MCP path, make a lightweight read-only MCP call before local project scans or plan drafting. If auth is expired, unauthenticated, consent-blocked, or requires re-auth, stop immediately and ask the user to re-authenticate/reload the MCP server.
 - `Read` `references/platforms/auth-provider-configuration.md` before configuring any platform/login provider such as Steam, Epic, PSN, Xbox, Apple, Google, Google Play Games, Facebook, Discord, Twitch, Snapchat, Oculus, Microsoft, OIDC, AWS Cognito, Nintendo, or Device ID.
 - Don't read other subskills.
 
@@ -52,8 +53,9 @@ When the handoff comes from an authorization preflight, follow `references/secur
 
 Before writing anything, confirm:
 
-1. The AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback). If not, route to `/ags install-cli` and stop here.
-2. The CLI is authenticated to the right Admin Portal (`ags auth status`). If not, point at `ags auth login`.
+1. The selected live access path is healthy before deeper work:
+   - CLI path: AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback) and authenticated to the right Admin Portal (`ags auth status`). If not, route to `/ags install-cli` or point at `ags auth login` and stop here.
+   - MCP path: AGS API MCP server is configured for the environment and a cheap read-only MCP call succeeds. If it reports expired auth, unauthenticated, consent required, or re-auth needed, stop and ask the user to re-authenticate/reload the MCP server.
 3. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
 4. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
 5. The project type is known (Unreal / Unity / Godot / Roblox / Web / custom engine). If this subskill is invoked from `/ags init`, use the project type detected in Stage 1 and confirmed by the wizard. Do not ask again or fall back to generic `.env` behavior when the project type is already known.
