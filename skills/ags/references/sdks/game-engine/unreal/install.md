@@ -2,7 +2,7 @@
 description: Install or scaffold the AGS Unreal plugin set in an Unreal Engine project.
   Defaults to OnlineSubsystemAccelByte plus AccelByteUe4Sdk and AccelByteNetworkUtilities,
   with pinned official sources and OSS identity verification.
-last-verified: 2026-06-24
+last-verified: 2026-07-14
 sources:
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
 - https://docs.accelbyte.io/gaming-services/tutorials/byte-wars/unreal-engine/learning-modules/general/module-initial-setup/unreal-module-initial-setup-install-the-accelbyte-game-sdk/
@@ -30,7 +30,7 @@ Read `references/sdks/game-engine/unreal.md` before installing. Do not fabricate
 
 Note on declared sources: the first source (`setup-game-sdk/unreal-sdk/`) covers the standalone AccelByteUe4Sdk download-and-extract workflow. The OSS-first + git-submodule approach used by this reference is grounded in the Byte Wars tutorial source. Use the tutorial source as the authoritative reference for the `Plugins/AccelByte/` submodule install pattern.
 
-Do not use generic web search for version discovery. Use only the official repo URLs listed in this file and the Unreal reference. To inspect available versions, ask for approval to run targeted Git commands such as `git ls-remote --tags <official-repo-url>` or use a user-provided tag. If the compatible tag is still unclear, ask the user to choose it before installing.
+Do not use generic web search for version discovery. Use only the official repo URLs listed in this file and the Unreal reference. To inspect available versions, ask for approval to run targeted Git commands such as `git ls-remote --tags --sort=-v:refname <official-repo-url>` (newest-first) or use a user-provided tag. Resolve a **tag**, not a branch. Do not trust raw tag order — these repos mix tag schemes, so cross-check each plugin's `.uplugin` `VersionName` for the authoritative current release, and gate engine compatibility on the repo README's `## Supported Unreal Engine` checklist read at the candidate tag — not on the `.uplugin` `EngineVersion`, which is only a base marker (Step 2 gives the exact commands). Select the newest tag compatible with the project's Unreal Engine version — do not pin a remembered version. If the compatible tag is still unclear, ask the user to choose it before installing.
 
 After installing the plugins, read the installed plugin docs, README files, sample config, or version-matched documentation for the exact `.uproject`, `Target.cs`, `Build.cs`, and `Config/DefaultEngine.ini` entries before writing configuration. Do not invent Unreal `.ini` key names or module names from memory.
 
@@ -81,13 +81,43 @@ Install the official plugin set under `Plugins/AccelByte/`:
 - `AccelByteUe4Sdk` from `https://github.com/AccelByte/accelbyte-unreal-sdk-plugin.git`
 - `AccelByteNetworkUtilities` from `https://github.com/AccelByte/accelbyte-unreal-network-utilities.git`
 
-Pin all three repos to tags or branches compatible with the project's Unreal Engine version.
+Pin all three repos to a **tag** compatible with the project's Unreal Engine version. Resolve the newest compatible tag rather than a remembered one, and confirm it with the user before installing. Resolve per plugin:
 
-Do not search the web for the tag. Use one of these allowed sources:
+1. **Detect the project's Unreal Engine version** (from the `.uproject` engine association / project setup).
 
-- A tag, branch, or commit the user provides.
-- A targeted Git query against the official repo URL, after approval if network access is restricted.
-- A release archive URL the user provides or explicitly approves.
+2. **List candidate tags, newest-first**, from the official repo:
+
+   ```bash
+   git ls-remote --tags --sort=-v:refname <official-repo-url> \
+     | grep -v '\^{}' | awk '{print $2}' | sed 's#refs/tags/##'
+   ```
+
+   Ignore pre-release tags (`-beta`, `-rc`, `-alpha`) unless the user asks for one.
+
+3. **Identify the true latest tag — cross-check the `.uplugin` `VersionName`.** Do not trust raw tag order — these repos mix tag schemes, so `--sort=-v:refname` can float a stale line to the top (real example: `accelbyte-unreal-sdk-plugin` sorts `v2.0.0` / `mpv2-2.0` above the current `28.8.0`; `accelbyte-unreal-network-utilities` sorts `v2.1.0` above the current `5.0.8`). The `VersionName` on the default branch is the authoritative current release; the tag matching it is the latest:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/AccelByte/accelbyte-unreal-oss/main/OnlineSubsystemAccelByte.uplugin        | grep '"VersionName"'
+   curl -fsSL https://raw.githubusercontent.com/AccelByte/accelbyte-unreal-sdk-plugin/main/AccelByteUe4Sdk.uplugin          | grep '"VersionName"'
+   curl -fsSL https://raw.githubusercontent.com/AccelByte/accelbyte-unreal-network-utilities/master/AccelByteNetworkUtilities.uplugin | grep '"VersionName"'
+   ```
+
+   **If `VersionName` can't be read** (missing field, private-repo fetch fails): still do not trust raw tag order. Read the `.uplugin` at the top few candidate tags to find the real version, or fall back to the newest clean numeric-scheme tag (skip `v*` / `mpv2-*` / pre-release lines), flag the mixed-scheme risk, and confirm the choice with the user before pinning.
+
+4. **Gate compatibility on the README `## Supported Unreal Engine` checklist — not `EngineVersion`.** The `.uplugin` `EngineVersion` field is only a base marker (it is a constant `4.27` even on the latest release, and absent on older tags); it does **not** tell you which engine versions a release supports. The authoritative compatibility matrix is the repo README's `## Supported Unreal Engine` checklist, and it is versioned per tag. Read it **at the candidate tag** and confirm the project's engine version is checked `[x]`:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/AccelByte/accelbyte-unreal-sdk-plugin/<tag>/README.md \
+     | grep -iE "Supported Unreal|Unreal Engine 5|Unreal Engine 4"
+   ```
+
+   If the newest tag does not check the project's engine version, step back to the newest tag whose README does.
+
+   **If no README checklist exists** for a plugin or tag (e.g. `accelbyte-unreal-network-utilities`, a companion used as a submodule of the OSS, ships none; some older tags omit it): pin the latest tag by `VersionName`, but **state plainly that engine compatibility could not be auto-verified from the repo**, and confirm against the AccelByte docs compatibility matrix (`https://docs.accelbyte.io/`) or explicit user confirmation before pinning. `accelbyte-unreal-network-utilities` tracks the OSS's engine support — align its choice with the resolved OSS tag.
+
+5. **Nothing resolvable or signals conflict — ask, don't guess.** When tag schemes conflict, no tag's README checks the project's engine version, or the repo signals can't be read at all, present the top candidate tags plus the detected engine version and have the user choose — or accept a user-supplied tag or an approved official release archive per `<action_safety>`. Never pin a guessed version.
+
+Do not search the web for the tag; use only `git ls-remote`, the `.uplugin`/README from the official repos, a user-provided tag, or a user-approved official release archive. **Do not use `release/*` branches to select an engine version** — they are plugin-version backport lines (`release/24.11.1`, `release/23.2.2`, …), not engine-version selectors. Use a branch only if the user explicitly wants a specific older plugin line, and prefer a tag on that line. Select the newest compatible tag, show it to the user, and pin only after they confirm.
 
 ### Step 3: Install
 
