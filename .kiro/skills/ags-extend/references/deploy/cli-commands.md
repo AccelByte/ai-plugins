@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-07-20
 authoritative: true
 note: This file is the SINGLE SOURCE OF TRUTH for extend-helper-cli command syntax
   inside this skill. Every other file in this bundle that mentions a CLI command,
@@ -20,7 +20,7 @@ see-also:
 
 This file is the only place inside this skill that quotes CLI command names, flag names, and environment variables. If you are about to write `extend-helper-cli <something>` somewhere else, stop — link here instead. The `<grounding_rules>` of every CLI-touching subskill enforces this.
 
-The CLI is a binary-only release (no source on GitHub). The verbatim `--help` output for every subcommand is bundled at `references/cli/help-output.md` and is the ground truth this file restates. Re-capture with `references/cli/scripts/capture-cli-help.sh` whenever a new release ships, then update this file to match.
+The CLI is distributed as binary releases. The verbatim command help captured from v0.0.13 is bundled at `references/cli/help-output.md`; re-capture it with `references/cli/scripts/capture-cli-help.sh` whenever a new release ships.
 
 ## Authentication
 
@@ -69,16 +69,25 @@ For AGS Shared Cloud, the equivalent grouped permissions are: App Management (CR
 
 `AB_BASE_URL` is set via env or `.env` for every other command. Only `login` accepts `--base-url` as a one-shot override (handy for switching between environments without re-exporting). Anywhere else in the docs that shows `--base-url` on `image-upload` / `deploy-app` / `update-var` / etc. is wrong.
 
-## Presence check (is the CLI installed?)
+## Presence and freshness check
 
-The CLI does **not** have a `--version` flag. Don't run `extend-helper-cli --version` for presence detection — it exits 1 ("flag provided but not defined: -version"). Use one of:
+Official releases starting with v0.0.13 expose equivalent top-level version flags:
+
+```bash
+extend-helper-cli --version
+extend-helper-cli -v
+```
+
+Official releases starting with v0.0.13 print one machine-readable line in the form `extend-helper-cli <semver>` and exit 0 without requiring authentication, configuration, network access, or Docker. Use `command -v` to find the executable and `--version` to determine its installed version. Verify that every downloaded candidate reports the selected release tag before installing it.
+
+Legacy binaries released before version support fail `--version`. Distinguish a legacy/pre-version install from a broken binary by falling back to:
 
 ```bash
 command -v extend-helper-cli   # exits 0 if on PATH, 1 if not
-extend-helper-cli --help       # exits 0; prints command list
+extend-helper-cli --help       # successful fallback means legacy/pre-version
 ```
 
-`extend-helper-cli status` is for *login* status, not presence. It does not report a CLI version either.
+Fetch the latest release metadata from `https://api.github.com/repos/AccelByte/extend-helper-cli/releases/latest`, remove a leading `v` from `tag_name`, and compare it semantically with the installed version. `extend-helper-cli status` remains the *login* status command; it does not report the CLI version.
 
 ## Verbosity (global)
 
@@ -86,7 +95,7 @@ Most subcommands accept:
 
 - `--verbosity {0..6}` (or `-v`) — `0` panic, `1` fatal, `2` error, `3` warn, `4` info (default), `5` debug, `6` trace.
 
-> **Exception:** `tunnel` does not accept `--verbosity`.
+At the top level, bare `-v` means version. After a subcommand, `-v {0..6}` means verbosity. **Exception:** `tunnel` does not accept `--verbosity`.
 
 ## Create an Extend App
 
@@ -226,7 +235,7 @@ These are different stages, both legitimate:
 
 The trap to avoid: editing the deployed app's value by editing local `.env` and redeploying. The image build doesn't carry `.env`, so the deployed process keeps whatever `update-var` / Admin Portal last set.
 
-## NoSQL Database Tunnel
+## Database Tunnel
 
 ```bash
 extend-helper-cli tunnel \
@@ -237,7 +246,9 @@ extend-helper-cli tunnel \
 
 Short flags: `-n` / `-r` / `-p`.
 
-Find `{resource-name}` in Admin Portal → Extend app detail → NoSQL Database tab → Database URL. Then connect your database client to `localhost:{local-port}`.
+`--resource-name` supports both SQL and NoSQL database resource names. Find the resource name in the matching SQL or NoSQL Database area in the Admin Portal, then connect your database client to `localhost:{local-port}`.
+
+The tunnel provides connectivity to the named database resource only. It does not discover database resources or create, update, delete, or otherwise manage database clusters.
 
 ## Delete an Extend App
 
@@ -289,7 +300,6 @@ These are the most common invented commands and flags. If you're tempted to writ
 - `extend-helper-cli list` — no list command. Use `get-app-info` per app, or the Admin Portal to enumerate.
 - `extend-helper-cli logs` — no log subcommand. Logs are in Grafana Cloud (see `references/observe/cli-commands.md`).
 - `extend-helper-cli deploy` (without the `-app` suffix) — the command is `deploy-app`.
-- `extend-helper-cli --version` — no version flag (exits 1). Use `command -v extend-helper-cli` for presence checks.
 - `--base-url {url}` on any command except `login` — `AB_BASE_URL` is set via env or `.env`; only `login` accepts an inline override.
 - `--cpu` / `--memory` on `deploy-app`, `start-app`, `stop-app`, or `update-var` — they exist only on `create-app` (initial allocation). Post-create resource changes go through Admin Portal or CSM API.
 - `--min-replicas` / `--max-replicas` on any command — replica config is read-only via `get-app-info`; editable only in Admin Portal / CSM API.

@@ -9,6 +9,8 @@ Single entry point for AccelByte Gaming Services — concept questions, namespac
 
 Before running this skill, apply `accelbyte` when it is available.
 
+Use the tool selection and fallback policy from `accelbyte` after routing to a subskill; do not redefine it here.
+
 Never answer AGS concept questions, scaffold projects, run CLI commands, or describe Admin Portal flows from this file. All of that belongs inside a subskill, workflow, or capability router.
 
 This is the single canonical AGS entry point. Do not decline deep Matchmaking or AMS work just because it is deep; route it inside this skill.

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
@@ -99,7 +99,7 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 **`start-app` / `stop-app`** — `extend-helper-cli` subcommands to start or stop a deployed app without redeploying.
 
-**`tunnel`** — `extend-helper-cli` subcommand that creates a secure tunnel to access NoSQL databases (DocumentDB) through a local port.
+**`tunnel`** — `extend-helper-cli` subcommand that provides local-port connectivity to a named SQL or NoSQL database resource. It does not discover resources or manage database clusters.
 
 **Image registry** — AccelByte-hosted registry that `image-upload` targets. You don't manage it; the CLI does.
 

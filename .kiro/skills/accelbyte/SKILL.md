@@ -15,6 +15,15 @@ Use this as the AccelByte skill-family preflight. Keep it small: route to the ri
 - AMS, dedicated server fleet, server binary upload, watchdog, warmed pool, claim keys, or local DS lifecycle route to `/ags ams`.
 - Extend, Override, Event Handler, Service Extension, Extend App UI, or Extend SDK work -> `/ags-extend`.
 
+## Tool Selection and Fallback
+
+Route to the product skill before choosing a tool. Within that product skill:
+
+- Prefer MCP for remote operations that both MCP and the selected product's CLI support.
+- Prefer the selected product's own CLI for local work and product-lifecycle operations.
+- Fall back to the other supported tool only when the preferred tool is unavailable or lacks the required capability.
+- Never use fallback to bypass an authentication or authorization failure, missing consent, or a required confirmation. Stop and resolve that gate on the selected path.
+
 ## Grounding
 
 - Read the selected AccelByte skill and its selected subskill before acting.

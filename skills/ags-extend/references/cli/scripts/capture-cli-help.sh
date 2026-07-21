@@ -53,7 +53,7 @@ OUT="$(dirname "$0")/../help-output.md"
   echo '```'
   "$BIN" --help 2>&1
   echo '```'
-  for cmd in dockerlogin image-upload create-app get-app-info deploy-app start-app stop-app delete-app update-var update-secret clone-template tunnel login logout status; do
+  for cmd in dockerlogin image-upload create-app get-app-info list-images deploy-app start-app stop-app delete-app update-var update-secret clone-template tunnel remote-debug login logout status appui; do
     echo
     echo "## \`$cmd\`"
     echo

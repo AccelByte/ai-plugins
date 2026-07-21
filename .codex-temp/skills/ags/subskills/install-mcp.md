@@ -4,10 +4,9 @@ description: Set up AGS-related MCP entries in the user's AI IDE. Handles the en
   AGS API MCP URL workflow and routes engine SDK MCP requests to engine-specific references.
 allowed-tools: Read Edit Bash Glob
 model: sonnet
-last-verified: 2026-06-17
+last-verified: 2026-07-21
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
-- https://prod.gamingservices.accelbyte.io/mcp
 see-also:
 - '[install-cli.md](install-cli.md)'
 - '[unreal-mcp.md](../references/sdks/game-engine/unreal/mcp.md)'
@@ -31,13 +30,12 @@ The AGS API MCP server source of truth is `content/mcps/ags-api.yaml`. Engine SD
 
 <grounding_rules>
 
-For the AGS API MCP Server, the URL patterns are exactly what `content/mcps/ags-api.yaml` declares:
+For the AGS API MCP Server, the URL patterns are exactly what `content/mcps/ags-api.yaml` declares. There is no shared default endpoint — every deployment has its own host:
 
-- **Default Shared Cloud:** `https://prod.gamingservices.accelbyte.io/mcp`
-- **Shared Cloud, per-studio:** `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp`
+- **Shared Cloud:** `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}` — the `{studio}-{game}` namespace appears in both the host and the path.
 - **Private Cloud / BYOC:** `https://{environment_name}.accelbyte.io/mcp`
 
-Do not invent other AGS API MCP URL shapes. If the user's environment does not fit one of those three, point at AccelByte support or their Delivery Manager.
+Do not invent other AGS API MCP URL shapes. If the user's environment does not fit one of those, point at AccelByte support or their Delivery Manager.
 
 For Game Engine SDK MCP requests:
 
@@ -99,7 +97,7 @@ For AGS API MCP URL setup, end with:
 AGS API MCP URL set
 
   IDE:               <Claude Code / Codex / Cursor / VS Code / Kiro / OpenCode>
-  Deployment:        Shared Cloud (default) | Shared Cloud (per-studio) | Private Cloud / BYOC
+  Deployment:        Shared Cloud | Private Cloud / BYOC
   URL:               <URL>
   Config file:       <path>
   Reachability:      OK / unreachable (note details)
@@ -179,25 +177,22 @@ Determine the requested MCP setup before editing anything:
 
 #### Step 2: Confirm deployment
 
-Ask which AGS deployment the user is on:
+Ask which AGS deployment the user is on. There is no shared default endpoint — each deployment has its own host:
 
-1. **Shared Cloud default** - `https://prod.gamingservices.accelbyte.io/mcp`.
-2. **Shared Cloud per-studio** - `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp`.
-3. **Private Cloud / BYOC** - `https://{environment_name}.accelbyte.io/mcp`.
+1. **Shared Cloud** - `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}`. The `{studio}-{game}` namespace appears in both the host and the path.
+2. **Private Cloud / BYOC** - `https://{environment_name}.accelbyte.io/mcp`.
 
-If they do not know, tell them their Delivery Manager or AccelByte sales contact can confirm.
+If they do not know their namespace or host, tell them their Delivery Manager or AccelByte sales contact can confirm.
 
 #### Step 3: Apply the URL
 
-If the user picked the default and the config already matches, no change is needed.
-
-For per-studio or private/BYOC URLs, show the diff in the IDE config before applying:
+Show the diff in the IDE config before applying the user's deployment URL:
 
 ```diff
    "AGS API MCP Server": {
      "type": "http",
--    "url": "https://prod.gamingservices.accelbyte.io/mcp"
-+    "url": "<the user's URL>"
+-    "url": "https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}"
++    "url": "<the user's deployment URL>"
    }
 ```
 

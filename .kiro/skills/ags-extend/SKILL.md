@@ -9,6 +9,10 @@ Single entry point for the full Extend lifecycle. **This file is a router.** It 
 
 Before running this skill, apply `accelbyte` when it is available.
 
+Use the tool selection and fallback policy from `accelbyte` after routing to a subskill; do not redefine it here.
+
+<!-- Authoring boundary: AGS CLI is intentionally not recommended as a fallback in this skill because it does not cover the full Extend Helper CLI lifecycle. Keep user-facing fallback guidance within the Extend-owned tool boundary until that parity exists. -->
+
 Never answer Extend questions, scaffold templates, run CLI commands, or apply patches from this file. All of that belongs inside a subskill.
 
 ## Subskills

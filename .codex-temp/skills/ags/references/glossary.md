@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-07-21
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -149,7 +149,7 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **MCP server.** Model Context Protocol server. AccelByte ships **two** MCP servers that connect AI IDEs to AGS context:
 
-- **`AGS API MCP`** (`ags-api-mcp-server`) — exposes AccelByte API operations as MCP tools so AI assistants can search and call AGS endpoints from inside the editor. Default URL `https://prod.gamingservices.accelbyte.io/mcp` (Shared Cloud); per-studio Shared Cloud uses `https://{studio_namespace}.prod.gamingservices.accelbyte.io/mcp`; Private Cloud uses `https://{environment_name}.accelbyte.io/mcp`. Owned by `/ags install-mcp`. Source: `content/mcps/ags-api.yaml`.
+- **`AGS API MCP`** (`ags-api-mcp-server`) — exposes AccelByte API operations as MCP tools so AI assistants can search and call AGS endpoints from inside the editor. There is no shared default endpoint: Shared Cloud uses `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}` (the `{studio}-{game}` namespace appears in both the host and the path); Private Cloud uses `https://{environment_name}.accelbyte.io/mcp`. Owned by `/ags install-mcp`. Source: `content/mcps/ags-api.yaml`.
 - **`AGS Extend SDK MCP`** (`ags-extend-sdk-mcp-server`) — exposes Extend SDK symbols and code-gen tooling to AI assistants for Extend app development. Owned by `/ags-extend install-mcp`. Source: `content/mcps/ags-extend-sdk.yaml`.
 
 Both ship as part of the plugin via the MCP configuration the compiler emits to `plugins/<target>/.mcp.json` (or the platform-equivalent file). Optional but high-leverage for AI-assisted workflows.

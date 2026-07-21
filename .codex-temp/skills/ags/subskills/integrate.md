@@ -6,7 +6,7 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-06-08
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -64,7 +64,7 @@ When the detected project is Unreal and this subskill edits or verifies C++ file
 
 Auth integration is a specialization inside this subskill. For IAM work, always ground the flow in `references/modules/iam.md`, `references/integrate/auth-flow.md`, and, when login fails, `references/debug/auth-failures.md`.
 
-For every AGS API integration, read `references/security/iam-authorization-preflight.md` and complete the authorization preflight before code edits. Caller type decides the token/client strategy; AGS CLI discovery is the preferred source for operation permissions.
+For every AGS API integration, read `references/security/iam-authorization-preflight.md` and complete the authorization preflight before code edits. Caller type decides the token/client strategy. Select live permission discovery with the shared `accelbyte` policy: prefer AGS API MCP for overlapping remote discovery, and use AGS CLI when MCP is unavailable or lacks the required capability.
 
 Don't fabricate SDK method signatures. When the user needs a specific signature, point at the SDK's docs / GitHub.
 
@@ -80,7 +80,8 @@ Do not declare game integration complete from SDK calls, backend state, CLI outp
 - `Read` any referenced wizard plan document under `docs/ags-plans/` before reading module references.
 - `Glob` to locate the right files in the project (e.g. find the existing auth handler to wire AGS auth into).
 - `Edit` / `Write` for code changes - summarize the intended edit scope before applying. Show a full diff only when the user asks, a harness approval flow requires it, or the change is too broad to summarize safely.
-- `Bash` for read-only AGS CLI authorization discovery and for build / smoke-test commands the user explicitly approves (compile, run, hit a test endpoint).
+- AGS API MCP tools for overlapping remote authorization discovery when configured for the target environment.
+- `Bash` for read-only AGS CLI authorization discovery when CLI is the selected path, and for build / smoke-test commands the user explicitly approves (compile, run, hit a test endpoint).
 - Don't read other subskills.
 
 </tool_usage_rules>
@@ -95,7 +96,7 @@ Before wiring a module:
    - token source is known (`user access token` for game-client calls, service/server token for game server / backend / trusted tooling);
    - IAM client kind matches the caller (`Public client` only for game-client login/bootstrap or browser-safe user flows; `Confidential` for game server / backend / trusted tooling);
    - planned SDK methods or REST endpoints are listed, including secondary calls such as profile/display-name lookups;
-   - required permissions were discovered with AGS CLI when the current CLI exposes them, or the gap/fallback is recorded;
+   - required permissions were discovered through the selected live tool, or the capability gap and allowed fallback are recorded;
    - configured client/token access is verified or the missing permission is named.
 3. The Service Selection check is recorded:
    - desired player/game state or behavior is named;
@@ -261,7 +262,7 @@ For specific cross-module flows (Lobby → Matchmaking → Session → AMS), see
 
 When the requested module is IAM/auth/login, treat it as a focused auth integration inside this subskill:
 
-1. **Confirm required tool** — use the approved Game Flow Plan's AGS config/tooling result. The AGS CLI binary `ags` must be available (`ags --version` or `ags describe`; use `ags --help` only as a fallback) before relying on CLI-backed IAM checks; route to `/ags install-cli` when the CLI is missing.
+1. **Confirm required tool** — use the approved Game Flow Plan's AGS config/tooling result and the shared `accelbyte` policy. Prefer AGS API MCP for overlapping remote IAM checks. Use AGS CLI when MCP is unavailable or lacks the required capability; when CLI is selected, verify `ags --version` or `ags describe` (`ags --help` only as a fallback) and route to `/ags install-cli` if it is missing. Stop on auth, authorization, consent, or confirmation failures instead of switching paths.
 2. **Confirm related service** — IAM is the only AGS service in scope for the first auth slice. Defer Lobby, Matchmaking, Store, and other module wiring until login is verified.
 3. **Confirm SDK prerequisite** — use `/ags install-sdk` for Unreal, Unity, Godot, Roblox, Web SDK, and custom-engine REST fallback. Do not call the Unreal SDK MCP `install_unreal_sdk` tool from this integration flow.
 4. **Read the auth docs** — read `references/modules/iam.md` and `references/integrate/auth-flow.md` before editing. If a login attempt already fails, also read `references/debug/auth-failures.md`.

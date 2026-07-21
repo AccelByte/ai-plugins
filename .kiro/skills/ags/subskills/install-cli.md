@@ -6,10 +6,10 @@ description: Install the AGS CLI for namespace and IAM management. Required by `
   installed via /ags-extend.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-07-20
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest
-- https://github.com/AccelByte/accelbyte-ags-cli/releases/tag/v0.1.0
+- https://github.com/AccelByte/accelbyte-ags-cli/releases/tag/v0.3.0
 see-also:
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[connect-portal.md](connect-portal.md)'
@@ -29,7 +29,8 @@ Install the AGS CLI on the user's machine. The current CLI binary is `ags` (`ags
 <grounding_rules>
 
 - AGS CLI is distributed as prebuilt release archives from `https://github.com/AccelByte/accelbyte-ags-cli/releases/latest`.
-- Always fetch the latest release metadata first, then select the asset that matches the user's OS and architecture. Do not pin to `v0.1.0` unless the user asks for that version.
+- Always fetch the latest release metadata first, then select the asset that matches the user's OS and architecture. Do not pin to a historical release unless the user asks for that version.
+- Compare the semantic version reported by `ags --version` with the latest release `tag_name` after removing a leading `v`. Treat malformed or missing version output as unparseable; never infer freshness from the binary's presence alone.
 - Use only assets from the official `AccelByte/accelbyte-ags-cli` GitHub release. Do not install from package managers, mirrors, local caches, or the old Bitbucket source checkout as the primary path.
 - Verify the downloaded archive with the matching `.sha256` asset before extracting when checksum download is available.
 - Build from source only as an explicit fallback when no release asset exists for the user's platform and the user accepts that fallback.
@@ -58,7 +59,8 @@ Before installing:
    - macOS/Linux: `curl` or `wget`, `tar`, and `shasum` or `sha256sum`.
    - Windows PowerShell: `Invoke-RestMethod` or `curl.exe`, `Expand-Archive`, and `Get-FileHash`.
 4. Fetch `https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest` and select a non-checksum asset for the detected platform.
-5. If the CLI is already installed, skip installation unless the user asks to upgrade. Still confirm authentication state with `ags auth status`.
+5. Classify the installation as `missing`, `current`, `outdated`, or `unparseable` by comparing the installed semantic version with the latest release tag. Do not run an installer or replace an existing binary without explicit confirmation.
+6. If a requested capability appears absent, complete the freshness check before declaring it unsupported. When the CLI is outdated, offer an upgrade and retry capability discovery after an approved upgrade. Do not suggest an upgrade as a remedy for authentication or authorization failures.
 
 </dependency_checks>
 
@@ -89,8 +91,10 @@ End with an "installed" block:
 AGS CLI installed
 
   OS / arch:          <os> <arch>
-  Version:            <version>
+  Installed version:  <version or unknown>
+  Latest version:     <version or unknown when metadata fetch failed>
   Install path:       <path>
+  Status:             missing / current / outdated / unparseable
   Authenticated:      yes / no - run `ags auth login` to authenticate
 
 Next step: /ags connect-portal (if you haven't done it yet)
@@ -108,7 +112,7 @@ The install is complete when:
 3. The user knows the next step: authenticate via `ags auth login` (interactive; don't run the browser flow for them) or use `ags auth login --grant client-credentials` for headless environments.
 4. The "installed" block is printed.
 
-If the CLI was already installed, "complete" means the install confirmation + authentication state are reported; no build was needed.
+If the CLI was already installed, "complete" means its path, installed version when parseable, latest version, freshness status, and authentication state are reported. An outdated or unparseable install must be offered an explicit upgrade; declining it is a valid non-mutating end state.
 
 </completeness_contract>
 
@@ -129,16 +133,16 @@ Get-Command ags -ErrorAction SilentlyContinue
 ags --version
 ```
 
-If installed, capture the version and path. Then run:
+If installed, capture the executable path and the complete `ags --version` output. Parse a semantic version from the output. If the command fails or no semantic version can be parsed, keep the path and classify the installed version as `unparseable` after fetching the latest release.
+
+Then run:
 
 ```bash
 ags auth status
 ags doctor
 ```
 
-If authenticated and diagnostics are healthy enough for the user's task, skip the install.
-
-If installed but the user asked to upgrade, continue to the release flow and show the current path/version before replacing anything.
+Do not decide to skip installation until the latest release is known and freshness has been classified.
 
 ### Step 2: Detect platform and fetch latest release
 
@@ -157,6 +161,16 @@ Invoke-RestMethod -Uri https://api.github.com/repos/AccelByte/accelbyte-ags-cli/
 ```
 
 Capture the release `tag_name`, `html_url`, asset names, and `browser_download_url` values. Do not assume `v0.1.0` is still latest.
+
+Normalize the installed version and release tag for comparison by removing a leading `v`; compare them as semantic versions, not as plain strings:
+
+- installed equals latest -> `current`; report it and do not reinstall.
+- installed lower than latest -> `outdated`; show both versions and offer an upgrade.
+- installed higher than latest -> `current` (development or newer build); report that it is newer than the latest published release and do not downgrade.
+- installed output cannot be parsed -> `unparseable`; explain that freshness cannot be proven and offer an upgrade.
+- no executable on `PATH` -> `missing`; offer installation.
+
+If multiple `ags` executables are discoverable, report every path and version before asking which one to keep or replace.
 
 ### Step 3: Resolve the release asset
 
@@ -190,6 +204,7 @@ Will install AGS CLI from the latest GitHub release.
   Asset:        <asset name>
   Checksum:     <asset name>.sha256
   Install path: <path to ags or ags.exe>
+  Replaces:     <installed version and path, or "nothing">
 
 Continue? (yes/no)
 ```
@@ -204,9 +219,15 @@ curl -fsSL "<asset-browser-download-url>" -o "$tmpdir/<asset>"
 curl -fsSL "<sha256-browser-download-url>" -o "$tmpdir/<asset>.sha256"
 (cd "$tmpdir" && shasum -a 256 -c "<asset>.sha256")
 tar -xzf "$tmpdir/<asset>" -C "$tmpdir"
-install -m 0755 "$tmpdir/ags" "<install-path>"
-ags --version
+chmod +x "$tmpdir/ags"
+"$tmpdir/ags" --version
+install -m 0755 "$tmpdir/ags" "<install-path>.new"
+"<install-path>.new" --version
+mv -f "<install-path>.new" "<install-path>"
+"<install-path>" --version
 ```
+
+Parse the version from `"$tmpdir/ags" --version` and require it to match the selected release tag before writing beside or replacing the destination. When `<install-path>` already exists, show the verified candidate version and ask for replacement confirmation immediately before `mv -f`. The `.new` file is on the destination filesystem, so the final rename is atomic; if preparation or verification fails, remove only `.new` and keep the installed binary untouched.
 
 On macOS, the first run of `ags` may be blocked by Gatekeeper. Go to System Settings → Privacy & Security and click Allow Anyway, then re-run `ags --version`.
 
@@ -224,10 +245,15 @@ $Expected = (Get-Content (Join-Path $Tmp "<asset>.sha256")).Split(" ")[0].ToLowe
 $Actual = (Get-FileHash (Join-Path $Tmp "<asset>") -Algorithm SHA256).Hash.ToLower()
 if ($Expected -ne $Actual) { throw "Checksum mismatch" }
 Expand-Archive (Join-Path $Tmp "<asset>") -DestinationPath $Tmp
+& (Join-Path $Tmp "ags.exe") --version
 New-Item -ItemType Directory -Path "<install-dir>" -Force | Out-Null
-Copy-Item (Join-Path $Tmp "ags.exe") "<install-path>" -Force
-ags --version
+Copy-Item (Join-Path $Tmp "ags.exe") "<install-path>.new" -Force
+& "<install-path>.new" --version
+Move-Item "<install-path>.new" "<install-path>" -Force
+& "<install-path>" --version
 ```
+
+Require the temporary binary's parsed version to match the selected release tag. If `<install-path>` exists, ask for replacement confirmation immediately before `Move-Item`. Keep the existing destination intact unless the candidate has passed both version checks; if candidate preparation fails, remove only `<install-path>.new`.
 
 If `ags --version` fails because the install directory is not yet on `PATH`, run the binary by direct path to verify, then complete the PATH step below.
 
@@ -280,6 +306,8 @@ ags doctor
 
 Per `output_contract`.
 
+Before saying that the AGS CLI does not support a requested command or flag, use `ags describe` (or the relevant `--help` fallback) and the freshness result. If the installation is outdated, offer the upgrade first; after an approved upgrade, retry discovery. If the user declines, report the version gap instead of declaring the capability universally unsupported. Authentication and authorization errors remain auth problems and must not be routed through an upgrade.
+
 ## Examples
 
 ### Already installed
@@ -288,15 +316,18 @@ Per `output_contract`.
 User: /ags install-cli
 
 Skill: Checking for existing install...
-       OK ags 0.1.0 already installed at /usr/local/bin/ags
+       OK ags 0.3.0 already installed at /usr/local/bin/ags
+       OK latest official release is v0.3.0
        OK auth status checked with `ags auth status`
 
        AGS CLI installed
 
-         OS / arch:        darwin arm64
-         Version:          0.1.0
-         Install path:     /usr/local/bin/ags
-         Authenticated:    yes
+         OS / arch:         darwin arm64
+         Installed version: 0.3.0
+         Latest version:    0.3.0
+         Install path:      /usr/local/bin/ags
+         Status:            current
+         Authenticated:     yes
 
        Next step: /ags connect-portal - looks like you're set up to go.
 ```
@@ -308,7 +339,7 @@ User: /ags install-cli
 
 Skill: Checking for existing install... not found.
        Detected: windows x86_64.
-       Latest release: v0.1.0
+       Latest release: v0.3.0
        Asset: ags-x86_64-pc-windows-msvc.zip
 
        I will download the release archive, verify its .sha256 checksum,
@@ -323,10 +354,12 @@ Skill: OK checksum verified
 
        AGS CLI installed
 
-         OS / arch:        windows x86_64
-         Version:          0.1.0
-         Install path:     C:\Users\you\AppData\Local\AccelByte\ags-cli\bin\ags.exe
-         Authenticated:    no - run `ags auth login` to authenticate
+         OS / arch:         windows x86_64
+         Installed version: 0.3.0
+         Latest version:    0.3.0
+         Install path:      C:\Users\you\AppData\Local\AccelByte\ags-cli\bin\ags.exe
+         Status:            current
+         Authenticated:     no - run `ags auth login` to authenticate
 
        Next step: run `ags auth login` (interactive), then `/ags connect-portal`.
 ```
@@ -352,4 +385,7 @@ Skill: That's the Extend CLI (extend-helper-cli), not the AGS CLI.
 - **Archive does not contain `ags` / `ags.exe`** - stop and report the asset name; the release format may have changed and this skill needs updating.
 - **Install succeeds but `ags` is not on `PATH`** - report the direct binary path and offer the PATH setup.
 - **Multiple versions present** - surface each path and version; ask which one the user wants to use.
+- **Installed version is outdated** - show the installed path, installed version, and latest version; ask whether to replace that binary. If declined, leave it untouched and report `Status: outdated`.
+- **Installed version is unparseable** - run `ags --help` only to distinguish a functioning legacy/unusual binary from a broken executable, report that freshness cannot be proven, and offer an upgrade with confirmation.
+- **Requested capability is absent** - check freshness before declaring it unsupported. If outdated, offer an upgrade and retry discovery after confirmation; do not use this path for auth failures.
 - **User asked for the Extend CLI by mistake** - route to `/ags-extend install-cli`.

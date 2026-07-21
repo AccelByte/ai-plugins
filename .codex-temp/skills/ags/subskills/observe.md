@@ -5,19 +5,21 @@ description: Pull read-only signals from a deployed AGS namespace. Use when the 
   availability, auth health, or connectivity.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-05-09
+last-verified: 2026-07-20
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest
+- https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[event-catalog.md](../references/observe/event-catalog.md)'
 - '[install-cli.md](install-cli.md)'
+- '[install-mcp.md](install-mcp.md)'
 - '[doctor.md](doctor.md)'
 ---
 
 # AGS Live Namespace Observability
 
-Read-only observability over a live AGS namespace. Use the AGS CLI (`ags`) for auth, diagnostics, command discovery, and generated read-only AGS API commands. Use the Admin Portal event browser where the current CLI does not expose the requested signal directly.
+Read-only observability over a live AGS namespace. Apply the shared `accelbyte` tool policy: prefer AGS API MCP for overlapping remote namespace/API signals, and use the AGS CLI (`ags`) for CLI health, diagnostics, local command discovery, or when MCP is unavailable or lacks the required capability. Use the Admin Portal event browser where neither selected tool exposes the requested signal directly.
 
 This subskill **never modifies state**. For mutating fixes based on what observation surfaces, route to `subskills/debug.md` or `subskills/connect-portal.md` after.
 
@@ -25,13 +27,14 @@ This subskill **never modifies state**. For mutating fixes based on what observa
 
 <grounding_rules>
 
-CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims trace to `references/observe/event-catalog.md`. Don't fabricate command names; use `ags describe` as the primary structured discovery path before running service-specific commands. Use `--help` only as a fallback when `describe` does not cover the command family.
+CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims trace to `references/observe/event-catalog.md`. Don't fabricate command or API names. When MCP is selected, use `search-apis` / `describe-apis` before `run-apis`. When CLI is selected, use `ags describe` before service-specific commands and `--help` only when `describe` does not cover the command family.
 
 </grounding_rules>
 
 <tool_usage_rules>
 
 - `Bash` for the AGS CLI's read-only commands (`ags auth status`, `ags doctor`, `ags describe`, generated list/get/show commands). Never use it for state-changing operations here.
+- AGS API MCP `search-apis` / `describe-apis` / `run-apis` for read-only remote operations. Never use write methods here.
 - `Read` for `references/observe/*.md`.
 - Don't read other subskills.
 
@@ -41,8 +44,8 @@ CLI commands trace to `references/observe/cli-commands.md`. Event-catalog claims
 
 Before observing:
 
-1. The AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback). If not, route to `/ags install-cli`.
-2. The CLI is authenticated (`ags auth status`).
+1. Identify the requested signal and select the path with the shared `accelbyte` policy. Prefer AGS API MCP for overlapping remote operations; select CLI for CLI-specific health/diagnostics or when MCP is unavailable or lacks the required capability.
+2. Verify the selected path's availability and authentication with a lightweight read-only check. If it has an auth, authorization, consent, or confirmation failure, stop on that path instead of switching tools.
 3. The namespace name is known from project runtime config for game projects, or from explicit user input for pure ops contexts. Do not use memory, previous sessions, or CLI defaults as the namespace source of truth.
 
 </dependency_checks>
@@ -86,7 +89,7 @@ An observation is complete when:
 
 ### Step 1: Confirm preconditions
 
-Per `dependency_checks`. If CLI isn't installed or authenticated, route accordingly.
+Per `dependency_checks`. If the selected path is unavailable or lacks the required capability, use the allowed fallback. If neither path has the capability, route to `/ags install-mcp`, `/ags install-cli`, or the Admin Portal as appropriate.
 
 ### Step 2: Identify the signal
 
@@ -102,11 +105,11 @@ What does the user want to know?
 | Event activity | Admin Portal event browser, or a generated CLI event command if exposed |
 | Specific player's recent activity | discover with `ags describe iam users` and run the matching read-only user lookup command |
 
-If the signal isn't supported via the CLI, point at the Admin Portal.
+If the signal isn't supported through the selected path, use the allowed fallback. If neither tool exposes it, point at the Admin Portal.
 
 ### Step 3: Run the query
 
-Run the read-only command. Use `--format json` when the result will be parsed or summarized programmatically. Capture output.
+Run the selected read-only query. For CLI, use `--format json` when the result will be parsed or summarized programmatically. Capture output.
 
 ### Step 4: Format and interpret
 
@@ -176,20 +179,21 @@ Skill: OK ags describe session game-sessions list
          - Healthy distribution. No stalled allocations.
 ```
 
-### CLI not installed
+### CLI-specific signal with CLI unavailable
 
 ```
-User: /ags observe
+User: /ags observe - check CLI health
 
-Skill: AGS CLI not installed. Run /ags install-cli first.
+Skill: CLI health is a CLI-specific signal, and AGS CLI is not installed.
+       Run /ags install-cli first.
 
-       Alternative: use the Admin Portal directly. Its event browser and
-       dashboards can show signals that may not be exposed by the current CLI.
+       For remote namespace/API signals, a configured AGS API MCP server can
+       be used without installing the CLI.
 ```
 
 ## Error handling
 
-- **CLI rate-limited** - back off, retry. Don't loop hammering the CLI.
+- **Selected path rate-limited** - back off, retry. Don't loop-hammer the service.
 - **Namespace not found** - surface the typo or wrong-portal-auth scenario.
 - **CLI returned an opaque 5xx** - try once more with `--verbose`; if still 5xx, suggest checking the AccelByte status page.
-- **User asks for a metric the CLI doesn't expose** - point at the Admin Portal or AccelByte's analytics export pipeline.
+- **User asks for a metric neither live tool exposes** - point at the Admin Portal or AccelByte's analytics export pipeline.

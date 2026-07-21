@@ -7,7 +7,7 @@ description: Add, update, or delete IAM/OAuth client permissions on an existing 
   instead.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-06-24
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/
 - https://github.com/AccelByte/ags-api-mcp-server
@@ -30,7 +30,7 @@ Every change here is scoped by the authorization preflight first, then applied t
 
 <grounding_rules>
 
-Scope every change through `references/security/iam-authorization-preflight.md` before touching a client. Don't invent permission resource strings, action values, `groupId`s, or command/body shapes. Discover the exact required resource/action and the exact mutation operation from live tooling — `ags describe` first, generated help only as a fallback, or the AGS API MCP server's `describe-apis` — not from memory or from another AGS version. For Shared Cloud, map the resource to a permission group with `references/synthetic/shared-cloud-client-permission-groups.md`; do not use that group model until environment detection resolves to Shared Cloud.
+Scope every change through `references/security/iam-authorization-preflight.md` before touching a client. Don't invent permission resource strings, action values, `groupId`s, or command/body shapes. Select the live tool using the shared `accelbyte` policy, then discover the exact required resource/action and mutation operation from that tool — AGS API MCP `describe-apis`, or `ags describe` with generated help only as a fallback — not from memory or from another AGS version. For Shared Cloud, map the resource to a permission group with `references/synthetic/shared-cloud-client-permission-groups.md`; do not use that group model until environment detection resolves to Shared Cloud.
 
 If the exact mutation operation for the environment isn't exposed by the CLI or the MCP server, say so and route to the Admin Portal owner. Do not approximate a write you can't verify.
 
@@ -41,7 +41,8 @@ If the exact mutation operation for the environment isn't exposed by the CLI or 
 - `Read` for `references/security/iam-authorization-preflight.md`, `references/synthetic/shared-cloud-client-permission-groups.md`, and `references/observe/cli-commands.md`.
 - `Glob` to locate project runtime config when the target namespace must come from a game project on disk.
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery (`ags describe` first, `--help` only as fallback, `ags iam clients get/list`, `ags iam client-config list-permissions`) freely; run state-changing commands only after showing the command/body and receiving explicit confirmation.
-- When the AGS API MCP server is configured for this environment, its `search-apis` / `describe-apis` / `run-apis` tools are an equivalent path — useful when the CLI is not installed or authenticated. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate; the tool itself also prompts for consent.
+- When the AGS API MCP server is configured for this environment, prefer its `search-apis` / `describe-apis` / `run-apis` tools for overlapping remote operations. Use the CLI when MCP is unavailable or lacks the required capability. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate; the tool itself also prompts for consent.
+- After selecting a path, an authentication or authorization failure, missing consent, or required confirmation is a stop condition on that path. Do not switch tools to bypass it.
 - Don't read other subskills except when redirecting (see Error handling).
 - Don't write project files. This subskill changes AGS-side client state only.
 
@@ -51,7 +52,7 @@ If the exact mutation operation for the environment isn't exposed by the CLI or 
 
 Before changing anything, confirm:
 
-1. A discovery + mutation path is available: the AGS CLI is installed and authenticated (`ags --version`, `ags auth status`), **or** the AGS API MCP server is configured for the target environment. If neither, route to `/ags install-cli` or `/ags install-mcp`, or hand the change to the Admin Portal owner, and stop.
+1. Select the discovery + mutation path using the shared `accelbyte` policy, then verify that path's availability and auth state. Prefer the AGS API MCP server for overlapping remote operations; use the AGS CLI (`ags --version`, `ags auth status`) only when MCP is unavailable or lacks the required capability. If the selected path has an auth, consent, or confirmation failure, stop on that path. If neither tool has the capability, route to `/ags install-cli` or `/ags install-mcp`, or hand the change to the Admin Portal owner, and stop.
 2. The target **client ID** is known. If the user only describes the client ("my dedicated server client"), discover it read-only (`ags iam clients list --namespace <ns> --format json` or the MCP equivalent) and confirm which client before mutating.
 3. The target **namespace** is known. For game projects, derive it from project runtime config (Unreal `Config/DefaultEngine.ini`, Unity SDK config asset/json, Web/custom `.env`) before CLI defaults. For pure ops contexts, take it from explicit user input. If project config and CLI profile disagree, stop and report the mismatch.
 4. The **environment model** is resolved (Shared Cloud vs Private Cloud / BYOC vs unknown) per the preflight, because it decides whether the change is expressed as a permission group or a free-form resource/action.
@@ -111,7 +112,7 @@ The change is complete when:
 
 ### Step 1: Confirm preconditions
 
-Run `dependency_checks`. If neither the CLI nor the MCP server is usable, route to `/ags install-cli` or `/ags install-mcp`, or hand off to the Admin Portal, and stop.
+Run `dependency_checks`. Record the selected path before discovery. If neither the MCP server nor the CLI has the required capability, route to `/ags install-mcp` or `/ags install-cli`, or hand off to the Admin Portal, and stop.
 
 ### Step 2: Scope the change with the authorization preflight
 
@@ -119,9 +120,9 @@ Read `references/security/iam-authorization-preflight.md` and follow it to:
 
 - Classify the caller the permission is for (game client / game server / backend / trusted tool / web-admin) and confirm the client kind matches (server-side ⇒ confidential).
 - Detect the environment (Shared Cloud vs Private Cloud / BYOC vs unknown). If unknown, report the missing evidence instead of guessing the format.
-- Discover the exact resource and action the change concerns, rather than guessing the string. Two equivalent discovery paths:
-  - **AGS CLI** — `ags describe <service> <resource> <method>`, generated `--help` only as fallback, and JSON output.
-  - **AGS API MCP server** — `search-apis` / `describe-apis` for the operation and its auth requirements.
+- Discover the exact resource and action the change concerns through the selected path, rather than guessing the string:
+  - **AGS API MCP server** — `search-apis` / `describe-apis` for the operation and its auth requirements; preferred for overlapping remote discovery.
+  - **AGS CLI** — `ags describe <service> <resource> <method>`, generated `--help` only as fallback, and JSON output; use when MCP is unavailable or lacks the required capability.
 
 For Shared Cloud, map the discovered resource to its permission group with `references/synthetic/shared-cloud-client-permission-groups.md` (catalog command `ags iam client-config list-permissions --exclude-permissions false --output -`, endpoint `GET /iam/v3/admin/clientConfig/permissions`). The action bits are `1=CREATE 2=READ 4=UPDATE 8=DELETE`.
 
@@ -154,7 +155,7 @@ Use `--skeleton` / `--dry-run` (CLI) or `describe-apis` (MCP) to build the body.
 
 ### Step 5: Confirm and execute
 
-Get explicit confirmation per `action_safety`. Then run the mutation through whichever path is available:
+Get explicit confirmation per `action_safety`. Then run the mutation through the path selected during preflight:
 
 - **CLI** — run the confirmed `ags iam clients ...` command. On PowerShell, write JSON bodies to a file and pass `--json @file` after verifying that flag with `ags describe`; use `--help` only if `describe` does not expose flag details.
 - **MCP** — `run-apis` with the confirmed method, path, and body. Its write-op consent prompt is in addition to — not a replacement for — the confirmation you already showed.

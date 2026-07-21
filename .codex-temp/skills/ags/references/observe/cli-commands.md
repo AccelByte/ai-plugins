@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-24
+last-verified: 2026-07-20
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 see-also:
@@ -98,14 +98,16 @@ The actual command surface depends on the bundled OpenAPI specs. Run `ags descri
 - **Live event streams or dashboards** - when the desired signal is not exposed by the current `ags` command surface.
 - **Unfamiliar territory** - the Admin Portal has UI that disambiguates options the CLI lists as flags.
 
-## When the AGS API MCP server is an alternative
+## When the AGS API MCP server is preferred
 
 If the AGS API MCP server is configured for the target environment, it runs the same discover-then-execute flow as the CLI — against the same live AGS API — without a local CLI install:
 
 - `search-apis` / `describe-apis` to find an operation and its parameters, request/response shapes, and auth requirements (the MCP equivalent of `ags describe`).
 - `run-apis` to execute it. Write operations (`POST` / `PUT` / `PATCH` / `DELETE`) prompt for consent before running, so the "confirm mutations" rule above still holds.
 
-Good fit when the CLI is not installed or authenticated, or when the work is already happening inside an MCP-host IDE. The IAM admin client and permission endpoints (`/iam/v3/admin/namespaces/{namespace}/clients/...`) are reachable this way, so permission discovery *and* permission configuration can both run through the MCP server. Set its URL with `/ags install-mcp`. The rules of engagement above apply unchanged: discover before executing, and confirm every mutation.
+Apply the shared `accelbyte` policy before choosing a path. Prefer MCP for remote operations that both tools support; use CLI for local diagnostics, scripted/product-lifecycle work, or when MCP is unavailable or lacks the required capability. The IAM admin client and permission endpoints (`/iam/v3/admin/namespaces/{namespace}/clients/...`) are reachable through MCP, so permission discovery *and* permission configuration can use it. Set its URL with `/ags install-mcp`.
+
+After selecting a path, stop on authentication or authorization failures, missing consent, or required confirmation. Do not switch tools to bypass the gate. The rules of engagement above still apply: discover before executing, and confirm every mutation.
 
 ## When Extend's CLI is the right answer instead
 

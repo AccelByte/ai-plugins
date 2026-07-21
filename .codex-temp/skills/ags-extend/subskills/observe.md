@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://github.com/AccelByte/extend-helper-cli
@@ -41,7 +41,7 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 
 Before running any observe commands:
 
-1. `command -v extend-helper-cli` returns a path. Missing → direct to `/ags-extend install-cli`; stop. (Do NOT use `extend-helper-cli --version` — that flag doesn't exist; see `references/deploy/cli-commands.md#presence-check-is-the-cli-installed`.)
+1. `command -v extend-helper-cli` returns a path. Run the `/ags-extend install-cli` freshness check and report the installed path/version, latest version, and status. Missing or broken/unparseable -> stop. Outdated or legacy/pre-version -> offer an upgrade to the latest official release. If the user declines, continue only when the documented observe command is present in `--help`. See `references/deploy/cli-commands.md#presence-and-freshness-check`.
 2. The CLI is authenticated. Either: `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET` are set in the user's environment or in a `.env` file in the CLI's cwd; OR the user has run `extend-helper-cli login` (browser flow). If neither, ask the user for `AB_BASE_URL` and direct them to `references/deploy/cli-commands.md#authentication`.
 3. Namespace and app name are known — either from the app's local `.env` (if the user is in/near an app dir) or supplied inline by the user.
 
@@ -95,7 +95,7 @@ Several "empty" cases to handle explicitly, not silently:
 - **`get-app-info` returns "app not found"** → the app named in the invocation isn't registered in the namespace. Say: "`{name}` is not deployed to `{namespace}` (or the name doesn't match). Verify in the Admin Portal, or run `/ags-extend deploy` to push it."
 - **App dir exists locally but `get-app-info` returns 404** → it was never deployed or was removed. Say: "`{name}` exists in your repo but isn't deployed to `{namespace}`. Run `/ags-extend deploy` to push it."
 - **Grafana Cloud shows no logs for a Running app** → rule out the cheap causes first, in order: (1) **ingestion lag** — logs arrive seconds-to-minutes late, so wait ~60–120s and refresh; (2) **time range too narrow** — widen the Explore time picker; (3) **filter doesn't match** — check available labels in Grafana's label browser; (4) **no traffic** — trigger a call to the app; (5) only then suspect the app's logger config. See `references/observe/grafana-guide.md`. Do not tell the user their logging is broken before (1)–(4) are ruled out.
-- **`get-app-info` returns zero or unexpected fields** → CLI version mismatch or transient API issue. Show the raw output and suggest retrying.
+- **`get-app-info` returns zero or unexpected fields** → show the raw output and check freshness. Offer an upgrade when outdated or legacy/pre-version. Retry after an approved, verified upgrade before declaring the field or capability unsupported. Treat authentication and authorization failures separately.
 
 </empty_result_recovery>
 

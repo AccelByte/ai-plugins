@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte/extend-helper-cli
@@ -40,7 +40,7 @@ Build and deploy one or more Extend apps from a local project to AGS. Walks four
 Before running any deploy commands:
 
 1. The current directory has `Makefile` + `Dockerfile` (single-app run), or `*/Makefile` + `*/Dockerfile` siblings exist one level down (multi-app project).
-2. `command -v extend-helper-cli` returns a path. Missing → direct to `/ags-extend install-cli`; stop. (Do NOT use `extend-helper-cli --version` — that flag doesn't exist and exits 1; see `references/deploy/cli-commands.md#presence-check-is-the-cli-installed`.)
+2. `command -v extend-helper-cli` returns a path. Run the `/ags-extend install-cli` freshness check and report the installed path/version, latest version, and status. Missing or broken/unparseable -> stop. Outdated or legacy/pre-version -> offer an upgrade to the latest official release. If the user declines, continue only when the documented deploy commands are present in `--help`. See `references/deploy/cli-commands.md#presence-and-freshness-check`.
 3. `docker --version` succeeds and `docker info` shows a running daemon. Missing → stop with install link.
 4. For each app being deployed: `Dockerfile` exists at `{app-path}/Dockerfile`.
 5. For each app being deployed: `.env` exists at `{app-path}/.env`, and `AB_CLIENT_ID` + `AB_CLIENT_SECRET` are not placeholder values.
@@ -127,6 +127,7 @@ Run in parallel:
 
 ```bash
 command -v extend-helper-cli || echo "extend-helper-cli not installed"
+extend-helper-cli --version
 docker --version 2>&1
 docker info 2>/dev/null | grep "Server Version"
 ```
@@ -142,6 +143,9 @@ Prerequisites:
 If any is missing:
 
 - `extend-helper-cli` missing → "Run `/ags-extend install-cli`, then retry `/ags-extend deploy`." Stop.
+- `extend-helper-cli` outdated or legacy/pre-version → report the path, installed/latest versions, and status; offer `/ags-extend install-cli` to upgrade to the latest official release. If the user declines, check the documented deploy command in `--help` and continue when present.
+- `extend-helper-cli` broken/unparseable → stop and run `/ags-extend install-cli`; do not replace it without confirmation.
+- required deploy command absent → check freshness before declaring the capability unavailable. Offer an upgrade when outdated or legacy/pre-version. Retry discovery only after an approved, verified upgrade. Do not treat authentication or authorization failures as upgrade candidates.
 - `docker` missing → "Install Docker from https://docs.docker.com, then retry." Stop.
 - Docker daemon not running → "Start Docker Desktop (or `sudo systemctl start docker`), then retry." Stop.
 

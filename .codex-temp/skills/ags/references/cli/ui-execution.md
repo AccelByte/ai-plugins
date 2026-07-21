@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-27
+last-verified: 2026-07-20
 see-also:
 - '[workflows.md](workflows.md)'
 - '[run-workflow.md](../../subskills/run-workflow.md)'
@@ -142,7 +142,7 @@ Skill: [spawns the window again with the full command; this time it opens and
 ## Error handling
 
 - **Plain path's discovery attempt fails with something other than a non-interactive-refusal error** (auth error, API/validation error, network error) — that's a normal command failure, not a missing-input signal. Surface it as-is and hand it back to the calling subskill's own error handling; don't try to interpret it as values to ask about in chat.
-- **`--ui fullscreen` not supported by the installed CLI version** (per `--help`) — report the version gap explicitly and tell the user only plain mode is available for this run; don't offer the fullscreen choice and don't silently switch input modes without saying so.
+- **`--ui fullscreen` not supported by the installed CLI version** (per `--help`) — run the `/ags install-cli` freshness check before declaring the capability unavailable. If outdated, offer an upgrade and retry `--help` after approval. If the user declines or a current CLI still lacks it, report the version-specific gap and use plain mode. Authentication and authorization failures are not upgrade candidates.
 - **Spawning a visible console window fails** (headless/sandboxed environment, or a shell with no `Start-Process` equivalent) — don't fall back to a manual copy/paste handoff. Switch to the plain path instead: tell the user the spawn failed and why, then ask in chat for the missing values and run the fully-flagged command inline.
 - **Fullscreen TUI output looks garbled when run through the sandboxed tool directly** — this means the spawn step was skipped and the command was run inline by mistake; do not attempt to interpret garbled output as a result. Re-run via the spawn-and-wait path, or switch to plain mode.
 - **Spawned window's process exits almost immediately instead of opening the TUI** (fullscreen was chosen) — this CLI build or this specific command likely requires every flag up front and doesn't fall back to interactive prompting for missing required flags. Don't treat the quick exit as a successful run. Ask the user in chat for the specific values that were left for the TUI, rebuild a fully-flagged command, and retry the spawn (or just switch to the plain path).

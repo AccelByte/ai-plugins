@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -187,9 +187,7 @@ Print:
 ━━━ Stage 3/4: Install CLI ━━━
 ```
 
-If the Step 1 check found `extend-helper-cli` already installed, say so and skip this stage (still count it as "already present" in the final summary).
-
-Otherwise read `subskills/install-cli.md` and follow it. If the user declines the install (the CLI's Step 3 confirmation), record "declined" and continue — deploy will re-prompt later.
+Read `subskills/install-cli.md` and follow its freshness check even when `extend-helper-cli` is already on `PATH`. Skip the download only when that flow reports `Status: current`. If the user declines an install or upgrade, record the reported status plus `declined` and continue — deploy will surface the same prerequisite later.
 
 ### Step 5 — Stage 4: Install MCP (optional)
 
@@ -215,7 +213,7 @@ Print the summary from `output_contract`. Then stop.
 If the user comes back and says "I already ran wizard, now run the rest" (or something like it):
 
 1. Check whether the current directory (or one level up) holds an Extend app: `Makefile` + `Dockerfile` together. If found, treat Stage 1 as already done. If `go.sum` / `.venv` / `target/` / `bin/` is present alongside, treat Stage 2 as already done too.
-2. Check `command -v extend-helper-cli`. If a path is returned, skip Stage 3. (The CLI has no `--version` flag — see `references/deploy/cli-commands.md#presence-check-is-the-cli-installed`.)
+2. Check `command -v extend-helper-cli`, then read and run `subskills/install-cli.md` to classify freshness. Skip the Stage 3 download only when it reports `Status: current`; do not infer freshness from presence alone.
 3. Ask about MCP (Stage 4).
 
 Do not re-run earlier stages once their artifact (cloned app dir, installed deps, installed binary, merged MCP config) is in place. Users invoke `init` to get to a ready state, not to redo work.
@@ -336,7 +334,8 @@ Skill: Detected ./guild-service/Makefile + Dockerfile and go.sum — treating
 
        ━━━ Stage 3/4: Install CLI ━━━
 
-       ✓ extend-helper-cli 0.4.1 already installed — skipping.
+       ✓ extend-helper-cli <version> at /usr/local/bin/extend-helper-cli
+         Latest version: <version> — status current, download skipped.
 
        ━━━ Stage 4/4: Install MCP (optional) ━━━
        ...

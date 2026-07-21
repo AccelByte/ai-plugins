@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/matchmaking/configure-match-rulesets/
@@ -41,8 +41,8 @@ Use this when the user already chose **AGS + game integration** or clearly asks 
 - If the session type is **P2P** or **None**, no AMS dependency is required unless the project has an existing AMS/session requirement.
 - Ask whether the user wants UI for the current active session, showing at least session ID and members. If yes, inspect the game code deeper for session/member UI entry points and ask the user to confirm the plan before writing it.
 - For game projects, namespace comes from project runtime config, not memory or CLI defaults. Unreal: `Config/DefaultEngine.ini`. Unity: AccelByte SDK config asset/json. Web/custom: `.env` or app config.
-- Before proposing AGS backend create/update work, inspect the current backend state through the AGS CLI skill path. In this bundle, use `/ags observe` for read-only CLI discovery; if a standalone `/ags-cli` skill exists in the runtime, use that. Do not invent CLI commands from memory: route through the AGS CLI skill/reference and `ags describe`-discovered commands.
-- Backend inspection is read-only in this subskill. Check whether the requested ruleset, match pool, session template, or related matchmaking configuration already exists before planning new creation work. If CLI install/auth/context is missing, record that blocker and route the prerequisite to `/ags install-cli`, `/ags observe`, or `/ags connect-portal` instead of guessing.
+- Before proposing AGS backend create/update work, inspect current backend state through the live path selected by the shared `accelbyte` policy. Prefer AGS API MCP for overlapping remote inspection; use `/ags observe` or a standalone `/ags-cli` skill when MCP is unavailable or lacks the required capability. Do not invent API or CLI commands from memory.
+- Backend inspection is read-only in this subskill. Check whether the requested ruleset, match pool, session template, or related matchmaking configuration already exists before planning new creation work. Stop on authentication, authorization, consent, or confirmation failures for the selected path. If neither path has the required capability or namespace context is missing, record that gap and route to `/ags install-mcp`, `/ags install-cli`, `/ags observe`, or `/ags connect-portal` instead of guessing.
 - If the request needs post-match session template or AMS work, include it as a dependency/risk and point to `/ags` or `/ags ams`; do not pretend native matchmaking alone provisions fleets.
 - The plan must include a "full integration flow" from player action to active session:
   1. Player starts matchmaking from the UI or gameplay entry point.
@@ -62,7 +62,8 @@ Use this when the user already chose **AGS + game integration** or clearly asks 
 
 - Use `Read` and `Glob` to inspect project shape, existing AGS config, existing menu/session/lobby/matchmaking code, and existing docs/config payloads.
 - Use `Write` only to save the approved plan under `docs/ags/matchmaking/`.
-- Use `Bash` only for read-only project inspection commands and read-only AGS CLI checks routed through the AGS CLI skill path (`/ags observe` in this bundle, or `/ags-cli` if present). Do not call AGS CLI mutations from this subskill.
+- Use AGS API MCP only for read-only remote backend inspection when it is the selected path.
+- Use `Bash` only for read-only project inspection commands and read-only AGS CLI checks routed through `/ags observe` or `/ags-cli` when CLI is the selected path. Do not call AGS CLI mutations from this subskill.
 - Do not edit game source code, AGS JSON config, Blueprints, project settings, build files, or generated files. Do not use `Edit`, `apply_patch`, shell redirection, code generators, or scripts that write project files.
 - Do not run builds, tests, formatters, Unreal header generation, SDK code generation, or AGS CLI mutations from this subskill. Verification commands that compile or mutate state belong to `integrate`.
 - Do not implement "just the entry point", "a small C++ surface", "a quick config file", or any other partial slice during planning. Code execution belongs to `integrate`.
@@ -79,7 +80,7 @@ Produce:
    - Goal and non-goals
    - Confirmed session outcome: `None`, `DS`, or `P2P`
    - Active-session UI decision: yes/no, and if yes, the planned session ID/member display entry point
-   - AGS backend inspection: what the AGS CLI skill path verified, what already exists, what is missing, and any CLI/auth/context blocker
+   - AGS backend inspection: which live path verified the state, what already exists, what is missing, and any capability/auth/context blocker
    - AGS backend/config work: ruleset, pool, session template dependency, region/backfill assumptions
    - Full integration flow: player action, QoS/attributes, ticket lifecycle, match-found notification, session join, travel/connect behavior, active-session display if in scope
    - Game-flow completion target: expected final status using `Smoke-verified`, `Game-flow integrated`, or `Complete`, plus the service evidence and game-flow evidence required
@@ -109,7 +110,7 @@ AGS matchmaking plan written.
 
 Planning is complete when:
 - Project runtime config has been inspected or a missing config risk is explicitly recorded.
-- The current backend state has been checked through the AGS CLI skill path, or a CLI/auth/context blocker is explicitly recorded with the required prerequisite skill.
+- The current backend state has been checked through the selected live path, or a capability/auth/context blocker is explicitly recorded with the required prerequisite skill.
 - Session type has been confirmed as `None`, `DS`, or `P2P`.
 - Active-session UI scope has been confirmed as yes or no.
 - The plan covers AGS config, session outcome, game-code integration, and match-found-to-session-join/travel behavior.
@@ -148,13 +149,13 @@ Read `references/overview.md`. Inspect project files enough to identify:
 - Existing UI/menu/session/lobby/matchmaking files.
 - Existing AGS config payloads under `Config/AGS/`, `docs/ags/matchmaking/`, a legacy matchmaking plan directory, or similar.
 
-### Step 2 - Inspect backend state through the AGS CLI skill
+### Step 2 - Inspect backend state through the selected live tool
 
-Before drafting backend work, use the AGS CLI skill path to inspect the namespace resolved from project runtime config:
+Before drafting backend work, inspect the namespace resolved from project runtime config through the live path selected by the shared `accelbyte` policy:
 
-- Prefer `/ags observe` in this bundle for read-only AGS CLI discovery. If the runtime provides a dedicated `/ags-cli` skill, use that instead.
-- Verify CLI/auth/context first. If the CLI is missing, auth is invalid, or the namespace context cannot be determined, stop backend inspection and record the prerequisite route: `/ags install-cli`, `/ags observe`, or `/ags connect-portal`.
-- Use the AGS CLI skill/reference and `ags describe` output to discover exact read-only list/get/show commands. Do not fabricate commands from memory.
+- Prefer AGS API MCP for overlapping remote inspection. Use `/ags observe` in this bundle, or a dedicated `/ags-cli` skill, when MCP is unavailable or lacks the required capability.
+- Verify availability, auth, and context on the selected path first. Stop on authentication, authorization, consent, or confirmation failures instead of switching tools. If neither path has the capability or namespace context cannot be determined, record the prerequisite route: `/ags install-mcp`, `/ags install-cli`, `/ags observe`, or `/ags connect-portal`.
+- Use MCP `search-apis` / `describe-apis`, or the AGS CLI skill/reference and `ags describe`, to discover exact read-only operations. Do not fabricate commands from memory.
 - Check whether the requested matchmaking ruleset, match pool, session template, and related config already exist before proposing creation or updates.
 - Summarize the result in the plan as "exists", "missing", or "blocked" for each backend item.
 

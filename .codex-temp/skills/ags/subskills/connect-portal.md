@@ -1,12 +1,12 @@
 ---
 name: ags-connect-portal
 description: Bootstrap or repair AGS namespace/IAM client/login-method config for
-  a project. Uses the AGS CLI to discover existing namespace state, create or select
-  IAM clients, enable required login methods when exposed by the CLI, and write .env
-  / engine config.
+  a project. Uses AGS live tooling to discover existing namespace state, create or
+  select IAM clients, enable required login methods when exposed, and write .env /
+  engine config.
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-06-24
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/
 - https://github.com/AccelByte/ags-api-mcp-server
@@ -25,15 +25,15 @@ see-also:
 
 # AGS Portal Connector
 
-Bootstrap the connection between an AccelByte namespace and a project on disk: discover or create the IAM client, enable required login methods when the CLI exposes those operations, write the project-specific runtime config, and confirm the SDK is pointing at the right URLs and namespace. **Does not create production namespaces on its own.** Namespace creation and tier upgrades stay in the Admin Portal with an authorized human in the loop.
+Bootstrap the connection between an AccelByte namespace and a project on disk: discover or create the IAM client, enable required login methods when the selected live tool exposes those operations, write the project-specific runtime config, and confirm the SDK is pointing at the right URLs and namespace. **Does not create production namespaces on its own.** Namespace creation and tier upgrades stay in the Admin Portal with an authorized human in the loop.
 
 ## Behavior Constraints
 
 <grounding_rules>
 
-Operate against information the user provides, files on disk, AGS CLI results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe` as the primary structured discovery path, plus `--skeleton` / `--dry-run` where available, to discover the exact generated command and request body before mutating AGS. Use `--help` only as a fallback when `describe` does not cover the command family.
+Operate against information the user provides, files on disk, selected live-tool results, and `references/platforms/auth-provider-configuration.md`. Don't fabricate namespace names, IAM client IDs, secrets, AGS URLs, login-method state, command shapes, platform App IDs, platform client secrets, platform keys, redirect URIs, issuer URLs, or platform-holder configuration. Select the live path with the shared `accelbyte` policy. For MCP, use `search-apis` / `describe-apis` before `run-apis`. For CLI, follow `references/observe/cli-commands.md#rules-of-engagement-for-llms`: use `ags describe`, plus `--skeleton` / `--dry-run` where available, before mutating AGS; use `--help` only when `describe` does not cover the command family.
 
-When the handoff comes from an authorization preflight, follow `references/security/iam-authorization-preflight.md`: game clients use Public IAM clients for login/bootstrap and user-token calls; game server / backend / trusted tooling uses a Confidential IAM client; permission changes must be based on AGS CLI discovery or explicit user/Admin Portal evidence, not guessed strings.
+When the handoff comes from an authorization preflight, follow `references/security/iam-authorization-preflight.md`: game clients use Public IAM clients for login/bootstrap and user-token calls; game server / backend / trusted tooling uses a Confidential IAM client; permission changes must be based on selected live-tool discovery or explicit user/Admin Portal evidence, not guessed strings.
 
 </grounding_rules>
 
@@ -42,8 +42,9 @@ When the handoff comes from an authorization preflight, follow `references/secur
 - `Read` / `Glob` to find existing config files.
 - `Write` / `Edit` only for project-side files (`.env`, SDK config, `.gitignore` updates).
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery freely; use state-changing commands only after showing the command/body and receiving explicit confirmation.
-- When the AGS API MCP server is configured for this environment, its `search-apis` / `describe-apis` / `run-apis` tools are an alternative to the AGS CLI for discovering and applying IAM client and permission changes — useful when the CLI is not installed or authenticated. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate as CLI mutations; the tool itself also prompts for consent.
+- When the AGS API MCP server is configured for this environment, prefer its `search-apis` / `describe-apis` / `run-apis` tools for overlapping remote IAM client and permission operations. Use CLI when MCP is unavailable or lacks the required capability. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate as CLI mutations; the tool itself also prompts for consent.
 - If choosing the MCP path, make a lightweight read-only MCP call before local project scans or plan drafting. If auth is expired, unauthenticated, consent-blocked, or requires re-auth, stop immediately and ask the user to re-authenticate/reload the MCP server.
+- If the selected CLI path has an authentication or authorization failure, missing consent, or required confirmation, stop on that path. Do not switch tools to bypass the gate.
 - `Read` `references/platforms/auth-provider-configuration.md` before configuring any platform/login provider such as Steam, Epic, PSN, Xbox, Apple, Google, Google Play Games, Facebook, Discord, Twitch, Snapchat, Oculus, Microsoft, OIDC, AWS Cognito, Nintendo, or Device ID.
 - Don't read other subskills.
 
@@ -53,13 +54,14 @@ When the handoff comes from an authorization preflight, follow `references/secur
 
 Before writing anything, confirm:
 
-1. The selected live access path is healthy before deeper work:
+1. Select the live access path with the shared `accelbyte` policy, then confirm it is healthy before deeper work:
+   - Prefer MCP for overlapping remote IAM operations. Use CLI when MCP is unavailable or lacks the required capability, or for CLI-specific diagnostics.
    - CLI path: AGS CLI is installed (`ags --version` or `ags describe`; use `ags --help` only as a fallback) and authenticated to the right Admin Portal (`ags auth status`). If not, route to `/ags install-cli` or point at `ags auth login` and stop here.
    - MCP path: AGS API MCP server is configured for the environment and a cheap read-only MCP call succeeds. If it reports expired auth, unauthenticated, consent required, or re-auth needed, stop and ask the user to re-authenticate/reload the MCP server.
-3. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
-4. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
-5. The project type is known (Unreal / Unity / Godot / Roblox / Web / custom engine). If this subskill is invoked from `/ags init`, use the project type detected in Stage 1 and confirmed by the wizard. Do not ask again or fall back to generic `.env` behavior when the project type is already known.
-6. For third-party provider login, the provider-specific prerequisites in `references/platforms/auth-provider-configuration.md` are satisfied or explicitly handed off to the user.
+2. The target namespace and base URL are known from the project runtime config when this is a game project. For Unreal, read `Config/DefaultEngine.ini` first. For Unity, read the AccelByte SDK config asset/json first. For Web/custom projects, read `.env` or app config first. Use CLI profile/config only to verify or fill missing values; do not let CLI defaults override project config.
+3. The project target is known (game client, dedicated server, web/admin tool) so the IAM client kind and login methods can be chosen.
+4. The project type is known (Unreal / Unity / Godot / Roblox / Web / custom engine). If this subskill is invoked from `/ags init`, use the project type detected in Stage 1 and confirmed by the wizard. Do not ask again or fall back to generic `.env` behavior when the project type is already known.
+5. For third-party provider login, the provider-specific prerequisites in `references/platforms/auth-provider-configuration.md` are satisfied or explicitly handed off to the user.
 
 If any of those are missing, stop and surface the gap before doing work.
 
@@ -71,13 +73,13 @@ This subskill writes to disk and can call AccelByte APIs. Specifically:
 
 - **Writes the `.env` file** — confirm with the user before overwriting an existing `.env`.
 - **Updates `.gitignore`** to ensure `.env` isn't committed — confirm with the user.
-- **Creates an IAM client via the CLI** — only with explicit confirmation, and only after showing the user the client config that will be created.
-- **Enables login methods / IAM settings via the CLI** - only with explicit confirmation, and only after showing the discovered command and JSON body.
+- **Creates an IAM client through live tooling** — only with explicit confirmation, and only after showing the user the client config that will be created.
+- **Enables login methods / IAM settings through live tooling** - only with explicit confirmation, and only after showing the discovered command or request body.
 - **Configures third-party provider credentials** - only after the user supplies the provider-owned values listed in `references/platforms/auth-provider-configuration.md`. If values are missing, stop and ask for them with the official setup reference; do not create placeholders or continue into login code.
 - **Never creates a namespace** — that's an Admin Portal operation with a human in the loop.
 - **Never creates production IAM clients** without explicit confirmation that the target is intentionally production.
 
-If the CLI isn't available or the user doesn't want to script it, the AGS API MCP server's `run-apis` tool can perform the same IAM client and permission mutations when it's configured for this environment (under the same confirmation gate). If neither is available, fall back to the Admin Portal: print the manual steps and stop.
+Run live mutations through the path selected during preflight. If that path is unavailable or lacks the required capability, use the allowed fallback under the same confirmation gate. Never switch after an auth, authorization, consent, or confirmation failure. If neither live tool has the capability, fall back to the Admin Portal: print the manual steps and stop.
 
 For Unreal projects, treat `Config/DefaultEngine.ini` as a project config file covered by these write-safety rules. `.env` is optional for Unreal local tooling and does not replace the engine runtime config.
 
@@ -96,7 +98,8 @@ Portal connection ready
   IAM client:       <client-id> (<public / confidential>)
   Project config:   <path>  (<engine config / .env / SDK config>)
   .env:             <path or not written>  (added to .gitignore when written)
-  CLI authenticated: yes
+  Live path:        <AGS API MCP / AGS CLI / Admin Portal manual>
+  Auth verified:    <yes / blocked / not applicable>
 
 Next step: /ags install-sdk
 ```
@@ -109,9 +112,9 @@ If anything was skipped or done manually, note it in the block.
 
 The connect step is complete when:
 
-1. The namespace name and base URL are known from CLI config, project config, or user input.
+1. The namespace name and base URL are known from selected live-tool config, project config, or user input.
 2. An IAM client exists in that namespace (created here or already present).
-3. Required login methods for the target integration are enabled, or the CLI has reported that the operation is unavailable and manual portal action is required.
+3. Required login methods for the target integration are enabled, or neither live tool has the capability and manual portal action is required.
 4. The project has the correct runtime config for its project type, carrying client ID, base URL, namespace name, and publisher namespace when the SDK requires it. Client secret only if it's a confidential server-side target.
 5. If `.env` is written, `.env` is in `.gitignore`.
 6. The "ready" block is printed.
@@ -124,7 +127,7 @@ The connect step is complete when:
 
 Run dependency checks. If any fail, surface the gap.
 
-Also inspect what is already configured:
+When CLI is the selected path, inspect what is already configured with:
 
 ```bash
 ags auth status --format json
@@ -162,7 +165,7 @@ For any third-party platform or social login method, read `references/platforms/
 
 ### Step 3: Discover existing namespace and IAM state
 
-Use `ags describe` before service commands, then run JSON output commands where exposed:
+Use the selected live tool to inspect existing state. For MCP, discover the operation with `search-apis` / `describe-apis` and execute the read with `run-apis`. When CLI is selected, use `ags describe` before service commands, then run JSON output commands where exposed:
 
 ```bash
 ags describe iam clients list
@@ -180,22 +183,22 @@ If the generated CLI exposes login-method, platform, identity-provider, or names
 
 ### Step 4: Create or update AGS resources
 
-If the user wants to create a new client and the CLI is authenticated:
+If the user wants to create a new client and the selected live path is authenticated:
 
 1. Show the client config that will be created (name, kind, scopes).
-2. Use `ags describe <service> <resource> <method>` and `--skeleton` when available to get the exact request body.
+2. Use MCP `describe-apis`, or CLI `ags describe <service> <resource> <method>` and `--skeleton` when CLI is selected, to get the exact request body.
 3. Show the command/body, including `--namespace`, `--api-scope`, and `--api-version` if required.
 4. Confirm with the user.
-5. Run the CLI command. Capture the new client ID (and secret, for confidential).
+5. Run the selected tool's confirmed mutation. Capture the new client ID (and secret, for confidential).
 
-If a required platform/login method is disabled or missing and the CLI exposes the update operation:
+If a required platform/login method is disabled or missing and the selected live tool exposes the update operation:
 
-1. Use `ags describe` / `--skeleton` to build the request body.
+1. Use MCP `describe-apis`, or CLI `ags describe` / `--skeleton` when CLI is selected, to build the request body.
 2. Show a minimal diff from current state to desired state.
 3. Confirm with the user.
-4. Run the CLI update.
+4. Run the selected tool's update.
 
-If the CLI does not expose the needed mutation, stop and give the exact Admin Portal action. Do not leave placeholder config and continue as if runtime verification can succeed.
+If the selected path lacks the needed mutation, use the allowed capability fallback. If neither live tool exposes it, stop and give the exact Admin Portal action. Do not leave placeholder config and continue as if runtime verification can succeed.
 
 If the authorization preflight identified missing permissions for an AGS API call during this bootstrap, apply the fix here. For a standalone permission change on a client that already exists outside a setup flow, `/ags manage-permissions` is the dedicated path; this in-flow handling mirrors it.
 
@@ -391,7 +394,8 @@ Skill: ✓ Created client. ID: a1b2c3d4...
          Base URL:          https://accelbyte.example.com
          IAM client:        a1b2c3d4 (public)
          .env:              ./.env  (in .gitignore)
-         CLI authenticated: yes
+         Live path:          AGS CLI
+         Auth verified:      yes
 
        Next step: /ags install-sdk
 ```

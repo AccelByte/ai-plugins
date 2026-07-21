@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-08
+last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/
 ---
@@ -105,8 +105,8 @@ If the request mentions AMS or Matchmaking as pure operational/capability work w
 After the user confirms the first slice, perform codebase and AGS tooling discovery for that slice only.
 
 - Find the engine, SDK/plugin, AGS config source, existing game path, and target files relevant to the confirmed slice.
-- Run read-only AGS CLI checks only when they affect the confirmed slice.
-- Run the authorization preflight from `../references/security/iam-authorization-preflight.md` for the confirmed slice. Classify caller type, token source, IAM client type, planned AGS calls, and required permissions. Use AGS CLI discovery first when the current CLI exposes operation or permission metadata.
+- Select live tooling with the shared `accelbyte` policy. For overlapping remote namespace/API checks, prefer AGS API MCP; use AGS CLI when MCP is unavailable or lacks the required capability, or when the check is CLI-specific.
+- Run the authorization preflight from `../references/security/iam-authorization-preflight.md` for the confirmed slice. Classify caller type, token source, IAM client type, planned AGS calls, and required permissions. Discover operation or permission metadata through the selected live tool.
 - Run the service-selection check from `../subskills/integrate.md` for any slice that stores or updates player/game data. Prefer purpose-built AGS services over Cloud Save and record Cloud Save only when the data is generic save/blob/preference/custom JSON, or when a native service cannot model the requirement.
 - Read supporting module/capability files only for the confirmed slice.
 
@@ -159,11 +159,12 @@ Writing the plan file does not approve code edits. The existing `Game Flow Plan`
 Before drafting the Game Flow Plan, perform codebase and AGS tooling discovery. Run this discovery only after the multi-slice gate has either not triggered or the user has confirmed the first slice.
 
 - Find the engine, SDK/plugin, AGS config source, existing login/bootstrap/menu/gameplay path, and target files/classes/functions.
-- Run read-only AGS CLI checks when AGS-side config affects the request. Start with `Get-Command ags` on Windows or `command -v ags` on macOS/Linux, then use `ags --version`, `ags auth status`, `ags doctor`, and `ags describe` when available.
-- If using the AGS API MCP server for live namespace evidence, make a lightweight read-only MCP call before deeper local discovery or plan drafting. If MCP auth is expired, unauthenticated, consent-blocked, or requires re-auth, stop and ask the user to re-authenticate/reload the MCP server before continuing.
-- Follow `../references/observe/cli-commands.md` for generated command discovery. Use `ags describe` before unfamiliar service/resource commands and prefer JSON output when the CLI exposes it.
+- Select the live path using the shared `accelbyte` policy. Prefer AGS API MCP for overlapping remote namespace/API evidence. Use AGS CLI when MCP is unavailable or lacks the required capability, or for CLI health and diagnostics.
+- Check the selected path before deeper local discovery or plan drafting. For MCP, make a lightweight read-only call. For CLI, start with `Get-Command ags` on Windows or `command -v ags` on macOS/Linux, then use `ags --version`, `ags auth status`, `ags doctor`, and `ags describe` as relevant.
+- If the selected path reports expired or missing authentication, authorization failure, missing consent, or required confirmation, stop and resolve that gate. Do not switch tools to bypass it.
+- When CLI is selected, follow `../references/observe/cli-commands.md` for generated command discovery, use `ags describe` before unfamiliar service/resource commands, and prefer JSON output when exposed.
 - Do not create, update, delete, enable, grant, revoke, or otherwise mutate AGS state before the Game Flow Plan is approved.
-- If CLI is unavailable, unauthenticated, or cannot verify the namespace/client/login method, record that blocker or gap in the Game Flow Plan instead of silently skipping it.
+- If the preferred path is unavailable or lacks the required capability, use the allowed fallback. If neither path can verify the namespace/client/login method, record that gap in the Game Flow Plan instead of silently skipping it.
 - For third-party login providers, read `../references/platforms/auth-provider-configuration.md` before asking for plan approval. If the provider is missing or inactive, construct the manual Admin Portal URL from the discovered AGS base URL and namespace and include the provider-specific field checklist from that reference.
 - Do not force an interactive AGS CLI login while planning. Ask only when the user must authenticate or choose between conflicting namespace/client/config sources.
 
@@ -188,8 +189,8 @@ Authorization Plan
   Token source:          <user access token | service/server token | unknown>
   IAM client type:       <public | confidential | unknown>
   AGS calls:             <SDK methods or REST endpoints, including secondary lookup calls>
-  Permission discovery:  <AGS CLI evidence, docs fallback, or gap>
-  Required permissions:  <exact permissions or "not exposed by current CLI">
+  Permission discovery:  <AGS API MCP evidence, AGS CLI evidence, docs fallback, or gap>
+  Required permissions:  <exact permissions or "not exposed by the selected live tool">
   Verified access:       <yes | no | blocked>
 ```
 
