@@ -1,12 +1,14 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-07-21
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[signal-guide.md](../references/observe/signal-guide.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[grafana-guide.md](../references/observe/grafana-guide.md)'
 - '[common-errors.md](../references/deploy/common-errors.md)'
+- '[mcp-auth-recovery.md](../../accelbyte/references/mcp-auth-recovery.md)'
 ---
 
 # AGS Extend Doctor
@@ -23,6 +25,7 @@ Read-only diagnosis for an Extend app that's misbehaving. Ingests the developer'
 - Read `references/debug/local-run.md` for local startup failure modes.
 - Read `references/overview.md` for architecture-level limits (replica ceiling, override latency, request size, retention).
 - Read `references/observe/grafana-guide.md` for any symptom about *log access itself* — "can't find the logs", "the logs link doesn't work", "Grafana is empty", "no logs showing", or "works locally but I can't see why it fails when deployed". Logs are ingested into Grafana **asynchronously**: an empty view is usually ingestion lag or a too-narrow time range, not broken logging. Surface that before sending the developer down a misconfiguration hunt.
+- Read `../../accelbyte/references/mcp-auth-recovery.md` when MCP sign-in reports "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page. Treat the generic page as a clue that needs corroboration, not proof of a stale registration.
 - Do not invent log patterns, error codes, or causes not listed in those references. If the symptom doesn't map to anything documented, say so and point the developer at Grafana Cloud Explore (logs are NOT in the CLI — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`) plus AccelByte support.
 
 </grounding_rules>
@@ -93,6 +96,7 @@ Match the developer's description to a symptom category:
 | Events not arriving | "event handler not triggering", "handler not called" | `faq.md#events-fire-locally-but-not-in-production` + `signal-guide.md` |
 | Override not called | "override registered but nothing happens" | `faq.md#override-works-in-dev-but-isnt-being-called-in-production` |
 | Authentication errors | "401", "unauthorized", "token failed" | `signal-guide.md#warning-signals` token refresh entry; `faq.md#credentials-and-permissions` |
+| MCP sign-in invalid-client failure | "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page — especially after an IAM client was removed | `../../accelbyte/references/mcp-auth-recovery.md` |
 | Permission errors | "permission denied", "403" | `signal-guide.md#error-signals` permission entry |
 
 If symptoms span multiple categories, pick the most specific and note the others in Likely causes.
@@ -122,6 +126,7 @@ Name exactly one next step. Examples:
 - "Run `/ags-extend observe` and look for the pattern `OOMKilled` in the last 200 lines."
 - "Check `.env` against the Admin Portal's app environment for drift (faq.md#credentials-and-permissions)."
 - "Run `/ags-extend debug` locally with the same inputs the production app is getting."
+- "Run `/ags-extend install-mcp` to recover the affected MCP server's stale cached registration."
 
 One next step. Not three. If the developer wants to branch after the first fails, they come back.
 
@@ -133,6 +138,7 @@ Always include a support fallback after the primary next step: "If this doesn't 
 |---|---|
 | Developer asks doctor to run a command | Stop. "This subskill is read-only. Run `/ags-extend observe` for logs, `/ags-extend debug` for local." |
 | Developer asks doctor to fix something | Stop. "I diagnose but don't mutate. Here's what to check + which subskill runs the fix." |
+| Stale cached MCP registration fits the evidence | Diagnose it and hand off to `/ags-extend install-mcp` (see `../../accelbyte/references/mcp-auth-recovery.md`). Do not prescribe or run the clear/logout mutation here. |
 | Symptoms contradict each other | Note the contradiction in the diagnosis. Example: "app is `Running` and alarms are firing suggests the health check is green but the feature is broken — usually a backend/downstream failure that the health check doesn't observe." |
 | No symptoms given (just "/ags-extend doctor") | Ask: "What's the symptom? (app status, log snippet, user-visible behavior, error message)." One question. |
 | "Is the AccelByte platform down?" | The references don't cover platform health. Direct to AccelByte's status page or support. |

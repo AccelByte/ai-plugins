@@ -9,6 +9,7 @@ sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[install-cli.md](install-cli.md)'
+- '[mcp-auth-recovery.md](../../accelbyte/references/mcp-auth-recovery.md)'
 - '[unreal-mcp.md](../references/sdks/game-engine/unreal/mcp.md)'
 - '[unity-mcp.md](../references/sdks/game-engine/unity/mcp.md)'
 - '[godot-mcp.md](../references/sdks/game-engine/godot/mcp.md)'
@@ -210,6 +211,8 @@ Treat 200, 401, and 405 as reachable. Other 4xx, 5xx, DNS failure, or timeout sh
 
 If the active IDE already exposes the AGS API MCP tools after setup, run a lightweight read-only MCP call before reporting ready. Use capability discovery, search/describe, or a harmless read operation. If the tool reports expired auth, unauthenticated, login required, consent required, or re-auth needed, stop and tell the user to re-authenticate/reload the MCP server. If the MCP tools are not available until restart, report `Auth check: not available until IDE restart`.
 
+If re-authentication itself fails with an invalid-client signature — "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page — the cached DCR registration may be stale rather than the token simply being expired. Read `../../accelbyte/references/mcp-auth-recovery.md` and follow its evidence check and client-specific recovery before telling the user to reinstall or re-add the MCP server. Do not jump to clearing authentication for an ordinary expired token.
+
 #### Step 6: Print the result block
 
 Print the relevant block from `output_contract`.
@@ -221,5 +224,6 @@ Print the relevant block from `output_contract`.
 - **Plugin installed but the AGS API MCP entry is gone or renamed** - surface the discrepancy. Do not auto-add a new AGS API MCP entry unless the user asks for that config creation flow.
 - **User-supplied AGS API MCP URL does not match any supported pattern** - explain the supported patterns. If the user insists on a custom URL, apply it only after warning that it may not be a supported AccelByte endpoint.
 - **Reachability check fails** - surface DNS, 5xx, timeout, or unexpected status details.
+- **Sign-in fails with "invalid client ID", "client ID not found", or a generic IAM "Invalid Request" page** - the cached DCR client registration may be stale. Read `../../accelbyte/references/mcp-auth-recovery.md` for the evidence check and client-specific recovery (Claude Code **Clear authentication**; Codex `mcp logout`/`mcp login`). Do not reinstall or re-add the MCP server, and do not clear authentication for an ordinary expired token.
 - **Godot SDK MCP requested** - report unsupported using the engine MCP placeholder reference.
 - **User wants the Extend SDK MCP** - route to `/ags-extend install-mcp`.

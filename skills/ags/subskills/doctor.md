@@ -5,11 +5,13 @@ description: Read-only symptom → cause diagnosis. Use when something is off bu
   via the diagnosis trees, then hands off to the subskill that owns the fix.
 allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-06-24
+last-verified: 2026-07-21
 sources:
 - https://docs.accelbyte.io/
+- https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[auth-failures.md](../references/debug/auth-failures.md)'
+- '[mcp-auth-recovery.md](../../accelbyte/references/mcp-auth-recovery.md)'
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[lobby-disconnects.md](../references/debug/lobby-disconnects.md)'
 - '[matchmaking-timeouts.md](../references/debug/matchmaking-timeouts.md)'
@@ -30,6 +32,7 @@ Read-only symptom-to-cause walk. Differs from `subskills/debug.md` by being expl
 Diagnosis trees trace to:
 
 - `references/debug/auth-failures.md`
+- `../../accelbyte/references/mcp-auth-recovery.md`
 - `references/security/iam-authorization-preflight.md`
 - `references/debug/lobby-disconnects.md`
 - `references/debug/matchmaking-timeouts.md`
@@ -52,7 +55,8 @@ Don't fabricate causes. If the symptom doesn't fit a known signature, say so and
 
 Doctor is read-only by contract. **No edits, no installs, no API mutations.** If a fix is needed, hand off:
 
-- Auth fix → `/ags debug` (which is allowed to mutate).
+- Auth fix in SDK/integration code (token refresh wiring, login call path) → `/ags debug` (which is allowed to mutate).
+- Stale cached MCP / DCR client registration fix (Clear authentication / `codex mcp logout`+`login`) → `/ags install-mcp`.
 - IAM client *permission* fix (add/update/delete a permission on an existing, correctly-typed client) → `/ags manage-permissions`.
 - IAM client *kind* / new client / login-method fix → `/ags connect-portal`.
 - SDK config fix → `/ags install-sdk` or `/ags integrate`.
@@ -104,6 +108,7 @@ Pick a starting reference based on the symptom:
 | Symptom shape | Reference |
 |---|---|
 | Auth / login / token issues | `references/debug/auth-failures.md` |
+| MCP sign-in failing with "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page — especially after an IAM client was removed | `../../accelbyte/references/mcp-auth-recovery.md` |
 | Permission errors, forbidden calls, or missing enriched fields such as display name | `references/security/iam-authorization-preflight.md` |
 | Lobby drops / WebSocket issues | `references/debug/lobby-disconnects.md` |
 | Matchmaking timeouts / no matches | `references/debug/matchmaking-timeouts.md` |
@@ -147,6 +152,7 @@ Name the subskill / peer skill that owns the fix:
 | Missing IAM client permission (client kind is correct) | `/ags manage-permissions` |
 | Missing display-name/profile lookup permission | `/ags manage-permissions` |
 | Login method disabled/missing/unimplemented (`400 invalid_request`) | `/ags connect-portal` |
+| Stale cached MCP client registration (deleted IAM client, "invalid client ID" / generic "Invalid Request" at MCP sign-in) | `/ags install-mcp` (see `../../accelbyte/references/mcp-auth-recovery.md`) |
 | Namespace mismatch in `.env` | `/ags connect-portal` |
 | SDK version drift | `/ags install-sdk` |
 | Test-login broken from a code regression | `/ags debug` |

@@ -1,9 +1,11 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-07-21
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[init.md](init.md)'
+- '[mcp-auth-recovery.md](../../accelbyte/references/mcp-auth-recovery.md)'
 ---
 
 # AGS Extend MCP Installer
@@ -267,7 +269,13 @@ Start the ags-api container first (see Claude Code section above). Then:
 
 Same JSON structure as Claude Code above.
 
-### Step 7 — Post-install reminder
+### Step 7 — Check authentication
+
+If the active IDE exposes either AccelByte MCP server after setup, run one lightweight read-only call to confirm authentication. If the tools are unavailable until restart, defer the check until the IDE reloads.
+
+If sign-in fails with an invalid-client signature — "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page — the cached DCR registration may be stale. Read `../../accelbyte/references/mcp-auth-recovery.md`, confirm the surrounding evidence, and follow its client-specific recovery. Do not reinstall or re-add the MCP server. Do not clear authentication for an ordinary expired token; try normal refresh or re-authorization first.
+
+### Step 8 — Post-install reminder
 
 ```
 Done. MCP config updated:
@@ -297,6 +305,7 @@ Restart {IDE} for the new MCP connections to activate.
 | `ags-extend-sdk` present with a different image tag | Treat as above; mention that newer tags exist (the one in this file) but let the user decide. |
 | User picks a language not in the table | Stop — the SDK MCP supports only the four listed. Ask again. |
 | Docker is installed but daemon not running | Both servers require Docker. Tell the user to start Docker and retry. |
+| Sign-in fails with "invalid client ID", "client ID not found", or a generic IAM "Invalid Request" page | The cached DCR client registration may be stale. Read `../../accelbyte/references/mcp-auth-recovery.md`, confirm its evidence, and follow the client-specific recovery. Do not reinstall or re-add the MCP server, and do not clear authentication for an ordinary expired token. |
 | Windsurf path doesn't exist yet | Create it (and the `~/.codeium/windsurf/` directory). Don't fall back to a different file. |
 | User wants both project and global configs | Pick one for this run. Say: "I'll write one at a time — re-run `/ags-extend install-mcp` and choose the other scope if you want both." |
 | "other" IDE | Print the generic JSON block and the required env vars. Stop without writing. |
