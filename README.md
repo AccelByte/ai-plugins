@@ -111,6 +111,12 @@ Picking the right Extend pattern, scaffolding a new service, defining its API, r
 6. **In production** — `/ags-extend observe` for logs and health, `/ags-extend doctor` if something's off, `/ags-extend upgrade` for SDK or proto version bumps.
 
 
+## AGS CLI
+
+Gives your AI assistant a scriptable interface to your live AGS environment. The `/ags` skills install the CLI (`/ags install-cli`) and drive it on your behalf: authenticating, discovering exact API contracts with `ags describe`, managing IAM clients and permissions, and running guided setup workflows like `competitive-multiplayer`.
+
+Because its commands are generated from real AGS OpenAPI specs, your assistant runs actual backend operations instead of guessing at API shapes. Everything it runs is a plain `ags` command you can inspect, re-run, or script yourself. For installation, authentication, and the full command reference, see the [AGS CLI documentation](https://github.com/AccelByte/accelbyte-ags-cli).
+
 ## MCP Servers
 
 ### AGS API MCP Server
