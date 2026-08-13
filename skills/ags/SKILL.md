@@ -19,6 +19,26 @@ This is the single canonical AGS entry point. Do not decline deep Matchmaking or
 
 `/ags` owns AGS routing for core modules, Matchmaking, and AMS. Do not decline deep Matchmaking or AMS work just because it is deep. Route that work to the nested capability routers:
 
+## Workspace Preflight
+
+Before selecting a workflow, capability router, or subskill, run a shallow, read-only workspace fingerprint when a workspace is available. Use the workspace as the anchor for project-specific answers; use bundled references to interpret or fill gaps in that evidence.
+
+1. Inspect the current directory and its ancestors for canonical project markers. If none are present, inspect only immediate child directories. Do not recursively inventory the repository.
+2. Detect the project type from strong markers:
+   - Unreal: `*.uproject`; then inspect `Config/DefaultEngine.ini`, project/plugin descriptors, and `Plugins/` only as needed.
+   - Unity: `ProjectSettings/ProjectVersion.txt` with `Packages/manifest.json`; use `Packages/packages-lock.json` and `Library/PackageCache/com.accelbyte.unitysdk*` when available. `Assets/` alone is not sufficient evidence.
+   - Godot: `project.godot`.
+   - Roblox/Rojo: `*.project.json` or `default.project.json`, supported by `wally.toml` when present.
+   - Web: `package.json` and its lockfile.
+   - Custom engine or backend: a primary build/dependency manifest such as `CMakeLists.txt`, `go.mod`, `pyproject.toml`, or a language project file.
+3. Record only the context relevant to routing and answering: project root, project type, engine version when available, AGS SDK family, declared SDK version, resolved SDK version, resolved local SDK source, AGS config locations, and caller type (`game client`, `game server`, `backend service`, `trusted tool`, `web app/admin UI`, or `unknown`). Infer caller type only from explicit user wording or project evidence.
+4. For exact SDK class, method, signature, or code-example questions, inspect existing project usage and resolved local SDK source before bundled references or remote documentation. Prefer evidence in this order:
+   `project code -> resolved local SDK source -> resolved package lock -> declared package manifest -> bundled AGS references -> official remote docs/source -> model memory`.
+5. If declared and resolved SDK versions disagree, report the mismatch and use the resolved source that the project actually compiles when it is available.
+6. Never print secrets found in SDK or OAuth configuration. Record only non-secret routing evidence unless the user's task explicitly requires a particular configuration value.
+
+Skip only the parts that cannot apply: when no workspace is available, record that and route from the request; for product-only questions such as pricing or comparisons, stop after the cheap project-type check.
+
 ## Capability Routers
 
 - Matchmaking-specific work → `capabilities/matchmaking/router.md`.
@@ -79,15 +99,16 @@ Phases run roughly in order but loop (scaffold → build → operate → back to
 
 <tool_usage_rules>
 
-1. Resolve the invocation to **exactly one** subskill using the decision procedure below.
-2. Read that subskill file start to finish before taking any action. Do not answer from memory of a subskill's contents — subskills change, and the file on disk is the source of truth.
-3. Do not mix instructions across two subskills in one response. If a handoff is needed, finish the current subskill, then tell the user which one to invoke next.
-4. If the user's message spans multiple phases ("set up a namespace and integrate auth"), route to the earliest phase and announce the next step; do not auto-chain into the next subskill.
-5. Before starting any routed work that will rely on a live AGS namespace through the AGS API MCP server or AGS CLI, run the cheapest read-only auth freshness check for that tool:
+1. Run the Workspace Preflight above before routing. This bounded fingerprint is the only project inspection allowed before selecting a subskill.
+2. Resolve the invocation to **exactly one** subskill using the decision procedure below, carrying the workspace context into that route.
+3. Read that subskill file start to finish before taking any further action. Do not answer from memory of a subskill's contents — subskills change, and the file on disk is the source of truth.
+4. Do not mix instructions across two subskills in one response. If a handoff is needed, finish the current subskill, then tell the user which one to invoke next.
+5. If the user's message spans multiple phases ("set up a namespace and integrate auth"), route to the earliest phase and announce the later step; do not auto-chain into the next subskill.
+6. Before starting any routed work that will rely on a live AGS namespace through the AGS API MCP server or AGS CLI, run the cheapest read-only auth freshness check for that tool:
    - MCP path: call a lightweight read-only MCP tool first, such as capability discovery or a harmless search/describe/read operation. If it reports expired auth, unauthenticated, login required, consent required, or re-auth needed, stop and ask the user to re-authenticate/reload the MCP server before doing more work.
    - CLI path: run `ags auth status` before other AGS CLI commands. If the session is expired, unauthenticated, or pointed at the wrong profile/portal, stop and ask the user to run `ags auth login` or select the correct profile before continuing.
    - Skip this for conceptual/local-only answers that do not need live AGS data, and say live verification was not required when relevant.
-6. Use only the tools listed in frontmatter. Subskills may further restrict; respect their restrictions.
+7. Use only the tools listed in frontmatter. Subskills may further restrict; respect their restrictions.
 
 </tool_usage_rules>
 

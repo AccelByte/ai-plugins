@@ -1,7 +1,7 @@
 {
   "name": "accelbyte-ai-plugins",
   "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "author": {
     "name": "AccelByte",
     "url": "https://accelbyte.io"
