@@ -146,7 +146,7 @@ Skill: [reads .env, accelbyte.config.json, runs ags auth status and a read-only 
        Next-step pointers:
          • PSN IdP setup: /ags connect-portal
          • SDK upgrade: /ags install-sdk (will detect the upgrade path)
-         • Customize MCP URL (optional, only if not on Shared Cloud default): /ags install-mcp
+         • Customize MCP URL (optional, only if not on Public Cloud default): /ags install-mcp
 ```
 
 ### Limited info (CLI not installed)

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-17
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -8,9 +8,11 @@ see-also:
 - '[tiers.md](../pricing/tiers.md)'
 ---
 
-# Deployment — Shared Cloud
+# Deployment — Public Cloud
 
 The default AGS deployment model. AccelByte-managed multi-tenant cloud. **Most studios start here.**
+
+> Previously called **Shared Cloud**. Same tier, renamed — older AccelByte documentation and support threads still use the old name.
 
 ---
 
@@ -25,7 +27,7 @@ A multi-tenant, AccelByte-operated cloud deployment that hosts namespaces for ma
 - Studios that **don't have data-residency constraints** and aren't bound by enterprise compliance requirements.
 - Studios that **want minimal ops involvement** — the whole point is that someone else runs the platform.
 
-## When to consider moving off shared cloud
+## When to consider moving off public cloud
 
 - **Data residency** — players in jurisdictions that require data to stay in a specific region (GDPR, certain APAC markets, etc.).
 - **Enterprise SLA needs** — when a contract demands stricter uptime guarantees than the standard tier provides.

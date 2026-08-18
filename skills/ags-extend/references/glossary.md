@@ -133,7 +133,7 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 ## Infrastructure limits
 
-**Image limit** — 50 images/app on Shared Cloud, 100 on Private Cloud. Old images get pruned.
+**Image limit** — 50 images/app on Public Cloud, 100 on Private Cloud. Old images get pruned.
 
 **Log retention** — 30 days. Forward externally if you need more.
 

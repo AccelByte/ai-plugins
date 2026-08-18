@@ -19,7 +19,7 @@ Native rules cover: numeric distance matching (MMR, score), exact attribute part
 Yes. Matchmaking doesn't require an MMR attribute. You can match purely by game mode, party size, or region. Add MMR (or a proxy like "matches played") once you have enough data. Start simple.
 
 **Q: How many concurrent players does matchmaking scale to?**
-AGS Matchmaking scales with your player base on Shared Cloud. There are no documented per-pool concurrency limits in the public documentation. For very large-scale launches (>10,000 concurrent), contact AccelByte support to discuss capacity planning.
+AGS Matchmaking scales with your player base on Public Cloud. There are no documented per-pool concurrency limits in the public documentation. For very large-scale launches (>10,000 concurrent), contact AccelByte support to discuss capacity planning.
 
 **Q: Can I have multiple pools for the same game mode?**
 Yes. Multiple pools can use the same ruleset. Common patterns: a pool for each region, a pool for different skill bands (new-player pool, veteran pool), a ranked vs casual split.

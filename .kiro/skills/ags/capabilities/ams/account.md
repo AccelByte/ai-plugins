@@ -17,8 +17,8 @@ Activate AMS in a namespace, create an AMS account, and link additional game nam
 
 <grounding_rules>
 
-- Read `references/overview.md` before starting — the account setup differs between Shared Cloud and Private Cloud.
-- Shared Cloud: self-service through the Admin Portal. Private Cloud: requires contacting the AccelByte Account Manager.
+- Read `references/overview.md` before starting — the account setup differs between Public Cloud and Private Cloud.
+- Public Cloud: self-service through the Admin Portal. Private Cloud: requires contacting the AccelByte Account Manager.
 - Namespaces linked to the same AMS account share: uploaded server images, observability metrics, and billing data.
 
 </grounding_rules>
@@ -36,12 +36,12 @@ Activate AMS in a namespace, create an AMS account, and link additional game nam
 
 Ask:
 
-> Is your AccelByte environment Shared Cloud or Private Cloud?
+> Is your AccelByte environment Public Cloud or Private Cloud?
 
-- **Shared Cloud** → self-service via Admin Portal, free trial available
+- **Public Cloud** → self-service via Admin Portal, free trial available
 - **Private Cloud** → contact your AccelByte Account Manager or submit a request through the customer support portal. AMS is not enabled via self-service for Private Cloud.
 
-### Step 2 — Activate AMS (Shared Cloud)
+### Step 2 — Activate AMS (Public Cloud)
 
 1. Sign into the Admin Portal and navigate to your **studio namespace** (not the game namespace)
 2. Locate the **AMS section** on the homepage

@@ -211,14 +211,14 @@ Pull logs from Grafana Cloud Explore (Admin Portal → app detail → Open Grafa
 
 ```
 User: /ags-extend doctor
-  My Service Extension works fine locally but not on shared cloud, and I
+  My Service Extension works fine locally but not on public cloud, and I
   can't figure out why — getting at the logs is painful, the Grafana view
   is empty.
 
 Skill: [reads grafana-guide.md and faq.md#local-vs-production-gotchas]
 
 ## Symptoms
-App behaves correctly in local run but misbehaves once deployed to a Shared
+App behaves correctly in local run but misbehaves once deployed to a Public
 Cloud namespace. Developer is blocked upstream of diagnosis: the deployed
 logs appear empty in Grafana, so there's nothing to compare against local.
 

@@ -13,7 +13,7 @@ sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
-- '[shared-cloud-client-permission-groups.md](../references/synthetic/shared-cloud-client-permission-groups.md)'
+- '[public-cloud-client-permission-groups.md](../references/synthetic/public-cloud-client-permission-groups.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[connect-portal.md](connect-portal.md)'
 - '[install-cli.md](install-cli.md)'
@@ -30,7 +30,7 @@ Every change here is scoped by the authorization preflight first, then applied t
 
 <grounding_rules>
 
-Scope every change through `references/security/iam-authorization-preflight.md` before touching a client. Don't invent permission resource strings, action values, `groupId`s, or command/body shapes. Select the live tool using the shared `accelbyte` policy, then discover the exact required resource/action and mutation operation from that tool — AGS API MCP `describe-apis`, or `ags describe` with generated help only as a fallback — not from memory or from another AGS version. For Shared Cloud, map the resource to a permission group with `references/synthetic/shared-cloud-client-permission-groups.md`; do not use that group model until environment detection resolves to Shared Cloud.
+Scope every change through `references/security/iam-authorization-preflight.md` before touching a client. Don't invent permission resource strings, action values, `groupId`s, or command/body shapes. Select the live tool using the shared `accelbyte` policy, then discover the exact required resource/action and mutation operation from that tool — AGS API MCP `describe-apis`, or `ags describe` with generated help only as a fallback — not from memory or from another AGS version. For Public Cloud, map the resource to a permission group with `references/synthetic/public-cloud-client-permission-groups.md`; do not use that group model until environment detection resolves to Public Cloud.
 
 If the exact mutation operation for the environment isn't exposed by the CLI or the MCP server, say so and route to the Admin Portal owner. Do not approximate a write you can't verify.
 
@@ -38,7 +38,7 @@ If the exact mutation operation for the environment isn't exposed by the CLI or 
 
 <tool_usage_rules>
 
-- `Read` for `references/security/iam-authorization-preflight.md`, `references/synthetic/shared-cloud-client-permission-groups.md`, and `references/observe/cli-commands.md`.
+- `Read` for `references/security/iam-authorization-preflight.md`, `references/synthetic/public-cloud-client-permission-groups.md`, and `references/observe/cli-commands.md`.
 - `Glob` to locate project runtime config when the target namespace must come from a game project on disk.
 - `Bash` for the AGS CLI when it's installed and authenticated. Use read-only discovery (`ags describe` first, `--help` only as fallback, `ags iam clients get/list`, `ags iam client-config list-permissions`) freely; run state-changing commands only after showing the command/body and receiving explicit confirmation.
 - When the AGS API MCP server is configured for this environment, prefer its `search-apis` / `describe-apis` / `run-apis` tools for overlapping remote operations. Use the CLI when MCP is unavailable or lacks the required capability. Treat `run-apis` write operations (`POST` / `PUT` / `PATCH` / `DELETE`) as mutations under the same confirmation gate; the tool itself also prompts for consent.
@@ -55,7 +55,7 @@ Before changing anything, confirm:
 1. Select the discovery + mutation path using the shared `accelbyte` policy, then verify that path's availability and auth state. Prefer the AGS API MCP server for overlapping remote operations; use the AGS CLI (`ags --version`, `ags auth status`) only when MCP is unavailable or lacks the required capability. If the selected path has an auth, consent, or confirmation failure, stop on that path. If neither tool has the capability, route to `/ags install-cli` or `/ags install-mcp`, or hand the change to the Admin Portal owner, and stop.
 2. The target **client ID** is known. If the user only describes the client ("my dedicated server client"), discover it read-only (`ags iam clients list --namespace <ns> --format json` or the MCP equivalent) and confirm which client before mutating.
 3. The target **namespace** is known. For game projects, derive it from project runtime config (Unreal `Config/DefaultEngine.ini`, Unity SDK config asset/json, Web/custom `.env`) before CLI defaults. For pure ops contexts, take it from explicit user input. If project config and CLI profile disagree, stop and report the mismatch.
-4. The **environment model** is resolved (Shared Cloud vs Private Cloud / BYOC vs unknown) per the preflight, because it decides whether the change is expressed as a permission group or a free-form resource/action.
+4. The **environment model** is resolved (Public Cloud vs Private Cloud / BYOC vs unknown) per the preflight, because it decides whether the change is expressed as a permission group or a free-form resource/action.
 
 If any of those are missing, surface the gap before doing work.
 
@@ -72,7 +72,7 @@ This subskill mutates IAM client permissions on a live namespace. Permission cha
 - **Production.** If the namespace or client is production, confirm that intent explicitly before any change.
 - **Never put secrets in scope.** This path changes permissions, not credentials. Don't echo or store client secrets.
 
-If the CLI or MCP server doesn't expose the needed mutation, stop and give the Admin Portal owner the exact resource/action (Private Cloud) or module / group / `groupId` / action (Shared Cloud) to apply.
+If the CLI or MCP server doesn't expose the needed mutation, stop and give the Admin Portal owner the exact resource/action (Private Cloud) or module / group / `groupId` / action (Public Cloud) to apply.
 
 </action_safety>
 
@@ -84,7 +84,7 @@ End with a change block:
 Permission change applied
 
   Namespace:        <name>
-  Environment:      <shared cloud | private cloud | unknown>
+  Environment:      <public cloud | private cloud | unknown>
   Client:           <client-id> (<public | confidential>)
   Operation:        <add | update | delete>
   Permission:       <resource [actions]>  |  <module / group / groupId / actions>
@@ -100,7 +100,7 @@ If the change was scoped but not executed (no path available, or user declined),
 
 The change is complete when:
 
-1. The authorization preflight has scoped the exact resource/action (Private Cloud) or permission group (Shared Cloud) and the environment is classified.
+1. The authorization preflight has scoped the exact resource/action (Private Cloud) or permission group (Public Cloud) and the environment is classified.
 2. The target client and namespace are confirmed.
 3. For a confirmed change, the mutation ran through the CLI or MCP server after explicit confirmation, or the inability to run it was reported with the exact change to apply manually.
 4. The result was verified by re-reading the client's permissions where the tooling allows.
@@ -119,12 +119,12 @@ Run `dependency_checks`. Record the selected path before discovery. If neither t
 Read `references/security/iam-authorization-preflight.md` and follow it to:
 
 - Classify the caller the permission is for (game client / game server / backend / trusted tool / web-admin) and confirm the client kind matches (server-side ⇒ confidential).
-- Detect the environment (Shared Cloud vs Private Cloud / BYOC vs unknown). If unknown, report the missing evidence instead of guessing the format.
+- Detect the environment (Public Cloud vs Private Cloud / BYOC vs unknown). If unknown, report the missing evidence instead of guessing the format.
 - Discover the exact resource and action the change concerns through the selected path, rather than guessing the string:
   - **AGS API MCP server** — `search-apis` / `describe-apis` for the operation and its auth requirements; preferred for overlapping remote discovery.
   - **AGS CLI** — `ags describe <service> <resource> <method>`, generated `--help` only as fallback, and JSON output; use when MCP is unavailable or lacks the required capability.
 
-For Shared Cloud, map the discovered resource to its permission group with `references/synthetic/shared-cloud-client-permission-groups.md` (catalog command `ags iam client-config list-permissions --exclude-permissions false --output -`, endpoint `GET /iam/v3/admin/clientConfig/permissions`). The action bits are `1=CREATE 2=READ 4=UPDATE 8=DELETE`.
+For Public Cloud, map the discovered resource to its permission group with `references/synthetic/public-cloud-client-permission-groups.md` (catalog command `ags iam client-config list-permissions --exclude-permissions false --output -`, endpoint `GET /iam/v3/admin/clientConfig/permissions`). The action bits are `1=CREATE 2=READ 4=UPDATE 8=DELETE`.
 
 ### Step 3: Read the client's current permissions
 
@@ -139,7 +139,7 @@ Identify whether the requested permission/action is already present, partially p
 
 State the operation and the minimal change:
 
-- **Add** — grant a resource/action (Private Cloud) or assign a group (Shared Cloud) the client doesn't have.
+- **Add** — grant a resource/action (Private Cloud) or assign a group (Public Cloud) the client doesn't have.
 - **Update** — change the action bits on a resource the client already has (e.g. add `UPDATE` to an existing `READ`).
 - **Delete** — remove a resource/action the client no longer needs.
 
@@ -220,12 +220,12 @@ Skill: ✓ Removed. Re-read client abc123 — STORE now [READ] only.
        (change block …)
 ```
 
-### Shared Cloud — map to a group first
+### Public Cloud — map to a group first
 
 ```
-User: /ags manage-permissions — let my client read game sessions. We're on Shared Cloud.
+User: /ags manage-permissions — let my client read game sessions. We're on Public Cloud.
 
-Skill: Environment: Shared Cloud (base URL on gamingservices.accelbyte.io) ⇒ permission-group model.
+Skill: Environment: Public Cloud (base URL on gamingservices.accelbyte.io) ⇒ permission-group model.
        Preflight discovered resource: NAMESPACE:{namespace}:SESSION:GAME [READ].
        Catalog match: Session / Game Session / g_game_session covers READ (action 2).
 
@@ -245,7 +245,7 @@ Skill: AGS CLI not installed and no AGS API MCP server configured for this envir
        Run /ags install-cli or /ags install-mcp, or have your Admin Portal owner
        add it manually. Once you tell me the AGS call this client needs to make,
        I can scope the exact resource/action (Private Cloud) or module/group
-       (Shared Cloud) for them to apply.
+       (Public Cloud) for them to apply.
 ```
 
 ## Error handling

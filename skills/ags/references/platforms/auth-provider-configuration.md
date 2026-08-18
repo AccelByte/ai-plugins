@@ -78,7 +78,7 @@ or paste the portal field labels for review.
 
 ## Coverage Rules
 
-- AGS Shared Cloud supports in-game login for the providers listed on the
+- AGS Public Cloud supports in-game login for the providers listed on the
   authentication overview, but web login is not supported there.
 - Web login setup in these guides is Private Cloud / publisher-namespace work
   unless the specific provider guide says otherwise.
@@ -200,7 +200,7 @@ configuration.
 - Facebook-side prerequisite: Facebook Developer app, Facebook Login product,
   public_profile advanced access, privacy policy/data deletion setup as needed.
 - Runtime shape: web login through Player Portal. The public guide does not
-  describe Shared Cloud web login support.
+  describe Public Cloud web login support.
 - Stop if missing: App ID or App Secret.
 
 ### Discord

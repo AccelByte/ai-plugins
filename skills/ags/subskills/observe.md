@@ -5,13 +5,14 @@ description: Pull read-only signals from a deployed AGS namespace. Use when the 
   availability, auth health, or connectivity.
 allowed-tools: Read Bash Glob
 model: sonnet
-last-verified: 2026-07-20
+last-verified: 2026-08-17
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest
 - https://github.com/AccelByte/ags-api-mcp-server
 see-also:
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[event-catalog.md](../references/observe/event-catalog.md)'
+- '[grafana-mcp.md](../references/observe/grafana-mcp.md)'
 - '[install-cli.md](install-cli.md)'
 - '[install-mcp.md](install-mcp.md)'
 - '[doctor.md](doctor.md)'
@@ -104,8 +105,11 @@ What does the user want to know?
 | Command discovery | `ags describe <service> <resource> <method>` |
 | Event activity | Admin Portal event browser, or a generated CLI event command if exposed |
 | Specific player's recent activity | discover with `ags describe iam users` and run the matching read-only user lookup command |
+| Service metrics over time (matchmaking throughput, wait times, error rates) | Not a CLI signal — query the tenant Grafana. See `references/observe/grafana-mcp.md`. Private Cloud only. |
 
 If the signal isn't supported through the selected path, use the allowed fallback. If neither tool exposes it, point at the Admin Portal.
+
+Time-series questions ("when did it start", "is it getting worse", "how many per minute") are metrics questions, and neither the CLI nor the AGS API MCP answers them. On **Private Cloud** with a Grafana MCP server connected, query it with that server's read-only discovery and query tools — read `references/observe/grafana-mcp.md` first, and discover live metric names before trusting any documented one. Public Cloud has no AGS service metrics; say so rather than offering a setup that cannot work.
 
 ### Step 3: Run the query
 

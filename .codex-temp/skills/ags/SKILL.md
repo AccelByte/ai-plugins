@@ -81,7 +81,7 @@ Matchmaking, Session, AMS, Statistics, and engine-specific references are suppor
 | 4  | `subskills/connect-portal.md` | scaffold | Bootstrap a namespace + IAM client + `.env` for a new project | wizard (typically) |
 | 5  | `subskills/install-sdk.md` | scaffold | Detect the target SDK and install/scaffold Unreal, Unity, Godot, Roblox, Web SDK, or custom-engine REST fallback | wizard (typically) |
 | 6  | `subskills/install-cli.md` | scaffold | Install the AGS CLI for namespace + IAM management | — |
-| 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Shared Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
+| 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Public Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
 | 8  | `subskills/generate-ui.md` | build | Detect the game engine and route AGS UI generation to the engine-specific UI workflow; Unreal and Unity are supported | install-sdk |
 | 9  | `subskills/init.md` | scaffold | Orchestrates wizard + connect-portal + install-sdk + install-cli + optional install-mcp | — |
 | 10 | `subskills/integrate.md` | build | Module-by-module SDK integration guide (auth, lobby, matchmaking, store, etc.) | install-sdk |
@@ -116,7 +116,7 @@ Phases run roughly in order but loop (scaffold → build → operate → back to
 
 For any IAM client, OAuth client, permission, permission group, `groupId`, resource/action, role, scope, `401`, `403`, `insufficient_permission`, or forbidden-call question, the selected workflow or subskill must read `references/security/iam-authorization-preflight.md` before answering. This is a cross-cutting rule, not a separate subskill.
 
-Environment detection controls the answer format. Shared Cloud answers must use the module / group / `groupId` / action shape. Private Cloud / BYOC answers use the discovered resource/action string as the final permission. If the environment cannot be identified from project config, AGS CLI profile/config, or the permission catalog behavior, report it as unknown and name the missing evidence instead of choosing a Shared Cloud group.
+Environment detection controls the answer format. Public Cloud answers must use the module / group / `groupId` / action shape. Private Cloud / BYOC answers use the discovered resource/action string as the final permission. If the environment cannot be identified from project config, AGS CLI profile/config, or the permission catalog behavior, report it as unknown and name the missing evidence instead of choosing a Public Cloud group.
 
 ### Decision procedure
 

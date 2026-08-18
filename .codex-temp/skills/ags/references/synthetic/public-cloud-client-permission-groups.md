@@ -5,13 +5,13 @@ see-also:
 - '[cli-commands.md](../observe/cli-commands.md)'
 ---
 
-# Shared Cloud Client Permission Groups
+# Public Cloud Client Permission Groups
 
-Use this synthetic reference when translating an AGS resource permission into the grouped IAM client permission model used in Shared Cloud.
+Use this synthetic reference when translating an AGS resource permission into the grouped IAM client permission model used in Public Cloud.
 
-This applies only to **Shared Cloud** environments — those whose AGS base URL is on `gamingservices.accelbyte.io`. In **Private Cloud / BYOC** (any host not on `gamingservices.accelbyte.io`, often a customer's own custom domain), permissions are free-form resource strings: the resource permission discovered with `ags describe` is the final answer, and there is no group to map to. Confirm the environment per `../security/iam-authorization-preflight.md` before applying this mapping.
+This applies only to **Public Cloud** environments — those whose AGS base URL is on `gamingservices.accelbyte.io`. In **Private Cloud / BYOC** (any host not on `gamingservices.accelbyte.io`, often a customer's own custom domain), permissions are free-form resource strings: the resource permission discovered with `ags describe` is the final answer, and there is no group to map to. Confirm the environment per `../security/iam-authorization-preflight.md` before applying this mapping.
 
-**Stop condition:** Do not use this file as the first source for a permission answer. First complete Environment Detection in `../security/iam-authorization-preflight.md` from project config, AGS CLI profile/config, or permission-catalog behavior. If the environment is unknown, report the resource/action plus the missing evidence; do not choose a Shared Cloud group.
+**Stop condition:** Do not use this file as the first source for a permission answer. First complete Environment Detection in `../security/iam-authorization-preflight.md` from project config, AGS CLI profile/config, or permission-catalog behavior. If the environment is unknown, report the resource/action plus the missing evidence; do not choose a Public Cloud group.
 
 ## Discovery Command
 
@@ -44,13 +44,13 @@ Use this action mapping when translating catalog entries:
 ## Lookup Workflow
 
 1. Use `ags describe <service> <resource> <method>` to find the exact required resource permission and action.
-2. Confirm Environment Detection resolved to Shared Cloud.
+2. Confirm Environment Detection resolved to Public Cloud.
 3. Run `ags iam client-config list-permissions --exclude-permissions false --output -`.
 4. Search `clientPermissions[].groups[].permissions[]` for the resource.
 5. Match the action bit to the required action.
 6. Report the module, group, `groupId`, resource, and covered actions.
 
-If multiple groups contain the same resource, report the ambiguity and choose the group whose module and action coverage best match the caller's operation. Do not guess a Shared Cloud group from the resource name alone.
+If multiple groups contain the same resource, report the ambiguity and choose the group whose module and action coverage best match the caller's operation. Do not guess a Public Cloud group from the resource name alone.
 
 ## Example
 

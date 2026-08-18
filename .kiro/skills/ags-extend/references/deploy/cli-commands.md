@@ -63,7 +63,7 @@ The OAuth client must have these Extend permissions. For AGS Private Cloud:
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:VARIABLE [CREATE, READ, UPDATE]`
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:TUNNEL [READ]`
 
-For AGS Shared Cloud, the equivalent grouped permissions are: App Management (CRUD), Deployment Management (Create), Extend app image repository access (Read), Configuration Secret Management (Read, Create, Update), Configuration Variable Management (Read, Create, Update), TCP Tunneling (Read).
+For AGS Public Cloud, the equivalent grouped permissions are: App Management (CRUD), Deployment Management (Create), Extend app image repository access (Read), Configuration Secret Management (Read, Create, Update), Configuration Variable Management (Read, Create, Update), TCP Tunneling (Read).
 
 ### `--base-url` exists only on `login`
 

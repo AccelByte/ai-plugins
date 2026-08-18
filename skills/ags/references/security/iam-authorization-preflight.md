@@ -9,7 +9,7 @@ see-also:
 - '[cli-commands.md](../observe/cli-commands.md)'
 - '[manage-permissions.md](../../subskills/manage-permissions.md)'
 - '[install-mcp.md](../../subskills/install-mcp.md)'
-- '[shared-cloud-client-permission-groups.md](../synthetic/shared-cloud-client-permission-groups.md)'
+- '[public-cloud-client-permission-groups.md](../synthetic/public-cloud-client-permission-groups.md)'
 ---
 
 # IAM Authorization Preflight
@@ -47,10 +47,10 @@ Detect the deployment model before reporting any permission, because the require
 
 - For game projects, start from the project's runtime config rather than memory or CLI defaults. For Godot, read `project.godot`; for Unreal, read `Config/DefaultEngine.ini` and the AccelByte SDK settings; for Unity, read the AccelByte SDK config asset/json if present; for Web/custom projects, read `.env` or the app config.
 - Use AGS CLI profile/config as supporting evidence for the active operator target. If project config and CLI profile point at different base URLs or namespaces, stop before permission mapping and report the mismatch.
-- **Shared Cloud** — the AGS base URL contains `gamingservices.accelbyte.io` (e.g. `https://prod.gamingservices.accelbyte.io` or `https://{studio_namespace}.prod.gamingservices.accelbyte.io`). IAM client permissions are exposed as predefined module/group entries, so the answer must be in permission-group format (module / group / `groupId` / actions) — not a bare resource string.
+- **Public Cloud** — the AGS base URL contains `gamingservices.accelbyte.io` (e.g. `https://prod.gamingservices.accelbyte.io` or `https://{studio_namespace}.prod.gamingservices.accelbyte.io`). IAM client permissions are exposed as predefined module/group entries, so the answer must be in permission-group format (module / group / `groupId` / actions) — not a bare resource string.
 - **Private Cloud / BYOC** — any AGS base URL *not* on `gamingservices.accelbyte.io`. These run on a customer-managed host, which may be a fully custom domain or an `{environment_name}.accelbyte.io` host — so detect this branch by exclusion, not by matching a fixed pattern. Permissions are free-form resource strings, so the discovered resource permission and action *is* the final answer.
 
-The URL is a fast heuristic, and only the `gamingservices.accelbyte.io` marker is reliable — a non-matching host alone does not prove Private Cloud, since custom domains vary. The authoritative check is behavioral: run `ags iam client-config list-permissions --exclude-permissions false --output -`. If it returns a grouped catalog, treat the environment as the Shared Cloud permission-group model regardless of hostname. If the host is not on `gamingservices.accelbyte.io` and the catalog command is unavailable, report the environment as unknown rather than guessing the format.
+The URL is a fast heuristic, and only the `gamingservices.accelbyte.io` marker is reliable — a non-matching host alone does not prove Private Cloud, since custom domains vary. The authoritative check is behavioral: run `ags iam client-config list-permissions --exclude-permissions false --output -`. If it returns a grouped catalog, treat the environment as the Public Cloud permission-group model regardless of hostname. If the host is not on `gamingservices.accelbyte.io` and the catalog command is unavailable, report the environment as unknown rather than guessing the format.
 
 ## Permission Discovery Step
 
@@ -68,17 +68,17 @@ Before implementation or diagnosis, produce an authorization preflight:
 
 Use the selected live discovery path because it tracks the actual API shape for the target environment. Do not hardcode permission strings from another AGS version or from memory when live discovery is available.
 
-## Shared Cloud Permission Group Discovery
+## Public Cloud Permission Group Discovery
 
-This step applies only when Environment Detection resolves to **Shared Cloud**. In Private Cloud / BYOC the discovered resource string is the final answer and there is no group to map to.
+This step applies only when Environment Detection resolves to **Public Cloud**. In Private Cloud / BYOC the discovered resource string is the final answer and there is no group to map to.
 
-Shared Cloud IAM client permissions are exposed as predefined module/group entries rather than free-form private-cloud resource strings. After discovering the required resource permission, use the IAM client configuration catalog to map that resource to the Shared Cloud group shown in the Admin Portal. Through MCP, discover and call the equivalent IAM client-config permissions endpoint; through CLI, run:
+Public Cloud IAM client permissions are exposed as predefined module/group entries rather than free-form private-cloud resource strings. After discovering the required resource permission, use the IAM client configuration catalog to map that resource to the Public Cloud group shown in the Admin Portal. Through MCP, discover and call the equivalent IAM client-config permissions endpoint; through CLI, run:
 
 ```sh
 ags iam client-config list-permissions --exclude-permissions false --output -
 ```
 
-Follow `../synthetic/shared-cloud-client-permission-groups.md` for the observed catalog shape, action bit mapping, and ambiguity handling. That detail is synthetic because it is based on CLI/API discovery rather than public documentation.
+Follow `../synthetic/public-cloud-client-permission-groups.md` for the observed catalog shape, action bit mapping, and ambiguity handling. That detail is synthetic because it is based on CLI/API discovery rather than public documentation.
 
 ## Output Shape
 
@@ -88,7 +88,7 @@ Include this block in AGS game-flow plans, backend-only plans, and permission-re
 Authorization preflight
 
   Caller:                <game client | game server | backend service | trusted tool | web app/admin UI>
-  Environment:           <shared cloud | private cloud | unknown>
+  Environment:           <public cloud | private cloud | unknown>
   Environment evidence:  <project config path/value, CLI profile/config, catalog behavior, or mismatch>
   Token source:          <user access token | service/server token | unknown>
   IAM client type:       <public | confidential | unknown>
@@ -96,7 +96,7 @@ Authorization preflight
   AGS calls:             <SDK methods or REST endpoints>
   Permission discovery:  <AGS API MCP evidence, AGS CLI command/evidence, docs fallback, or gap>
   Required permissions:  <exact permissions or "not exposed by selected live tool">
-  Shared Cloud groups:   <module / group / groupId / actions; "N/A (private cloud)"; or "not checked">
+  Public Cloud groups:   <module / group / groupId / actions; "N/A (private cloud)"; or "not checked">
   Verified access:       <yes | no | blocked>
 ```
 

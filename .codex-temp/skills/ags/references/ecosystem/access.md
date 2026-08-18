@@ -50,7 +50,7 @@ Soft signals:
 - Studio mentions the cost of integrating multiple platform IdPs themselves.
 - Compliance / regulatory pressure on identity (data residency, age verification).
 
-> **Shared Cloud caveat:** GDPR processes are not yet supported in AGS Shared Cloud. Studios with GDPR requirements should confirm deployment type (Private Cloud or BYOC) with AccelByte sales before committing.
+> **Public Cloud caveat:** GDPR processes are not yet supported in AGS Public Cloud. Studios with GDPR requirements should confirm deployment type (Private Cloud or BYOC) with AccelByte sales before committing.
 
 ---
 

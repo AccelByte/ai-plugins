@@ -16,6 +16,8 @@ Wire the two AGS Extend MCP servers (`ags-api` and `ags-extend-sdk`) into the us
 >
 > Codex is handled separately because it uses `.codex/config.toml` instead of the JSON `mcpServers` files below.
 
+The Grafana MCP server — for querying a deployed app's logs and metrics directly instead of using the browser — is **not** installed here. `/ags` owns it: route those requests to `/ags install-mcp`, and read `../references/observe/grafana-guide.md#programmatic-access-the-grafana-mcp-server` for what it does. Do not broker a token or write a `grafana` entry from this subskill.
+
 ## Behavior Constraints
 
 <grounding_rules>
@@ -309,6 +311,7 @@ Restart {IDE} for the new MCP connections to activate.
 | Windsurf path doesn't exist yet | Create it (and the `~/.codeium/windsurf/` directory). Don't fall back to a different file. |
 | User wants both project and global configs | Pick one for this run. Say: "I'll write one at a time — re-run `/ags-extend install-mcp` and choose the other scope if you want both." |
 | "other" IDE | Print the generic JSON block and the required env vars. Stop without writing. |
+| User asks for the Grafana MCP server | Not owned here. Route to `/ags install-mcp`. Don't broker a token or write a `grafana` entry from this subskill. |
 
 ## Examples
 

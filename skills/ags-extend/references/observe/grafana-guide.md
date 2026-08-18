@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-25
+last-verified: 2026-08-17
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/tool-utilities/grafana-cloud-observability/access-grafana-cloud/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
@@ -8,6 +8,8 @@ see-also:
 - '[signal-guide.md](signal-guide.md)'
 - '[cli-commands.md](cli-commands.md)'
 - '[common-errors.md](../deploy/common-errors.md)'
+- '[install-mcp.md](../../subskills/install-mcp.md)'
+- '[grafana-mcp.md](../../../ags/references/observe/grafana-mcp.md)'
 ---
 
 # Grafana Cloud for Extend Logs
@@ -36,18 +38,34 @@ The instance lives at a URL of the form `https://<your-stack>.grafana.net`.
 
 ### Access differs by deployment tier
 
-| | Shared Cloud | Private / Dedicated Cloud |
+| | Public Cloud | Private Cloud |
 |---|---|---|
 | Grafana access | Scoped to **your AMS / Extend resources only** | Unrestricted |
 | Entry point | AMS menu, or the **individual Extend app detail page** → "Open Grafana Cloud" | Also from the Admin Portal sidebar (Foundations → Tools & Utilities → Grafana Cloud) |
 | General AGS service metrics / Game Health dashboards | Not available | Available |
 | Requires | The full AMS or Extend package (free-trial users unlock it once the tier is unlocked) | — |
 
-Both tiers use the **same** managed Grafana Cloud instance — Shared Cloud just sees a scoped slice of it.
+Both tiers use the **same** managed Grafana Cloud instance — Public Cloud just sees a scoped slice of it.
 
-**If "Open Grafana Cloud" is missing or greyed out on Shared Cloud,** the Extend package isn't unlocked for that namespace — that's an entitlement/tier matter, not a bug. Contact AccelByte.
+**If "Open Grafana Cloud" is missing or greyed out on Public Cloud,** the Extend package isn't unlocked for that namespace — that's an entitlement/tier matter, not a bug. Contact AccelByte.
 
-> On Shared Cloud, Grafana access is SSO-only and scoped to your own resources. Programmatic access (a service-account token or API key, e.g. for an MCP server or a script) may not be available on every deployment — confirm with your AccelByte contact before relying on it. The dependable way to read deployed logs today is the manual browser flow described here; `extend-helper-cli` has no logs command.
+> On Public Cloud, Grafana access is SSO-only and scoped to your own resources — there is no service-account token or API key, so the browser flow described here is the only way in. `extend-helper-cli` has no logs command on either tier.
+
+## Programmatic access: the Grafana MCP server
+
+On **Private Cloud**, you can query Loki directly instead of clicking through Explore — AGS brokers a short-lived read-only token and Grafana's own MCP server turns it into callable tools. Worth setting up when you are reading a deployed app's logs repeatedly; for a single look, the browser flow above is faster.
+
+Setup is owned by `/ags` and documented once, in [grafana-mcp.md](../../../ags/references/observe/grafana-mcp.md#step-1--broker-a-token) — brokering, the `406` workaround, the read-only MCP config, reload, and expiry. Read it there rather than restating any of it from memory, and route setup requests to `/ags install-mcp`.
+
+Not available on Public Cloud: the broker rejects those tenants by design. Use the browser flow.
+
+Once connected, everything in the LogQL sections below applies unchanged — the MCP server runs the same queries Explore does, scoped the same way:
+
+```
+{app_name="<Your-App-Name>"}
+```
+
+Prefer the Loki source for log lines and the Prometheus/Mimir source for metrics, exactly as in the browser. Ingestion lag applies identically — an empty result means the same five things it means in Explore.
 
 ## How Grafana is organized (short version)
 
@@ -58,7 +76,7 @@ Two surfaces matter for troubleshooting:
 
 Data sources you'll use in Explore:
 
-- **Logs:** a Loki data source. In your studio's Grafana — Shared or Private Cloud alike — it's named **`log-<studio>`** (and metrics is `metrics-<studio>`); only AccelByte's own internal Grafana shows it as `grafanacloud-logs`. The name is the only thing that varies, so if neither matches what you see, just pick the single Loki / logs source from the data-source dropdown.
+- **Logs:** a Loki data source. In your studio's Grafana — Public or Private Cloud alike — it's named **`log-<studio>`** (and metrics is `metrics-<studio>`); only AccelByte's own internal Grafana shows it as `grafanacloud-logs`. The name is the only thing that varies, so if neither matches what you see, just pick the single Loki / logs source from the data-source dropdown.
 - **Metrics:** a Prometheus-style data source for the same signals the dashboards chart.
 
 For "why is my app misbehaving," you want **Explore → the Loki logs data source.**
@@ -120,4 +138,5 @@ Explore supports **Live** tailing (toggle at the top of the Explore view) — a 
 | Only `/metrics` access lines show | That's the health/metrics scrape (`GET /metrics`), normal background traffic — exclude it with `!= "/metrics"` and trigger a real request |
 | Metrics show but no log lines | You're on the metrics data source — switch Explore to the Loki logs source |
 | A saved query with `namespace="extend-accelbyte-custom-service"` returns nothing | That namespace value was wrong — the real namespace is auto-generated per deployment (`ext-<game-namespace>-<id>`). Scope by `app_name="<your-app>"` instead. |
-| Can't open Grafana at all (Shared Cloud) | Extend/AMS package not unlocked for the namespace — tier/entitlement, contact AccelByte |
+| Can't open Grafana at all (Public Cloud) | Extend/AMS package not unlocked for the namespace — tier/entitlement, contact AccelByte |
+| Anything wrong with the Grafana MCP server — broker errors, missing tools, sudden 401s | Owned by `/ags`. See [grafana-mcp.md](../../../ags/references/observe/grafana-mcp.md#common-confusions). |

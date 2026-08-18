@@ -52,7 +52,7 @@ The CLI does **not** have `logs`, `status`, or `list` subcommands. All log and m
 
 ### Access
 
-Open Grafana Cloud from the Extend app's detail page in the Admin Portal → click "Open Grafana Cloud" → sign in with "Sign in with Admin Portal" (your Admin Portal credentials over SSO). Access scope differs by tier — Shared Cloud is scoped to your AMS/Extend resources; Private Cloud is unrestricted. See `grafana-guide.md#access`.
+Open Grafana Cloud from the Extend app's detail page in the Admin Portal → click "Open Grafana Cloud" → sign in with "Sign in with Admin Portal" (your Admin Portal credentials over SSO). Access scope differs by tier — Public Cloud is scoped to your AMS/Extend resources; Private Cloud is unrestricted. See `grafana-guide.md#access`.
 
 ### What's available
 

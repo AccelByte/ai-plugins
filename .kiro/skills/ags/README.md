@@ -36,7 +36,7 @@ For new Matchmaking and AMS work, use `/ags matchmaking ...` and `/ags ams ...`.
  4. install-sdk    — detect SDK target and install Unreal, Unity, Godot, Roblox, Web SDK, or custom-engine REST fallback
     generate-ui    — detect engine and generate AGS UI where supported
  5. install-cli    — install the AGS CLI
- 6. install-mcp    — customize the AGS API MCP URL (Shared Cloud / per-studio / Private Cloud). The MCP server itself ships with the plugin.
+ 6. install-mcp    — customize the AGS API MCP URL (Public Cloud / per-studio / Private Cloud). The MCP server itself ships with the plugin.
  7. integrate      — module-by-module SDK wiring (auth, lobby, matchmaking, store, …)
  8. debug          — run the game locally and trace integration failures
  9. observe        — pull logs, metrics, and events from a live namespace
@@ -88,7 +88,7 @@ For new Matchmaking and AMS work, use `/ags matchmaking ...` and `/ags ams ...`.
 | `install-sdk` | Detects the target SDK and installs/scaffolds Unreal, Unity, Godot, Roblox, the standalone **TypeScript Web SDK**, or custom-engine REST fallback. Unreal and Unity specifics live in engine references under `references/sdks/game-engine/`. **Extend SDKs (Go, Python, C#, Java) are owned by `/ags-extend`** — they're for Extend apps, not game clients. |
 | `generate-ui` | Detects the game engine and routes AGS UI generation to the engine-specific workflow. Unreal is supported through `AccelByteUITools`; Unity is supported through the AccelByte Unity MCP server; Godot is explicitly unsupported for now. |
 | `install-cli` | Installs the AGS CLI for namespace + IAM management |
-| `install-mcp` | Picks and applies the right AGS API MCP URL for the user's deployment (Shared Cloud default / per-studio / Private Cloud). The MCP entry itself ships with the plugin via `content/mcps/ags-api.yaml`; this subskill is the URL-customization conversation. |
+| `install-mcp` | Picks and applies the right AGS API MCP URL for the user's deployment (Public Cloud default / per-studio / Private Cloud). The MCP entry itself ships with the plugin via `content/mcps/ags-api.yaml`; this subskill is the URL-customization conversation. |
 | `init` | End-to-end setup: runs wizard → connect-portal → install-sdk → install-cli → optional install-mcp |
 | `integrate` | Module-by-module SDK wiring guide — auth, lobby, matchmaking, sessions, store, statistics, leaderboards, achievements, social, analytics |
 | `debug` | Runs a game locally against AGS and traces integration failures (auth errors, lobby disconnects, matchmaking timeouts) |
@@ -175,7 +175,7 @@ ags/
       console.md                 — PlayStation, Xbox, Switch specifics
       mobile.md                  — iOS, Android specifics
     deployment/
-      shared-cloud.md            — Shared cloud (default)
+      public-cloud.md            — Public cloud (default)
       private-cloud.md           — Dedicated infra
       byoc.md                    — Bring-your-own AWS account
     pricing/

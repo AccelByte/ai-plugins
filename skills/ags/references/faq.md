@@ -20,7 +20,7 @@ The questions developers and technical evaluators ask most. Short answers ground
 
 ## What is AGS, in one paragraph?
 
-AccelByte Gaming Services is a managed cloud-hosted game backend platform — modular services for identity, matchmaking, parties and presence, sessions, leaderboards, achievements, store/economy, analytics, social, and more (Cloud Save, Inventory, Challenges, Season Pass, Chat, UGC, and others), plus dedicated game-server hosting (AMS) and an extensibility layer (Extend) all under the AGS umbrella. Studios integrate AGS instead of building these systems themselves. Pricing scales with Peak Concurrent Users (PCCU); deployment options span shared cloud, private cloud, BYOC, and hybrid.
+AccelByte Gaming Services is a managed cloud-hosted game backend platform — modular services for identity, matchmaking, parties and presence, sessions, leaderboards, achievements, store/economy, analytics, social, and more (Cloud Save, Inventory, Challenges, Season Pass, Chat, UGC, and others), plus dedicated game-server hosting (AMS) and an extensibility layer (Extend) all under the AGS umbrella. Studios integrate AGS instead of building these systems themselves. Pricing scales with Peak Concurrent Users (PCCU); deployment options span public cloud, private cloud, BYOC, and hybrid.
 
 ADT (build distribution + crash reporting + playtest tooling) is a *separate* AccelByte product — not part of AGS — and lives in its own peer skill `/adt`.
 
@@ -170,7 +170,7 @@ Yes — via Extend's **App UI** pattern. That belongs in `/ags-extend ask` and t
 
 ## What happens during AGS upgrades?
 
-Shared-cloud customers upgrade with AccelByte's release cadence — managed maintenance windows. Private-cloud and BYOC customers schedule upgrades with their Delivery Manager. Extend apps are isolated from core AGS upgrades — by design, Extend's contract is stable across AGS versions, so studios on Extend don't carry version-update risk on their custom code.
+Public-cloud customers upgrade with AccelByte's release cadence — managed maintenance windows. Private-cloud and BYOC customers schedule upgrades with their Delivery Manager. Extend apps are isolated from core AGS upgrades — by design, Extend's contract is stable across AGS versions, so studios on Extend don't carry version-update risk on their custom code.
 
 ## Where do I get help?
 

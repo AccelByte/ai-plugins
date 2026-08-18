@@ -4,7 +4,7 @@ sources:
 - https://accelbyte.io/pricing
 see-also:
 - '[pccu-bands.md](pccu-bands.md)'
-- '[shared-cloud.md](../deployment/shared-cloud.md)'
+- '[public-cloud.md](../deployment/public-cloud.md)'
 - '[private-cloud.md](../deployment/private-cloud.md)'
 - '[byoc.md](../deployment/byoc.md)'
 ---
@@ -23,8 +23,8 @@ AGS sells in three named tiers. Each tier maps to a deployment model and a suppo
 
 | Tier | Hosting | Support | Notes |
 |---|---|---|---|
-| **Starter / Free** | Shared cloud | Community | Up to 25k play hours **or** 90 days free; see live pricing for post-trial structure |
-| **Growth** | Shared cloud | Standard | PCCU-based pricing; scales with player base |
+| **Starter / Free** | Public cloud | Community | Up to 25k play hours **or** 90 days free; see live pricing for post-trial structure |
+| **Growth** | Public cloud | Standard | PCCU-based pricing; scales with player base |
 | **Enterprise** | Private cloud or BYOC | Professional + Delivery Manager | Custom pricing; dedicated infra; data residency / SLA |
 
 ## Picking the right tier
@@ -39,7 +39,7 @@ AGS sells in three named tiers. Each tier maps to a deployment model and a suppo
 ### Growth
 
 - Default for indie / mid-market production launches.
-- Shared cloud, PCCU-based pricing per `references/pricing/pccu-bands.md`.
+- Public cloud, PCCU-based pricing per `references/pricing/pccu-bands.md`.
 - Standard support — sufficient for studios that aren't running 24/7 live-service operations with multi-million PCCU.
 
 ### Enterprise

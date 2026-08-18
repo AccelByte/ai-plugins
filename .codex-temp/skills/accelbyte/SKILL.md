@@ -31,6 +31,15 @@ Route to the product skill before choosing a tool. Within that product skill:
 - When a step fetches a git repository (clone, submodule, or a package manager resolving a git URL) and the naive command fails, follow `references/git.md` — try the command, then authenticate via `gh` or SSH, then a user-provided local copy — before falling back to manual steps.
 - If a live AGS namespace, CLI, MCP server, or project file is required, inspect it directly or state the blocker.
 
+## Terminology
+
+**Shared Cloud is now called Public Cloud.** Same deployment tier, renamed — the AccelByte-managed multi-tenant offering, as distinct from Private Cloud and BYOC.
+
+- Write **Public Cloud** in every answer, even when the user says "Shared Cloud".
+- Treat "Shared Cloud" in a user's message, an older AccelByte doc, a screenshot, or a support thread as meaning Public Cloud. Don't ask which they mean, and don't treat it as an unknown tier.
+- Say the old name once, in passing, only when the user used it — enough to confirm you understood them ("Public Cloud, formerly Shared Cloud"). Don't correct them, and don't repeat it after the first mention.
+- The rename does not apply to `:::sharedCloud…` admonition markers in AccelByte documentation source. Those are markup, not the product name; leave them as they are.
+
 ## Live Auth Preflight
 
 Before starting work that will depend on a live AccelByte environment, perform the cheapest read-only auth freshness check for the tool you intend to use. Do this before long codebase scans, generated plans, or multi-step edits so expired credentials do not waste the user's time.

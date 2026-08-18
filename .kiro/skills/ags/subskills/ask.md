@@ -18,7 +18,7 @@ see-also:
 - '[marketing-to-service.md](../references/catalogs/marketing-to-service.md)'
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[manage-permissions.md](manage-permissions.md)'
-- '[shared-cloud-client-permission-groups.md](../references/synthetic/shared-cloud-client-permission-groups.md)'
+- '[public-cloud-client-permission-groups.md](../references/synthetic/public-cloud-client-permission-groups.md)'
 ---
 
 # AGS Knowledge-Base Advisor
@@ -39,7 +39,7 @@ For pricing specifically: in-repo numbers are illustrative. Always direct custom
 
 For customer citations: only cite customers per `docs/internal/accelbyte-customer-roster.md` rules — Public Case Study or Named Reference only. Never invent metrics for TBD outcomes.
 
-Permission-shaped questions are not purely conceptual. Any answer about IAM client permissions, OAuth client permissions, permission groups, `groupId`, resource/action strings, scopes, or `401` / `403` / `insufficient_permission` failures must be grounded in `references/security/iam-authorization-preflight.md` before module or synthetic permission references. Do not use `references/synthetic/shared-cloud-client-permission-groups.md` until environment detection resolves to Shared Cloud.
+Permission-shaped questions are not purely conceptual. Any answer about IAM client permissions, OAuth client permissions, permission groups, `groupId`, resource/action strings, scopes, or `401` / `403` / `insufficient_permission` failures must be grounded in `references/security/iam-authorization-preflight.md` before module or synthetic permission references. Do not use `references/synthetic/public-cloud-client-permission-groups.md` until environment detection resolves to Public Cloud.
 
 </grounding_rules>
 
@@ -73,7 +73,7 @@ Match the answer shape to the question shape:
 | Pricing | Point at `https://accelbyte.io/pricing`. Don't quote in-repo bands as authoritative. Mention the calculator. |
 | "How is AGS different from Y?" (EOS / PlayFab / in-house) | Short prose grounded in `references/faq.md`. If a comparison table already exists there, point at it rather than redrawing. |
 | "Can I do X with AGS?" | Yes / no + one sentence. If yes, name the module. If no, name the alternative (Extend / your own backend / out of scope). Maximum two sentences. |
-| Permission-shaped | Authorization preflight block plus a concise recommendation. Include caller, environment evidence, target AGS call, required resource/action, and Shared Cloud group only when Shared Cloud is confirmed. |
+| Permission-shaped | Authorization preflight block plus a concise recommendation. Include caller, environment evidence, target AGS call, required resource/action, and Public Cloud group only when Public Cloud is confirmed. |
 | Compound | Answer each part in the shape that fits it, in the order asked. Don't merge into one sprawling answer. |
 | "Should I add Extend / AMS / ADT?" | Route to `subskills/handoff.md` instead of answering here. |
 
@@ -95,7 +95,7 @@ The response is complete when:
 
 - Every factual claim is traceable to a specific section in the references.
 - Module recommendations name the specific modules; deployment recommendations name a specific model.
-- Permission-shaped answers classify the environment as Shared Cloud, Private Cloud / BYOC, or unknown before choosing group format versus resource/action format.
+- Permission-shaped answers classify the environment as Public Cloud, Private Cloud / BYOC, or unknown before choosing group format versus resource/action format.
 - Pricing answers always direct to `https://accelbyte.io/pricing` for current numbers.
 - The answer doesn't volunteer facts the developer didn't ask for.
 - If a clarifying question was asked, you waited for the answer before recommending.
@@ -125,7 +125,7 @@ Do not fabricate a plausible-sounding answer.
    - Identify caller type and target AGS API/SDK operation from the user's wording and project files.
    - Detect environment from project runtime config before CLI defaults. For Godot, read `project.godot`; for Unreal, read `Config/DefaultEngine.ini`; for Unity, read the AccelByte SDK config asset/json if present; for Web/custom apps, read `.env` or app config.
    - Check AGS CLI profile/config only as read-only supporting evidence. If project config and CLI target disagree, stop and report the mismatch.
-   - Use `ags describe` when available to discover the required resource/action; use generated command help only as a fallback. If the environment is Shared Cloud, map that resource through `references/synthetic/shared-cloud-client-permission-groups.md`; otherwise do not use Shared Cloud groups.
+   - Use `ags describe` when available to discover the required resource/action; use generated command help only as a fallback. If the environment is Public Cloud, map that resource through `references/synthetic/public-cloud-client-permission-groups.md`; otherwise do not use Public Cloud groups.
    - If the environment or permission cannot be verified, report the exact evidence gap instead of guessing.
 5. **Conditional reads.** Only what the question needs:
    - Cost / scope / vs.-alternatives → `references/faq.md`.
@@ -169,7 +169,7 @@ AGS is AccelByte Gaming Services — a managed cloud-hosted game backend
 platform with modules for identity, lobby, matchmaking, sessions,
 leaderboards, achievements, store/economy, analytics, and social. Studios
 integrate AGS instead of building these systems themselves. Pricing is
-PCCU-based; deployment options span shared cloud, private cloud, BYOC, and
+PCCU-based; deployment options span public cloud, private cloud, BYOC, and
 hybrid.
 ```
 

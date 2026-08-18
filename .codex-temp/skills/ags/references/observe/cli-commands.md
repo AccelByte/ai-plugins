@@ -6,7 +6,7 @@ see-also:
 - '[install-cli.md](../../subskills/install-cli.md)'
 - '[install-mcp.md](../../subskills/install-mcp.md)'
 - '[observe.md](../../subskills/observe.md)'
-- '[shared-cloud-client-permission-groups.md](../synthetic/shared-cloud-client-permission-groups.md)'
+- '[public-cloud-client-permission-groups.md](../synthetic/public-cloud-client-permission-groups.md)'
 - '[ui-execution.md](../cli/ui-execution.md)'
 ---
 
@@ -56,7 +56,7 @@ For game projects, derive the target `--namespace` from the project's runtime co
 - **Run local diagnostics** with `ags doctor`.
 - **List IAM clients, users, sessions, matchmaking objects, and other AGS resources** when the generated service command exposes that operation and the authenticated client has permission.
 - **Inspect command metadata** with `ags describe` instead of parsing human-readable help.
-- **Map Shared Cloud IAM client permission groups** with `ags iam client-config list-permissions --exclude-permissions false --output -`; follow `../synthetic/shared-cloud-client-permission-groups.md` for the permission group catalog shape and action-bit mapping.
+- **Map Public Cloud IAM client permission groups** with `ags iam client-config list-permissions --exclude-permissions false --output -`; follow `../synthetic/public-cloud-client-permission-groups.md` for the permission group catalog shape and action-bit mapping.
 - **Trigger admin actions** that the Admin Portal also supports - useful for scripts and automation, with explicit confirmation for mutations.
 - **Provision integration prerequisites** such as IAM clients and login-method settings when the generated IAM command surface exposes those operations. Use `ags describe` and `--skeleton` / `--dry-run` where available; do not hardcode guessed command names or JSON body shapes.
 
@@ -79,7 +79,7 @@ ags session game-sessions list --namespace <namespace>
 # Discover the stable command and parameter contract as JSON
 ags describe iam clients list
 
-# List Shared Cloud client permission groups and their resource permissions
+# List Public Cloud client permission groups and their resource permissions
 ags iam client-config list-permissions --exclude-permissions false --output -
 ```
 

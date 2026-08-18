@@ -3,7 +3,7 @@ last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
-- '[shared-cloud.md](shared-cloud.md)'
+- '[public-cloud.md](public-cloud.md)'
 - '[byoc.md](byoc.md)'
 - '[tiers.md](../pricing/tiers.md)'
 ---

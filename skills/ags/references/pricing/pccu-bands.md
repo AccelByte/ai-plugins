@@ -22,7 +22,7 @@ AGS pricing is metered on **Peak Concurrent Users (PCCU) per day** — the maxim
 The PCCU pricing curve has the following shape:
 
 - **Multiple bands**, with the per-PCCU/day price stepping down as PCCU climbs.
-- The first 30 PCCU/day are permanently free (included in all Shared Cloud plans). The first paid band begins at 31 PCCU/day; discounts kick in at progressively higher thresholds.
+- The first 30 PCCU/day are permanently free (included in all Public Cloud plans). The first paid band begins at 31 PCCU/day; discounts kick in at progressively higher thresholds.
 - **Starter packages** for committed tiers existed at roughly $2,500–$3,500/month range as of source capture.
 - **Above the highest band**, pricing flattens to a long-tail rate.
 - **Real numbers move.** The internal capture in `docs/internal/accelbyte-pricing.md` recorded one snapshot; the live site shows different numbers as of 2026-04-29. Treat the capture as a shape illustrator, not a quote.
@@ -40,7 +40,7 @@ A "PCCU" is the daily peak distinct count of players hitting AGS APIs — login,
 ## Starter / free tier (legacy tier name)
 
 - Up to 25k play hours **or** 90 days free.
-- After trial: 30 PCCU/day included permanently. Usage beyond 30 PCCU/day billed at the applicable band rate. No monthly base fee for Shared Cloud.
+- After trial: 30 PCCU/day included permanently. Usage beyond 30 PCCU/day billed at the applicable band rate. No monthly base fee for Public Cloud.
 - Suitable for development and early-launch.
 
 ## Enterprise tier (legacy tier name)

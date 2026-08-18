@@ -42,7 +42,7 @@ Each module exposes both REST APIs (with OpenAPI specs) and SDK methods. Game cl
 
 | Model | Description | Best for |
 |---|---|---|
-| **Shared Cloud** | AccelByte-managed, multi-tenant | Indie / mid-market studios; early titles before launch |
+| **Public Cloud** | AccelByte-managed, multi-tenant | Indie / mid-market studios; early titles before launch |
 | **Private Cloud** | Dedicated infrastructure, single-tenant, AccelByte-managed | Enterprise studios with data-residency, compliance, or SLA requirements |
 | **Bring Your Own Cloud (BYOC)** | Deployed into the customer's own AWS environment | Publishers with existing cloud commitments or cost agreements |
 | **Bare Metal / Hybrid** | AMS on bare metal or hybrid; AGS still managed | High-performance, cost-sensitive multiplayer titles |
@@ -141,8 +141,8 @@ See `references/ecosystem/` for the "when do I add this" decision triggers per c
 
 | Studio shape | Typical entry |
 |---|---|
-| Indie / mid-market, building first online title | Shared cloud + Foundations modules (IAM + a few of Lobby / Achievements / Store) |
-| Mid-market with multiplayer focus | Shared cloud + Foundations + Matchmaking + Sessions; AMS later |
+| Indie / mid-market, building first online title | Public cloud + Foundations modules (IAM + a few of Lobby / Achievements / Store) |
+| Mid-market with multiplayer focus | Public cloud + Foundations + Matchmaking + Sessions; AMS later |
 | AAA / publisher | Private cloud + full module set; Extend for studio-specific behavior; ADT for build pipeline |
 | Existing EOS studio outgrowing defaults | AGS overlay on EOS via headless account linking; Extend for the gaps EOS doesn't cover |
 | Studio wanting only cross-platform identity | Access (standalone) — upgrade to full AGS later if needed |

@@ -1,7 +1,7 @@
 {
   "name": "accelbyte-ai-plugins",
   "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
-  "version": "0.6.13",
+  "version": "0.6.14",
   "author": {
     "name": "AccelByte",
     "url": "https://accelbyte.io"
@@ -11,7 +11,7 @@
       "type": "string",
       "title": "AGS API MCP Server URL",
       "required": true,
-      "description": "Your AGS environment\u0027s MCP endpoint. There is no shared default \u2014 set the URL for your own deployment.\nShared Cloud: https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game} (the {studio}-{game} namespace appears in both the host and the path).\nPrivate Cloud: https://{environment_name}.accelbyte.io/mcp."
+      "description": "Your AGS environment\u0027s MCP endpoint. There is no shared default \u2014 set the URL for your own deployment.\nPublic Cloud: https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game} (the {studio}-{game} namespace appears in both the host and the path).\nPrivate Cloud: https://{environment_name}.accelbyte.io/mcp."
     }
   },
   "mcpServers": {

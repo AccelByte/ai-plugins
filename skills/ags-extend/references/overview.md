@@ -154,7 +154,7 @@ Extend apps run inside AccelByte's cloud, same network as AGS.
 
 | Limit | Value | Why it matters |
 |---|---|---|
-| Images per app | 50 (Shared Cloud), 100 (Private Cloud) | Old images get pruned; don't rely on rolling back to an ancient one. |
+| Images per app | 50 (Public Cloud), 100 (Private Cloud) | Old images get pruned; don't rely on rolling back to an ancient one. |
 | Log retention | 30 days | Anything older lives in whatever external sink you forward to. |
 | Metrics retention | 13 months | Fine for SLO tracking; not enough for long-term trending — export. |
 | Max HTTP request size | 4.5 MB | Large payloads need chunking or a signed URL upload pattern. |

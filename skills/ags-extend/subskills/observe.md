@@ -1,13 +1,15 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-08-17
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://github.com/AccelByte/extend-helper-cli
+- https://github.com/grafana/mcp-grafana
 see-also:
 - '[deploy-cli-commands.md](../references/deploy/cli-commands.md)'
 - '[observe-cli-commands.md](../references/observe/cli-commands.md)'
 - '[signal-guide.md](../references/observe/signal-guide.md)'
 - '[grafana-guide.md](../references/observe/grafana-guide.md)'
+- '[grafana-mcp.md](../../ags/references/observe/grafana-mcp.md)'
 ---
 
 # AGS Extend Observer
@@ -22,6 +24,7 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 - Read `references/observe/signal-guide.md` for status meanings, log-pattern classification, and common fixes. Do not invent diagnostic advice.
 - The CLI cannot tail logs and cannot list apps. The only observability command is `extend-helper-cli get-app-info` (returns `appStatus`, image tag, etc.). Logs and metrics live in Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud).
 - Read `references/observe/grafana-guide.md` before coaching the user on opening Grafana, finding logs, or writing a log query. Logs are forwarded to Grafana **asynchronously** — an empty log view right after a deploy or a request is almost always ingestion lag (or too-narrow a time range / wrong filter), not broken logging. Never tell a user their logging is broken until they've widened the time range, confirmed lines still aren't arriving, and ruled out no-traffic.
+- Grafana can be read two ways: the browser flow, or a Grafana MCP server backed by a brokered service-account token. The token path is **Private Cloud only** — never offer it to a Public Cloud user, where the broker rejects the tenant by design, and don't assume BYOC behaves like Private Cloud. That path is owned by `/ags`: read `../../ags/references/observe/grafana-mcp.md` before describing the broker call or the MCP config, and don't restate either from memory.
 - Distinguish carefully between `Deploying`, `Degraded`, `Stopped`, and `Failed` — they imply different next actions. The signal guide has the mapping.
 
 </grounding_rules>
@@ -34,18 +37,24 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 - **Never** modify any file. This subskill is strictly observe-only.
 - **Never** run `extend-helper-cli deploy-app`, `start-app`, `stop-app`, or any state-changing command from here. If the user asks for those, finish observing and direct them to `/ags-extend deploy`.
 - Logs come from Grafana Cloud, not the CLI. Direct the user there; do not pretend a CLI log command exists.
+- When a Grafana MCP server is already configured, use its read-only query tools directly instead of asking the user to copy log lines out of the browser. Never use its write tools (creating dashboards, annotations, datasources) from this subskill.
+- Do not broker a token and do not edit MCP config here. Both belong to `/ags install-mcp` — route the user there and continue observing with what is already available.
 
 </tool_usage_rules>
 
 <dependency_checks>
 
-Before running any observe commands:
+Preconditions depend on the signal. App status and metadata come from the CLI; logs come from Grafana. Check only what the requested signal needs — don't block a log question on a missing CLI, or a status question on a missing Grafana server.
+
+For CLI signals (app status, image tag, scenario):
 
 1. `command -v extend-helper-cli` returns a path. Run the `/ags-extend install-cli` freshness check and report the installed path/version, latest version, and status. Missing or broken/unparseable -> stop. Outdated or legacy/pre-version -> offer an upgrade to the latest official release. If the user declines, continue only when the documented observe command is present in `--help`. See `references/deploy/cli-commands.md#presence-and-freshness-check`.
 2. The CLI is authenticated. Either: `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET` are set in the user's environment or in a `.env` file in the CLI's cwd; OR the user has run `extend-helper-cli login` (browser flow). If neither, ask the user for `AB_BASE_URL` and direct them to `references/deploy/cli-commands.md#authentication`.
 3. Namespace and app name are known — either from the app's local `.env` (if the user is in/near an app dir) or supplied inline by the user.
 
-No Docker dependency — this subskill talks to the AGS control plane through the CLI only.
+For log signals: either a configured Grafana MCP server (Private Cloud), or the user's browser. Neither needs the CLI. If the CLI is missing but the user only wants logs, say so and carry on with Grafana.
+
+No Docker dependency in either path.
 
 </dependency_checks>
 
@@ -62,14 +71,15 @@ Two possible output shapes:
   (Admin Portal → app detail → Open Grafana Cloud).
 ```
 
-**App is unhealthy (any non-running status, or user pasted log lines):**
+**App is unhealthy (any non-running status, or log lines available from either source):**
 
 ```
 {app-name}  [{appStatus}]  {scenario}  image-tag {tag}
 
   appStatus from get-app-info: {appStatus}
 
-  (If user pasted log lines from Grafana:)
+  (If log lines are available — queried via the Grafana MCP server, or pasted
+   by the user. Say which source they came from.)
   Issues identified:
     {timestamp}  {error line}
     {timestamp}  {error line}
@@ -148,7 +158,28 @@ If `get-app-info` returns "app not found": see `empty_result_recovery`.
 
 ### Step 3 — Logs and metrics (Grafana Cloud)
 
-The CLI cannot tail logs. Direct the user to Grafana Cloud:
+The CLI cannot tail logs — Grafana holds them. There are two ways in. Pick one before saying anything to the user:
+
+- **A Grafana MCP server is already connected** → query it yourself (Step 3a). The user never has to leave the conversation.
+- **Otherwise** → walk them through the browser flow (Step 3b). Offer the MCP setup only when they're on Private Cloud *and* reading logs repeatedly; for a single look it's slower than just opening Explore. Setup itself is `/ags install-mcp`.
+
+#### Step 3a — Query Grafana directly
+
+Run the same LogQL the browser flow would, scoped by `app_name`, against the Loki datasource:
+
+```
+{app_name="{app-name}"} |~ "(?i)error|panic|fatal|traceback|exception"
+```
+
+Ingestion lag still applies — an empty result means the same five things it means in a browser, in the same order (see `empty_result_recovery`). Widen the time range before reporting nothing.
+
+If the tools return 401 or have vanished since earlier in the session, the brokered token expired (~4h, no refresh). Say so plainly and point at `../../ags/references/observe/grafana-mcp.md` — do not diagnose it as an app problem.
+
+Summarize findings using the diagnosis shape below. Never paste a raw log dump.
+
+#### Step 3b — Browser flow
+
+Direct the user to Grafana Cloud:
 
 ```
 Logs and metrics for {app-name} live in Grafana Cloud:
@@ -166,7 +197,7 @@ anything is broken.
 Retention: logs 30 days, metrics 13 months. See references/observe/cli-commands.md.
 ```
 
-For the full walkthrough — access by deployment tier (Shared vs Private Cloud), how Grafana is organized, LogQL filters, and a "find the last error in the last 30 minutes" recipe — read `references/observe/grafana-guide.md` and walk the user through the relevant steps inline. Don't tell them to open the reference file; relay the steps.
+For the full walkthrough — access by deployment tier (Public vs Private Cloud), programmatic access via the Grafana MCP server, how Grafana is organized, LogQL filters, and a "find the last error in the last 30 minutes" recipe — read `references/observe/grafana-guide.md` and walk the user through the relevant steps inline. Don't tell them to open the reference file; relay the steps.
 
 If the user pastes log lines from Grafana into the chat, scan them against `references/observe/signal-guide.md`:
 
@@ -215,6 +246,10 @@ Based on the diagnosis:
 | App named in invocation isn't deployed | See `empty_result_recovery`. |
 | `get-app-info` runs but JSON is incomplete | CLI version mismatch. Suggest `/ags-extend install-cli` to upgrade. Show the raw output. |
 | User wants logs (any status) | Direct to Grafana Cloud as in Step 3. Do not pretend a CLI log command exists. |
+| Grafana MCP tools return 401 mid-session | The brokered token expired (~4h, no refresh). Say so, and point at `../../ags/references/observe/grafana-mcp.md`. Don't diagnose it as an app fault. |
+| User on Public Cloud asks to query Grafana programmatically | Not available on that tier — the broker rejects it by design, and there is no workaround. Use the browser flow in Step 3b. |
+| Token broker call returns `406 Not Acceptable` | Missing `Content-Type: application/json` and a `{}` body — but brokering isn't done here. Route to `/ags install-mcp`. |
+| User asks to set up the Grafana MCP server | Owned by `/ags` — hand off to `/ags install-mcp`. Don't broker a token or edit MCP config from this subskill. |
 | App status is `running` but user reports the feature broken | Likely a handler bug or downstream failure that the health check doesn't catch. Direct to Grafana Cloud logs, then `/ags-extend doctor` for symptom-driven diagnosis. |
 | App stuck `starting` or `deployment failed` for >5 min | Show the `get-app-info` JSON output. Direct user to Grafana Cloud for logs from the failed deploy. |
 | Logs the user pasted suggest OOMKilled | Surface it prominently. Suggested fix: raise the memory limit in the AGS Admin Portal (app detail → resource configuration), then redeploy via `/ags-extend deploy` (see `references/init/resource-defaults.md` for hard limits). |

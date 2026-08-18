@@ -178,11 +178,11 @@ These MCP servers are intended to be installed via a skill included in this plug
 
 ### AGS API MCP Server
 
-Use when the user needs answers specific to their live AGS environment — namespace config, IAM client state, API responses, or session state. Provides real data instead of general guidance. Requires the MCP URL to be configured for the user's own deployment (Shared Cloud or Private Cloud) — there is no shared default endpoint.
+Use when the user needs answers specific to their live AGS environment — namespace config, IAM client state, API responses, or session state. Provides real data instead of general guidance. Requires the MCP URL to be configured for the user's own deployment (Public Cloud or Private Cloud) — there is no shared default endpoint.
 
 ```
 Set the URL for the user's own AGS deployment. There is no shared default endpoint — every deployment has its own host, so ask which one they are on:
-Shared Cloud:  https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}  (the {studio}-{game} namespace appears in both the host and the path)
+Public Cloud:  https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}  (the {studio}-{game} namespace appears in both the host and the path)
 Private Cloud: https://{environment_name}.accelbyte.io/mcp
 ```
 

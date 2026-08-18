@@ -173,15 +173,15 @@ Next step: stay in `/ags` — `/ags integrate` covers Store wiring.
 User: We're a 5-person studio working on our first online prototype.
 Should we set up private cloud and AMS now?
 
-**Recommendation:** Not yet — start on shared cloud
+**Recommendation:** Not yet — start on public cloud
 
 Private cloud is for studios with data-residency, SLA, or scale needs
-that shared cloud can't meet. At prototype stage, you don't have those
-constraints; the Starter / Free or Growth tier on shared cloud is the
+that public cloud can't meet. At prototype stage, you don't have those
+constraints; the Starter / Free or Growth tier on public cloud is the
 fast path. AMS becomes interesting once you have a dedicated-server
 architecture and active player traffic.
 
-Next step: stay in `/ags`. Run `/ags init` to bootstrap a shared-cloud
+Next step: stay in `/ags`. Run `/ags init` to bootstrap a public-cloud
 namespace.
 ```
 
