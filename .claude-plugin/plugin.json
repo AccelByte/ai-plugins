@@ -1,7 +1,7 @@
 {
   "name": "accelbyte-ai-plugins",
   "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
-  "version": "0.6.14",
+  "version": "0.7.4",
   "author": {
     "name": "AccelByte",
     "url": "https://accelbyte.io"
@@ -12,12 +12,30 @@
       "title": "AGS API MCP Server URL",
       "required": true,
       "description": "Your AGS environment\u0027s MCP endpoint. There is no shared default \u2014 set the URL for your own deployment.\nPublic Cloud: https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game} (the {studio}-{game} namespace appears in both the host and the path).\nPrivate Cloud: https://{environment_name}.accelbyte.io/mcp."
+    },
+    "TEAMMATE_MEMORY_MCP_URL": {
+      "type": "string",
+      "title": "Teammate Memory MCP Server URL",
+      "description": "Your AGS environment\u0027s teammate memory endpoint. Fill your own domain into the shape below, keeping the {studio}-{game} segment.\nShape: https://{env-domain}/teammate/memory/mcp/{studio}-{game}\nEvery AGS environment serves this; if yours does not answer yet, contact AccelByte.\nLeave empty if you have not been given one; the teammate scans and reports without memory."
+    },
+    "TEAMMATE_WIKI_MCP_URL": {
+      "type": "string",
+      "title": "Teammate Studio Wiki MCP Server URL",
+      "description": "Your AGS environment\u0027s teammate studio wiki endpoint. Fill your own domain into the shape below, keeping the {studio}-{game} segment.\nShape: https://{env-domain}/teammate/wiki/mcp/{studio}-{game}\nEvery AGS environment serves this; if yours does not answer yet, contact AccelByte.\nLeave empty if you have not been given one; nothing else degrades."
     }
   },
   "mcpServers": {
     "ags_api": {
       "type": "http",
       "url": "${user_config.AGS_API_MCP_URL}"
+    },
+    "teammate_memory": {
+      "type": "http",
+      "url": "${user_config.TEAMMATE_MEMORY_MCP_URL}"
+    },
+    "teammate_wiki": {
+      "type": "http",
+      "url": "${user_config.TEAMMATE_WIKI_MCP_URL}"
     }
   }
 }

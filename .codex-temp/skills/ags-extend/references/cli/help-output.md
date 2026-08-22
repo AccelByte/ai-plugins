@@ -1,8 +1,9 @@
 ---
 last-verified: 2026-07-20
 authoritative: true
-note: Verbatim --help output captured from the extend-helper-cli binary. This is the
-  ground-truth grounding artifact every other CLI claim in this skill defers to.
+note: --help output captured from the extend-helper-cli binary, as captured except
+  for the one host-specific default noted in the body. This is the ground-truth grounding
+  artifact every other CLI claim in this skill defers to.
 sources:
 - https://github.com/AccelByte/extend-helper-cli
 see-also:
@@ -13,7 +14,9 @@ see-also:
 
 Captured: 2026-07-20. Source: `https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-darwin_arm64`.
 
-This file is the verbatim output of `extend-helper-cli --help` for every subcommand. It is the ground truth for the skill — `references/deploy/cli-commands.md` is its skill-friendly restatement; this file is the unedited source.
+This file is the output of `extend-helper-cli --help` for every subcommand, and the ground truth for CLI syntax — `references/deploy/cli-commands.md` is its readable restatement.
+
+One substitution: `--ssh-path` prints a default built from the home directory of whoever runs it, so the capture host's own path is replaced with `/Users/you/.ssh/id_rsa`. On your machine the CLI prints yours. Everything else is as captured.
 
 ## Top-level
 
@@ -318,7 +321,7 @@ OPTIONS:
    --token value                  Personal Access Token (for token auth)
    --username value               Username (for basic auth)
    --password value               Password (for basic auth)
-   --ssh-path value               SSH private key path (default: "/Users/elmer/.ssh/id_rsa")
+   --ssh-path value               SSH private key path (default: "/Users/you/.ssh/id_rsa")
    --ssh-pass value               SSH key passphrase (if needed)
    --output value                 Output format. Supported value: "json". Emits a single machine-readable JSON object to stdout; all log output is redirected to stderr.
    --help, -h                     show help

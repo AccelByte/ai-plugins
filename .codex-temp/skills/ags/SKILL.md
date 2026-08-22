@@ -49,6 +49,8 @@ Two boundaries still leave this router:
 - **Extend** (Override / Event Handler / Service Extension / App UI / custom gRPC handler deployment) → `/ags-extend`.
 - **ADT** (build distribution, crash reporting, playtest tooling) → `/adt`. **A separate AccelByte product**, not under AGS. Originally BlackBox.
 
+One peer skill also leaves this router, and it is not a product boundary: reviewing an AccelByte integration that already exists — scanning a repo for incomplete integrations, deprecated APIs, unsafe token handling or missing error paths, checking what an engine SDK upgrade would break, or checking whether one named AMS fleet or Extend app is sized right → `/teammate`. `/ags` owns building and explaining AGS; `/teammate` owns reviewing what is already built and hands back a report.
+
 ## Required Maps
 
 Use the maps when a request needs product, dependency, service-name, or migration context:
@@ -159,6 +161,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 
 | Cue | Route |
 |---|---|
+| "check my integration", "health check", "review my AccelByte integration", "scan my repo", "any deprecated APIs", "am I using deprecated", "what breaks if we upgrade", "upgrade check", "is this fleet sized right", "is this app over-provisioned" | `/teammate` — leaves this skill, see the redirect below |
 | `handoff`, "should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to private cloud", "do I need AMS", "is AGS even right", "is AGS right for this" | `subskills/handoff.md` |
 | `manage-permissions`, "add permission", "grant permission", "remove permission", "revoke permission", "delete permission", "edit permission", "update permission", "change permission", "configure permission", "set permission", "assign permission", "grant scope", "add scope", "edit client permissions", "update client permissions", "manage permissions" | `subskills/manage-permissions.md` with `references/security/iam-authorization-preflight.md` |
 | "what permission", "which permission", "client permission", "OAuth permission", "IAM permission", "permission group", `groupId`, "resource/action", "scope", `401`, `403`, `insufficient_permission`, "forbidden" | `subskills/ask.md` with `references/security/iam-authorization-preflight.md` |
@@ -228,6 +231,12 @@ Use when the message is about ADT (build distribution, crash reporting, playtest
 
 > That's an ADT question — build distribution, crash reporting, crash video replay, or playtest tooling. ADT is a separate AccelByte product with its own skill. Run `/adt` to invoke it. (`/ags` routes "should I add ADT?" decisions through `subskills/handoff.md`, but ADT's actual workflows live in `/adt`.)
 
+### Teammate redirect
+
+Use when the message asks for a review of an integration that already exists rather than help building one:
+
+> That's a job for the AccelByte teammate — it scans an AccelByte-integrated repo and reports back on incomplete integrations, deprecated APIs, unsafe token handling and missing error paths, tells you what an engine SDK upgrade would break, and checks whether a named AMS fleet or Extend app is sized right. Run `/teammate` to invoke it. (`/ags` still owns building and explaining AGS, so come back here for "how do I add X".)
+
 ### When subskills conflict
 
 If the user's follow-up inside a running subskill clearly belongs to a different subskill (e.g. during `integrate`, they ask "actually, what's the difference between Lobby and Session Management?"), finish answering the narrow question if it's a one-sentence sidebar, or stop the current subskill and say:
@@ -240,5 +249,6 @@ If the user's follow-up inside a running subskill clearly belongs to a different
 - **Does not run any CLI commands or write project files.** Those live in `wizard`, `connect-portal`, `install-sdk`, `install-cli`, `integrate`, `debug`, `run-workflow`.
 - **Does not read references directly.** Subskills, workflows, capability routers, and maps own their own reading.
 - **Does not own the Extend lifecycle.** That's `/ags-extend`.
+- **Does not review an integration that already exists.** A repo scan, an SDK-upgrade break check, or a fleet/app sizing check is `/teammate`. `subskills/doctor.md` diagnoses a symptom you already have; `/teammate` goes looking for the ones you don't.
 - **Does not let module wiring define product completion.** `workflows/online-game-flow.md` owns the Game Flow Plan, and `subskills/integrate.md` is the module-wiring helper for game projects.
 - **Does not carry state across invocations.** Each `/ags` call is fresh; the only state is what's on disk (namespace `.env`, SDK config, etc.), and the relevant subskill reads it.

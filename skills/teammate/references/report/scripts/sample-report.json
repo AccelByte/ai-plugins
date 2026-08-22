@@ -1,0 +1,96 @@
+{
+  "schema_version": 6,
+  "mode": "code-only",
+  "repo": {
+    "name": "example-game",
+    "url": "https://github.com/example-studio/example-game",
+    "commit_sha": "0000000000000000000000000000000000000000",
+    "tree_state": "clean"
+  },
+  "actor": {
+    "id": "sample@example-studio.test",
+    "display": "Sample Runner"
+  },
+  "actor_source": "git-config",
+  "provenance": {
+    "started_at": "2026-07-25T23:52:30Z",
+    "scanned_at": "2026-07-26T00:00:00Z",
+    "tool_version": "0.0.1"
+  },
+  "surface": {
+    "capabilities": [
+      {
+        "capability": "identity-access",
+        "call_sites": [
+          { "path": "Assets/Config/DefaultAccelByte.ini", "line": 12 }
+        ]
+      },
+      {
+        "capability": "user-profiles",
+        "call_sites": [
+          { "path": "Assets/Scripts/ProfilePanel.cs", "line": 63 }
+        ]
+      },
+      {
+        "capability": "lobby",
+        "call_sites": [
+          { "path": "Assets/Scripts/AGSLobby.cs", "line": 88 },
+          { "path": "Assets/Scripts/AGSLobby.cs", "line": 141 }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "a0b75505b6e4819a",
+      "detector_id": "auth-token-safety",
+      "severity": "critical",
+      "confidence": "high",
+      "title": "Confidential client secret present in a shipped game client",
+      "location": {
+        "path": "Assets/Config/DefaultAccelByte.ini",
+        "line": 12
+      },
+      "citations": [
+        {
+          "source": "https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authorization/manage-access-control-for-applications/",
+          "note": "sample finding \u2014 severity and confidence are copied from the playbook: this one matches a row, and a discovered signal with no row takes that playbook's stated default. A docs page is the right citation here because that is where the rule lives; what a finding cites never sets what it scores."
+        }
+      ],
+      "suppressed": false,
+      "snippet_hash": "235a552a619e736ba0b13aaa499d9ecad914173cc9797e7e0ec52849df7db281"
+    },
+    {
+      "id": "953d6078f18586e6",
+      "detector_id": "deprecated-apis",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Deprecated SDK method called at the pinned tag",
+      "location": {
+        "path": "Assets/Scripts/ProfilePanel.cs",
+        "line": 63
+      },
+      "citations": [
+        {
+          "source": "https://github.com/AccelByte/accelbyte-unity-sdk/blob/17.16.1/Runtime/Api/UserProfiles.cs#L290",
+          "note": "sample finding \u2014 the construct itself, at an immutable ref, on the line the marker sits on. The reader opens one link and sees the [Obsolete] attribute naming its replacement."
+        }
+      ],
+      "suppressed": false,
+      "snippet_hash": "104fbad4016b6fef6795eb019f7f38a3bdc499f402950c23a68ff0762d8dbfcb"
+    },
+    {
+      "id": "d1812ccf9ae4de80",
+      "detector_id": "deprecated-apis",
+      "severity": "medium",
+      "confidence": "low",
+      "title": "Suppressed deprecated-sdk-call \u2014 severity stays the row's, confidence drops to low",
+      "location": {
+        "path": "Assets/Scripts/AGSLobby.cs",
+        "line": 88
+      },
+      "suppressed": true,
+      "snippet_hash": "0bc27ec4b9cb320fd53597b9900abade58506a86d137f7fab79e204cc0ef8c94"
+    }
+  ]
+}

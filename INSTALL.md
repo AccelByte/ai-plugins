@@ -42,7 +42,7 @@ claude --plugin-dir /path/to/accelbyte-ai-plugins
 | Status | Source path | Destination path | Notes |
 |--------|-------------|------------------|-------|
 | `copy` | `/path/to/accelbyte-ai-plugins/skills/` | `~/.claude/skills/` or `<project>/.claude/skills/` | Copy the directory contents. |
-| `left-alone` | `/path/to/accelbyte-ai-plugins/.claude-plugin/plugin.json` | no pre-configured MCP entries | Plugin manifest has no pre-configured MCP servers. Some MCP servers in this bundle are intended to be installed via a skill included in this plugin. |
+| `left-alone` | `/path/to/accelbyte-ai-plugins/.claude-plugin/plugin.json` | not usable outside plugin mode | The manifest's `mcpServers` URLs are `${user_config.*}` references, which only resolve when Claude Code loads this as a plugin — copied into `~/.claude.json` or `<project>/.mcp.json` they stay unsubstituted. Add those servers by hand with your own URLs, or use a skill included in this plugin. |
 
 ## 2. Claude Desktop
 
@@ -202,11 +202,37 @@ Requires Docker. Set `CONFIG_DIR` to your SDK language:
 - `config/csharp`
 ```
 
+### Teammate Memory MCP Server
+
+Use as the teammate skill's memory. Six tools under the wiki_memory_* prefix hold your studio's reports, scan history, suppressions, and the cross-persona activity feed. Set its URL by filling your own AGS environment's domain into https://{env-domain}/teammate/memory/mcp/{studio}-{game}. The tool-name prefix, not the name you give a server, says which body of text answered: wiki_memory_* is your studio's raw records, and it grounds nothing about AccelByte.
+
+```
+Fill your own AGS environment's domain into this shape:
+https://{env-domain}/teammate/memory/mcp/{studio}-{game}
+Keep the {studio}-{game} segment. It is a discovery hint and never the scope — your scope comes from your token — but without it sign-in resolves to the wrong pool and never completes.
+Every AGS environment serves this. If yours does not answer yet, it has not been turned on there — contact AccelByte.
+Your scope is derived from your AGS token, never from anything you configure. Each entry's author is stamped from that token, which is what lets a colleague's activity be quoted back to you.
+A second URL may be offered alongside this one and is a separate entry: your studio's digested pages. They are separate services, so one being unreachable says nothing about the other. Ask for this one first: reuse, suppressions and colleague activity all depend on it.
+```
+
+### Teammate Studio Wiki MCP Server
+
+Use to orient a teammate run on your studio's own digested pages. Three tools under the wiki_studio_* prefix — search, read, list — over your studio's memory rewritten as pages. Pages only: the records a page was written from stay on the memory service and are read with the wiki_memory_* tools. It grounds nothing about AccelByte, whichever prefix reaches it. Set its URL by filling your own AGS environment's domain into https://{env-domain}/teammate/wiki/mcp/{studio}-{game}.
+
+```
+Fill your own AGS environment's domain into this shape:
+https://{env-domain}/teammate/wiki/mcp/{studio}-{game}
+Keep the {studio}-{game} segment. It is a discovery hint and never the scope — your scope comes from your token — but without it sign-in resolves to the wrong pool and never completes.
+Every AGS environment serves this. If yours does not answer yet, it has not been turned on there — contact AccelByte.
+This is a different service from teammate memory, with a different URL. It serves pages and nothing else — there is no source read here, because this half holds no raw. The records a page was written from stay with memory: wiki_memory_get for the keyed document kinds, and wiki_memory_list for the activity and feedback records, which have no key.
+Configure it after memory. It serves what has been rewritten so far, which starts empty.
+```
+
 ### AccelByte Unity MCP
 
 Use when integrating AccelByte into a Unity project. Provides Unity-specific AGS UI prefab generation now and is structured for Unity SDK symbols, snippets, and installer assistance as the server evolves.
 
-```
+````
 Requires `uvx` (https://docs.astral.sh/uv/) and a matching Unity editor installation.
 Add the embedded UI tools package to your Unity project's `Packages/manifest.json`:
 
@@ -215,7 +241,7 @@ Add the embedded UI tools package to your Unity project's `Packages/manifest.jso
 ```
 
 Unity Package Manager resolves and downloads the package automatically on next editor open.
-```
+````
 
 ### AccelByte Unreal SDK MCP Server
 

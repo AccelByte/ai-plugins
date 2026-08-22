@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.6.14-blue)
+![version](https://img.shields.io/badge/version-0.7.4-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -110,6 +110,51 @@ Picking the right Extend pattern, scaffolding a new service, defining its API, r
 5. **Ready to ship** — `/ags-extend deploy` builds, pushes, and deploys to AGS. `/ags-extend ci` wires it into GitHub Actions or GitLab CI.
 6. **In production** — `/ags-extend observe` for logs and health, `/ags-extend doctor` if something's off, `/ags-extend upgrade` for SDK or proto version bumps.
 
+### teammate
+
+An AI colleague for your AccelByte integration. Point it at your game repo and
+it checks how your AGS integration is wired, then hands you a report where every
+finding is backed by a citation or left out.
+
+#### What it covers
+
+Your repo's AccelByte SDK usage: incomplete integrations, deprecated APIs,
+unsafe token handling, and calls with no path for failing — surfaced as a report
+you can act on, held to a grounded-or-suppressed rule so no claim ships without a
+citation. It also answers two questions that are not about the code as it
+stands: what an engine SDK upgrade would break, and whether one AMS fleet or
+Extend app is sized right.
+
+#### Examples
+
+```
+/teammate health-check
+```
+```
+/teammate check my AccelByte integration for deprecated APIs
+```
+```
+/teammate check my Extend app CPU and memory usage and advise the optimal settings
+```
+```
+/teammate what can you check?
+```
+
+#### What you can do
+
+- **Health check** — `/teammate health-check` — scan an AccelByte-integrated repo for integration gaps, deprecations, and auth-token-safety issues, and get a cited report.
+- **Upgrade check** — `/teammate upgrade-check` — for a version bump of your engine SDK, see which of your own call sites break, each at `file:line`. It reads only.
+- **Sizing check** — `/teammate sizing-check` — for one named AMS fleet or Extend app, see what it is set to and what it should be, with each number labelled by what it rests on.
+- **Ask** — `/teammate` — ask what the teammate can do and get routed to the right check.
+
+#### Intended workflow
+
+1. Install this skill (optionally add its memory MCP for report reuse).
+2. Open your AccelByte-integrated game repo.
+3. Run `/teammate health-check` to scan it.
+4. Review the report — every finding is cited or left out.
+5. Act on the findings, then re-run to confirm.
+
 
 ## MCP Servers
 
@@ -125,6 +170,20 @@ Useful when debugging a live integration or validating how your game's backend i
 Gives your AI assistant direct access to AccelByte Extend SDK types, functions, and models while you code. Supports Go, Java, Python, and C#.
 
 Instead of hallucinating API shapes, your assistant can look them up — making AI-generated Extend code significantly more accurate.
+
+
+### Teammate Memory MCP Server
+
+Remembers your studio's scans, so a report can be reused and a colleague's activity can surface while you work.
+
+Optional: the teammate still scans and reports without it, it just can't reuse prior reports or see colleague activity.
+
+
+### Teammate Studio Wiki MCP Server
+
+Serves your studio's own notes and reports as readable pages, so a run can orient itself on what your team already found.
+
+Optional, and it starts empty: it serves what has been rewritten so far. Nothing here ever grounds a claim about AccelByte.
 
 
 ### AccelByte Unity MCP
@@ -205,4 +264,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler `v0.4.1`.
+Built with AccelByte External Marketplace compiler `v0.6.0`.

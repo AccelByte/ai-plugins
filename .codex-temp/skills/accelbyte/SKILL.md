@@ -14,6 +14,7 @@ Use this as the AccelByte skill-family preflight. Keep it small: route to the ri
 - Matchmaking rulesets, pools, MMR, tickets, region routing, backfill, and X-Ray debugging route to `/ags matchmaking`.
 - AMS, dedicated server fleet, server binary upload, watchdog, warmed pool, claim keys, or local DS lifecycle route to `/ags ams`.
 - Extend, Override, Event Handler, Service Extension, Extend App UI, or Extend SDK work -> `/ags-extend`.
+- Reviewing an AccelByte integration that already exists — "check my integration", "any deprecated APIs", "what breaks if we upgrade the SDK", "is this AMS fleet or Extend app sized right" — routes to `/teammate`. It scans and reports; it does not teach a module or wire one up, so a "how do I add X" question stays with `/ags`.
 
 ## Tool Selection and Fallback
 
@@ -56,6 +57,14 @@ Mirror the ordered steps into the host-native progress tracker when the harness 
 Known tracker names:
 
 - Codex: `update_plan`
-- Claude Code: `TodoWrite`
+- Claude Code: `TaskCreate` / `TaskUpdate` (named `TodoWrite` before 2.1)
 - OpenCode: `todowrite`
 - Cursor, Kiro, or unknown harness: use the native task/progress UI if present; otherwise use a visible checklist.
+
+These names are a starting point, not a check. Harnesses rename their trackers between versions, so bind whichever one this harness exposes; a name from this list being absent means look for the current one, not that there is no tracker. Fall back to a visible checklist only when the harness genuinely offers none.
+
+**Not in the tool list is not the same as not available.** Some harnesses defer tools: they are usable but appear nowhere until fetched by name, so a tracker that is fully working reads as missing to anything that only scans the visible list. Establish absence with an **exact-name** lookup — on Claude Code that is one `ToolSearch` call, `select:TaskCreate,TaskUpdate,TodoWrite` — before concluding anything. A keyword or fuzzy search does not settle it: it ranks by wording, so a bad query returns unrelated tools whether the tracker exists or not, and reading that noise as proof of absence is how a run falls back to a checklist on a harness that had the tracker all along. Fuzzy sweeps are a reasonable second probe for a renamed tracker, never the first.
+
+**And absent is not always broken.** A harness may hold the task tools back by default and hand them over only when the session asks for them, so a lookup that comes back empty can be reporting a switch nobody flipped rather than a harness with no tracker. Claude Code does this from v2.1.233 on its newer model families: `TodoWrite`, `TaskCreate`, `TaskGet`, `TaskUpdate` and `TaskList` are left out unless the session opted in — `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in the environment, or the names passed to `--allowedTools` / `--tools` at startup — and are provided on every model in background and web sessions. That is the one case where the lookup is right, the fallback is right, and the user can still have the real tracker for the asking. It is also why the same skill tracks properly in one session and falls back in the next: what changed was the session, not the skill.
+
+When the fallback does fire, say which exact names were looked up and came back empty, and — where the harness documents a way to switch the tracker on — the one line that does it. A checklist offered with no names behind it is indistinguishable from one offered because nobody checked; a checklist offered with no way out of it makes a setting look like a defect.
