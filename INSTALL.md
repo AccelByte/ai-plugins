@@ -204,7 +204,7 @@ Requires Docker. Set `CONFIG_DIR` to your SDK language:
 
 ### Teammate Memory MCP Server
 
-Use as the teammate skill's memory. Six tools under the wiki_memory_* prefix hold your studio's reports, scan history, suppressions, and the cross-persona activity feed. Set its URL by filling your own AGS environment's domain into https://{env-domain}/teammate/memory/mcp/{studio}-{game}. The tool-name prefix, not the name you give a server, says which body of text answered: wiki_memory_* is your studio's raw records, and it grounds nothing about AccelByte.
+Use as the teammate skill's memory. Six tools under the wiki_memory_* prefix hold your studio's reports, scan history, suppressions, the documents you hand it, and the cross-persona activity feed. Set its URL by filling your own AGS environment's domain into https://{env-domain}/teammate/memory/mcp/{studio}-{game}. The tool-name prefix, not the name you give a server, says which body of text answered: wiki_memory_* is your studio's raw records, and it grounds nothing about AccelByte.
 
 ```
 Fill your own AGS environment's domain into this shape:

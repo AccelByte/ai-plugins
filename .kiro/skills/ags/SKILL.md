@@ -47,7 +47,7 @@ Two boundaries still leave this router:
 - **Extend** (Override / Event Handler / Service Extension / App UI / custom gRPC handler deployment) → `/ags-extend`.
 - **ADT** (build distribution, crash reporting, playtest tooling) → `/adt`. **A separate AccelByte product**, not under AGS. Originally BlackBox.
 
-One peer skill also leaves this router, and it is not a product boundary: reviewing an AccelByte integration that already exists — scanning a repo for incomplete integrations, deprecated APIs, unsafe token handling or missing error paths, checking what an engine SDK upgrade would break, or checking whether one named AMS fleet or Extend app is sized right → `/teammate`. `/ags` owns building and explaining AGS; `/teammate` owns reviewing what is already built and hands back a report.
+One peer skill also leaves this router, and it is not a product boundary: reviewing an AccelByte integration that already exists — scanning a repo for incomplete integrations, deprecated APIs, unsafe token handling or missing error paths, checking what an engine SDK upgrade would break, or checking whether one named AMS fleet or Extend app is sized right → `/teammate`. Handing over a document to keep — a technical design, a milestone plan, meeting notes, a postmortem — goes there too, and is the one thing it does that is not a review. `/ags` owns building and explaining AGS; `/teammate` owns reviewing what is already built and hands back a report.
 
 ## Required Maps
 
@@ -159,7 +159,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 
 | Cue | Route |
 |---|---|
-| "check my integration", "health check", "review my AccelByte integration", "scan my repo", "any deprecated APIs", "am I using deprecated", "what breaks if we upgrade", "upgrade check", "is this fleet sized right", "is this app over-provisioned" | `/teammate` — leaves this skill, see the redirect below |
+| "check my integration", "health check", "review my AccelByte integration", "scan my repo", "any deprecated APIs", "am I using deprecated", "what breaks if we upgrade", "upgrade check", "is this fleet sized right", "is this app over-provisioned", "remember this design", "ingest our plan", "add these notes to memory" | `/teammate` — leaves this skill, see the redirect below |
 | `handoff`, "should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to private cloud", "do I need AMS", "is AGS even right", "is AGS right for this" | `subskills/handoff.md` |
 | `manage-permissions`, "add permission", "grant permission", "remove permission", "revoke permission", "delete permission", "edit permission", "update permission", "change permission", "configure permission", "set permission", "assign permission", "grant scope", "add scope", "edit client permissions", "update client permissions", "manage permissions" | `subskills/manage-permissions.md` with `references/security/iam-authorization-preflight.md` |
 | "what permission", "which permission", "client permission", "OAuth permission", "IAM permission", "permission group", `groupId`, "resource/action", "scope", `401`, `403`, `insufficient_permission`, "forbidden" | `subskills/ask.md` with `references/security/iam-authorization-preflight.md` |
@@ -233,7 +233,7 @@ Use when the message is about ADT (build distribution, crash reporting, playtest
 
 Use when the message asks for a review of an integration that already exists rather than help building one:
 
-> That's a job for the AccelByte teammate — it scans an AccelByte-integrated repo and reports back on incomplete integrations, deprecated APIs, unsafe token handling and missing error paths, tells you what an engine SDK upgrade would break, and checks whether a named AMS fleet or Extend app is sized right. Run `/teammate` to invoke it. (`/ags` still owns building and explaining AGS, so come back here for "how do I add X".)
+> That's a job for the AccelByte teammate — it scans an AccelByte-integrated repo and reports back on incomplete integrations, deprecated APIs, unsafe token handling and missing error paths, tells you what an engine SDK upgrade would break, and checks whether a named AMS fleet or Extend app is sized right. It will also keep a design, a plan or a postmortem you hand it in your studio's own memory, so a later run can read what the team decided. Run `/teammate` to invoke it. (`/ags` still owns building and explaining AGS, so come back here for "how do I add X".)
 
 ### When subskills conflict
 

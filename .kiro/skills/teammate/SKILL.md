@@ -118,7 +118,7 @@ uncommitted edits, or a clean one a commit or two back — it ranks what it foun
 and lets the user choose it over a rescan. When the Report is delivered it can
 offer **one fix as one pull request** on a fresh branch (Stage 7) — one file, one
 approval, and nothing opened without credentials you already have.
-`upgrade-check` answers the other dev question — moving the engine SDK to a newer
+`upgrade-check` answers a different dev question — moving the engine SDK to a newer
 version, which of your own call sites break. It diffs the symbols your code
 actually calls between the version you are on and the one you name, on Unity and
 on Unreal, and cites the SDK source at both. Each row is a break, a warning your

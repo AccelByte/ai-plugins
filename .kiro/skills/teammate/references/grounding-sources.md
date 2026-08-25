@@ -50,7 +50,7 @@ tool/MCP the studio has installed.
 | **`ags` skill references** | A | Module facts, security/auth rules, SDK-detection heuristics — the AGS family's maintained representation of AccelByte facts. Reason from these; they are **not** a citable target | Present when the AGS family is installed alongside this skill |
 | **Wiki grounding tools** (`wiki_search` / `wiki_read` / `wiki_read_source` / `wiki_list`) | C | Cross-cutting prose from AccelByte's global, public documentation corpus — one deployment, the same for every studio. **Not** your studio's own material, which reaches you under two other prefixes and grounds nothing (rows below) | Optional; degrades silently when absent, and independently of whether either studio-scoped toolset is available |
 | **Your studio's pages** (`wiki_studio_*`) | C | **Nothing.** Your own memory rewritten as pages. It orients a run and it is not a citation: a claim about AccelByte behaviour is not made true by your own notes, rewritten or not | Optional; its absence costs no citation, and its presence supplies none — a session holding only these has no grounding corpus |
-| **Your studio's memory** (`wiki_memory_*`) | C | **Nothing.** Prior reports, scan history, suppressions and the activity feed ([memory-contract.md](memory-contract.md)) | Optional; degrades silently when absent, and independently of the two rows above |
+| **Your studio's memory** (`wiki_memory_*`) | C | **Nothing.** Prior reports, scan history, suppressions, the documents your team handed the teammate, and the activity feed ([memory-contract.md](memory-contract.md)) | Optional; degrades silently when absent, and independently of the two rows above |
 
 ### Deprecations → the operation source and the two client sources
 

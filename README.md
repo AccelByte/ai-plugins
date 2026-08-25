@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.7.4-blue)
+![version](https://img.shields.io/badge/version-0.7.5-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -123,7 +123,9 @@ unsafe token handling, and calls with no path for failing — surfaced as a repo
 you can act on, held to a grounded-or-suppressed rule so no claim ships without a
 citation. It also answers two questions that are not about the code as it
 stands: what an engine SDK upgrade would break, and whether one AMS fleet or
-Extend app is sized right.
+Extend app is sized right. And it keeps what the code never records — hand it a
+design, a plan or a postmortem and it files the text in your studio's own memory,
+so a later answer can reach what the team decided.
 
 #### Examples
 
@@ -131,10 +133,10 @@ Extend app is sized right.
 /teammate health-check
 ```
 ```
-/teammate check my AccelByte integration for deprecated APIs
-```
-```
 /teammate check my Extend app CPU and memory usage and advise the optimal settings
+```
+```
+/teammate remember this technical design
 ```
 ```
 /teammate what can you check?
@@ -145,15 +147,17 @@ Extend app is sized right.
 - **Health check** — `/teammate health-check` — scan an AccelByte-integrated repo for integration gaps, deprecations, and auth-token-safety issues, and get a cited report.
 - **Upgrade check** — `/teammate upgrade-check` — for a version bump of your engine SDK, see which of your own call sites break, each at `file:line`. It reads only.
 - **Sizing check** — `/teammate sizing-check` — for one named AMS fleet or Extend app, see what it is set to and what it should be, with each number labelled by what it rests on.
-- **Ask** — `/teammate` — ask what the teammate can do and get routed to the right check.
+- **Remember** — `/teammate remember` — hand over a technical design, a milestone plan, meeting notes or a postmortem and it files the text, unedited, in your studio's memory. Needs the memory server; without one it stores nothing and says so.
+- **Ask** — `/teammate` — ask what the teammate can do, or what past scans already found, and get routed to the right check.
 
 #### Intended workflow
 
-1. Install this skill (optionally add its memory MCP for report reuse).
+1. Install this skill (optionally add its memory MCP for report reuse and for `remember`).
 2. Open your AccelByte-integrated game repo.
 3. Run `/teammate health-check` to scan it.
 4. Review the report — every finding is cited or left out.
 5. Act on the findings, then re-run to confirm.
+6. Hand it the designs and plans behind the code with `/teammate remember`, so a later answer reaches them too.
 
 
 ## MCP Servers
@@ -174,14 +178,14 @@ Instead of hallucinating API shapes, your assistant can look them up — making 
 
 ### Teammate Memory MCP Server
 
-Remembers your studio's scans, so a report can be reused and a colleague's activity can surface while you work.
+Remembers your studio's scans and the documents you hand it, so a report can be reused, a design or a postmortem stays readable, and a colleague's activity can surface while you work.
 
-Optional: the teammate still scans and reports without it, it just can't reuse prior reports or see colleague activity.
+Optional, though `/teammate remember` needs it: without it the teammate still scans and reports, it just can't keep a document, reuse a prior report, or see colleague activity.
 
 
 ### Teammate Studio Wiki MCP Server
 
-Serves your studio's own notes and reports as readable pages, so a run can orient itself on what your team already found.
+Serves your studio's own scans and documents as readable pages, so a run can orient itself on what your team already found and on what it decided.
 
 Optional, and it starts empty: it serves what has been rewritten so far. Nothing here ever grounds a claim about AccelByte.
 
