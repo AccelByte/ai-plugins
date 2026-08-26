@@ -1,15 +1,17 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
 - https://accelbyte.io/gaming-services
 - https://accelbyte.io/ags-eos
 - https://accelbyte.io/pricing
+- https://docs.accelbyte.io/gaming-services/modules/foundations/legal/manage-user-data-portability-and-erasure/
 see-also:
 - '[overview.md](overview.md)'
 - '[glossary.md](glossary.md)'
 - '[extend.md](ecosystem/extend.md)'
 - '[pccu-bands.md](pricing/pccu-bands.md)'
+- '[legal.md](modules/legal.md)'
 ---
 
 # AGS — FAQ
@@ -150,6 +152,10 @@ Start native. If you hit the rule-expression ceiling, escalate to Extend Overrid
 ## Can I export AGS data to my own warehouse?
 
 AGS Analytics emits events that can be exported to external warehouses (BigQuery, Snowflake, Redshift, etc.). The exact export mechanism depends on tier and deployment model — for the current options, point users at `https://docs.accelbyte.io/` Analytics docs or contact AccelByte support. Studios with serious data needs usually pair AGS Analytics with an external BI stack rather than relying on AGS dashboards alone.
+
+## Can players request their data or ask for account deletion (GDPR/CCPA)?
+
+Yes, via the Legal & Privacy module — right of access (data export) and right to erasure (account deletion), covering GDPR and CCPA. **This module is not supported on AGS Public Cloud at all** — Private Cloud / BYOC only, independent of any data-residency reasoning. There are distinct initiation paths (user self-service via Player Portal/Launcher, Admin Portal manual action, Admin SDK/S2S) with different namespace and user-ID requirements — see `references/modules/legal.md` and the official docs: `https://docs.accelbyte.io/gaming-services/modules/foundations/legal/manage-user-data-portability-and-erasure/`. AccelByte doesn't provide legal advice on compliance itself — that's a question for the studio's own counsel.
 
 ## What's the SLA?
 

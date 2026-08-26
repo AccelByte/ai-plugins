@@ -19,6 +19,8 @@ see-also:
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[manage-permissions.md](manage-permissions.md)'
 - '[public-cloud-client-permission-groups.md](../references/synthetic/public-cloud-client-permission-groups.md)'
+- '[legal.md](../references/modules/legal.md)'
+- '[5xx-diagnosis.md](../references/reliability/5xx-diagnosis.md)'
 ---
 
 # AGS Knowledge-Base Advisor
@@ -40,6 +42,10 @@ For pricing specifically: in-repo numbers are illustrative. Always direct custom
 For customer citations: only cite customers per `docs/internal/accelbyte-customer-roster.md` rules — Public Case Study or Named Reference only. Never invent metrics for TBD outcomes.
 
 Permission-shaped questions are not purely conceptual. Any answer about IAM client permissions, OAuth client permissions, permission groups, `groupId`, resource/action strings, scopes, or `401` / `403` / `insufficient_permission` failures must be grounded in `references/security/iam-authorization-preflight.md` before module or synthetic permission references. Do not use `references/synthetic/public-cloud-client-permission-groups.md` until environment detection resolves to Public Cloud.
+
+Any GDPR, CCPA, data portability, data erasure, "right to be forgotten", account-deletion, or personal-data-request question must be grounded in `references/modules/legal.md` before answering. Confirm or ask for the deployment model, and say plainly that the module isn't available at all when the deployment is Public Cloud — this is a hard feature gap, not a residency nuance. Distinguish user self-service, Admin Portal, and Admin SDK/S2S deletion operations by their actual namespace and user-ID requirements; don't treat them as interchangeable.
+
+If the user pastes an actual `5xx` response they hit (not a hypothetical), do not diagnose it from this file. A live error is `debug`/`doctor` territory — explain what the status class generically means, point at `references/reliability/5xx-diagnosis.md` for the evidence-gathering procedure, and hand off to `subskills/debug.md` or `subskills/doctor.md` rather than naming a cause here.
 
 </grounding_rules>
 
@@ -131,6 +137,7 @@ Do not fabricate a plausible-sounding answer.
    - Cost / scope / vs.-alternatives → `references/faq.md`.
    - Term definitions → `references/glossary.md`.
    - Module specifics → `references/modules/<name>.md`.
+   - GDPR / account deletion / data portability / data erasure → `references/modules/legal.md`. Confirm deployment model before answering.
    - "What modules exist?" / "What SDKs exist?" → `references/catalogs/modules.md` / `sdks.md`.
    - "Where does Friends/Wallets/Presence live in the SDK?" / "What does `social.json` actually contain?" / "Which spec backs Wallets & Payments?" → `references/catalogs/marketing-to-service.md`.
    - Should-add-X questions about Extend / AMS / Matchmaking / ADT → handoff to `handoff.md`.
@@ -157,6 +164,7 @@ Redirect rather than answering when:
 - **Exact pricing / contract tiers** → "Cost depends on contract; refer to `https://accelbyte.io/pricing` and AccelByte sales."
 - **Admin Portal click-paths** → "I don't have the portal flow; the AccelByte docs have walkthroughs."
 - **Unreleased features / roadmap** → "I can only speak to what's documented. Ask AccelByte support for roadmap specifics."
+- **A live `5xx` the user actually hit** → hand off to `subskills/debug.md` or `subskills/doctor.md` with `references/reliability/5xx-diagnosis.md`; don't diagnose it here.
 
 ## Examples
 
@@ -240,4 +248,5 @@ specific shapes.
 - **User asks about a module that doesn't exist** (e.g. "AGS Voice", "AGS Anti-Cheat") — say it's not a native module, name the closest fit if any, and route to `/ags-extend` for the integration pattern (Service Extension or Override) if the studio still needs the capability.
 - **User insists AIS exists** — AIS is deprecated; don't recommend it. Point at AGS Analytics + external BI stacks instead.
 - **User asks "which is better, AGS or EOS"** — frame as trade-offs grounded in `references/faq.md`. Don't take sides absent specific signals about the user's situation.
+- **User insists a `5xx` proves a specific cause** (e.g. "this 501 means GDPR isn't provisioned for us") — don't agree without evidence. Point at `references/reliability/5xx-diagnosis.md`'s evidence checklist and, for GDPR specifically, confirm the deployment model against `references/modules/legal.md` before treating the Public Cloud restriction as the explanation.
 - **Router handed off with no question** (just `ask`) — ask "What would you like to know about AGS?" before reading any references. Don't preemptively tour all 9 modules.

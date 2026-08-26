@@ -1,11 +1,13 @@
 ---
-last-verified: 2026-08-17
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/legal/manage-user-data-portability-and-erasure/
 see-also:
 - '[overview.md](overview.md)'
 - '[faq.md](faq.md)'
+- '[legal.md](modules/legal.md)'
 ---
 
 # AGS — Glossary
@@ -110,6 +112,16 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 **Promotion / coupon.** Time-limited or condition-gated grants of items, currency, or discounts.
 
 ---
+
+## Legal & privacy
+
+**GDPR (General Data Protection Regulation).** EU data-protection law. AGS's Legal & Privacy module implements the right of access and right to erasure it requires. **Not supported on AGS Public Cloud** — see `modules/legal.md`.
+
+**CCPA (California Consumer Privacy Act).** California's data-privacy law, covered by the same AGS module as GDPR.
+
+**Right of access.** A user's request to receive a copy of their personal data. Typically processed within 28 days; unactioned requests are auto-removed from the queue after 56 days.
+
+**Right to erasure / account deletion request.** A user's (or admin-initiated, on the user's behalf) request to delete an account and its personal data. Distinct initiation paths — user self-service via Player Portal/Launcher, Admin Portal manual action, or Admin SDK/S2S (`AdminSubmitUserAccountDeletionRequest`) — have different namespace and user-ID requirements; see `modules/legal.md`. Don't treat them as interchangeable.
 
 ## Telemetry & operations
 

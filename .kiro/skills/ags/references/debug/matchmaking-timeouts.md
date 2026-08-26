@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -7,6 +7,7 @@ see-also:
 - '[matchmaking.md](../ecosystem/matchmaking.md)'
 - '[debug.md](../../subskills/debug.md)'
 - '[doctor.md](../../subskills/doctor.md)'
+- '[5xx-diagnosis.md](../reliability/5xx-diagnosis.md)'
 ---
 
 # Debug — Matchmaking Timeouts
@@ -73,4 +74,4 @@ This is no longer a matchmaking issue — it's a Sessions / AMS / network issue.
 - Anything in the rule expression layer → `/ags matchmaking`.
 - Fleet-side allocation failures → `/ags ams`.
 - Sessions-side connection failures → check `references/modules/session.md` and `references/debug/lobby-disconnects.md`.
-- Persistent 5xx from matchmaking endpoint → AccelByte support.
+- Unexplained `5xx` from the matchmaking endpoint → read `../reliability/5xx-diagnosis.md` first; gather the evidence checklist before naming a cause, and recommend AccelByte support before any unconfirmed hypothesis if nothing confirms one.

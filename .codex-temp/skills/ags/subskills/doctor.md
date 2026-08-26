@@ -15,6 +15,8 @@ see-also:
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[lobby-disconnects.md](../references/debug/lobby-disconnects.md)'
 - '[matchmaking-timeouts.md](../references/debug/matchmaking-timeouts.md)'
+- '[5xx-diagnosis.md](../references/reliability/5xx-diagnosis.md)'
+- '[legal.md](../references/modules/legal.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[debug.md](debug.md)'
 - '[manage-permissions.md](manage-permissions.md)'
@@ -36,6 +38,8 @@ Diagnosis trees trace to:
 - `references/security/iam-authorization-preflight.md`
 - `references/debug/lobby-disconnects.md`
 - `references/debug/matchmaking-timeouts.md`
+- `references/reliability/5xx-diagnosis.md` for any unexplained `5xx` — read before naming a likely cause. A 5xx identifies a failure class, not a root cause; gather its evidence checklist and don't assert provisioning/health/config causes without corroboration.
+- `references/modules/legal.md` for GDPR / account-deletion / data-portability symptoms — confirm deployment model first; not supported on Public Cloud at all.
 
 Don't fabricate causes. If the symptom doesn't fit a known signature, say so and point at observability (`subskills/observe.md`) or AccelByte support.
 
@@ -112,6 +116,8 @@ Pick a starting reference based on the symptom:
 | Permission errors, forbidden calls, or missing enriched fields such as display name | `references/security/iam-authorization-preflight.md` |
 | Lobby drops / WebSocket issues | `references/debug/lobby-disconnects.md` |
 | Matchmaking timeouts / no matches | `references/debug/matchmaking-timeouts.md` |
+| Any unexplained `5xx` on any endpoint | `references/reliability/5xx-diagnosis.md` **first** — gather evidence before naming a likely cause |
+| GDPR / account deletion / data portability | `references/modules/legal.md` — confirm deployment model before diagnosing |
 | Generic "something's wrong" | Walk the user through the symptom triage from the top |
 
 ### Step 3: Walk the diagnosis tree (read-only)
@@ -159,6 +165,7 @@ Name the subskill / peer skill that owns the fix:
 | Lobby timeouts likely OS-level | `/ags debug` |
 | Match formation likely rule-set issue | `/ags matchmaking` |
 | AMS fleet capacity issue | `/ags ams` |
+| Unexplained `5xx` with no documented/confirmed cause after following `references/reliability/5xx-diagnosis.md` | AccelByte support, with the evidence bundle — before naming any unconfirmed hypothesis |
 | Suspected AGS incident | AccelByte support |
 | Need more visibility before deciding | `/ags observe` |
 

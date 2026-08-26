@@ -1,11 +1,13 @@
 ---
-last-verified: 2026-08-17
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/legal/manage-user-data-portability-and-erasure/
 see-also:
 - '[private-cloud.md](private-cloud.md)'
 - '[byoc.md](byoc.md)'
 - '[tiers.md](../pricing/tiers.md)'
+- '[legal.md](../modules/legal.md)'
 ---
 
 # Deployment — Public Cloud
@@ -33,6 +35,7 @@ A multi-tenant, AccelByte-operated cloud deployment that hosts namespaces for ma
 - **Enterprise SLA needs** — when a contract demands stricter uptime guarantees than the standard tier provides.
 - **Dedicated infra ask** — explicit isolation requirements (regulatory, customer concerns).
 - **Scale economics** — at high PCCU, dedicated infra can become more cost-effective than shared.
+- **The Legal & Privacy (GDPR/CCPA) module itself** — this is a separate reason from data residency above. AGS's built-in account-deletion / data-access module **is not supported on Public Cloud at all**, regardless of where the studio's players are located. A studio can have zero residency requirements and still need Private Cloud purely to get this module. See `../modules/legal.md`.
 
 The next step is **Private Cloud** (`references/deployment/private-cloud.md`) or **BYOC** (`references/deployment/byoc.md`).
 

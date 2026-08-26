@@ -1,11 +1,13 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/legal/manage-user-data-portability-and-erasure/
 see-also:
 - '[public-cloud.md](public-cloud.md)'
 - '[byoc.md](byoc.md)'
 - '[tiers.md](../pricing/tiers.md)'
+- '[legal.md](../modules/legal.md)'
 ---
 
 # Deployment — Private Cloud
@@ -21,6 +23,7 @@ AGS deployed on dedicated infra for a single customer. AccelByte still runs ops,
 ## When it's the right answer
 
 - **Data residency requirements** — GDPR, certain APAC jurisdictions, or contractual obligations that mandate data stays in a specific region.
+- **The Legal & Privacy (GDPR/CCPA) module specifically** — this AGS module (account deletion / data-access requests) is only available here or on BYOC; it's not offered on Public Cloud at all, even without a residency requirement. See `../modules/legal.md`.
 - **Enterprise SLA** — stricter uptime and incident-response guarantees than standard.
 - **Compliance** — regulated markets (financial-tied gaming, age-gated jurisdictions, certain government contracts).
 - **Scale** — at high PCCU, dedicated infra becomes economically attractive vs. shared.

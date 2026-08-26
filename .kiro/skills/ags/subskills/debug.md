@@ -14,6 +14,8 @@ see-also:
 - '[iam-authorization-preflight.md](../references/security/iam-authorization-preflight.md)'
 - '[lobby-disconnects.md](../references/debug/lobby-disconnects.md)'
 - '[matchmaking-timeouts.md](../references/debug/matchmaking-timeouts.md)'
+- '[5xx-diagnosis.md](../references/reliability/5xx-diagnosis.md)'
+- '[legal.md](../references/modules/legal.md)'
 - '[cli-commands.md](../references/observe/cli-commands.md)'
 - '[doctor.md](doctor.md)'
 - '[manage-permissions.md](manage-permissions.md)'
@@ -36,6 +38,8 @@ Diagnosis trees trace to:
 - `references/debug/lobby-disconnects.md` for lobby connection issues.
 - `references/debug/matchmaking-timeouts.md` for match-formation issues.
 - `references/security/iam-authorization-preflight.md` for caller type, token source, IAM client kind, AGS CLI permission discovery, and missing-permission diagnosis.
+- `references/reliability/5xx-diagnosis.md` for **any** unexplained `5xx` response, regardless of which endpoint returned it. Read this before stating a cause — a 5xx identifies a failure class, not a root cause. Gather the evidence checklist there (endpoint, method, response body, request/trace ID, timestamp, namespace, deployment model, logs) before hypothesizing, and recommend AccelByte Support before presenting any unconfirmed hypothesis.
+- `references/modules/legal.md` for GDPR / account-deletion / data-portability work specifically. Confirm the deployment model before diagnosing — this module is not supported on Public Cloud at all.
 
 Don't fabricate error signatures or make up causes. When something doesn't fit a known signature, say so and escalate (AccelByte support, or `subskills/observe.md` for a deeper look at namespace state).
 
@@ -132,6 +136,8 @@ Pick a starting reference:
 | Response has `userId` but UI expects display name | `references/security/iam-authorization-preflight.md` first, then the module/API call that should enrich the user display data |
 | Lobby disconnects, WebSocket resets, presence drops | `references/debug/lobby-disconnects.md` |
 | Matchmaking timeouts, no matches forming | `references/debug/matchmaking-timeouts.md` |
+| Any unexplained `5xx` (500/501/502/503/504, "internal server error", "bad gateway", "service unavailable") on **any** endpoint | `references/reliability/5xx-diagnosis.md` **first**, before any endpoint-specific reference — gather the evidence checklist and don't state a cause until it's confirmed |
+| GDPR / account deletion / data portability / data erasure work | `references/modules/legal.md` — confirm deployment model before diagnosing; not supported on Public Cloud at all |
 | Store call failures | `references/debug/auth-failures.md` first (most common cause), then look at the call specifically |
 | Anything else | Read `subskills/doctor.md` to narrow down |
 

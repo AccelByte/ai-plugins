@@ -1,10 +1,11 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/
 see-also:
 - '[overview.md](../overview.md)'
 - '[iam.md](../modules/iam.md)'
+- '[legal.md](../modules/legal.md)'
 - '[handoff.md](../../subskills/handoff.md)'
 ---
 
@@ -50,7 +51,7 @@ Soft signals:
 - Studio mentions the cost of integrating multiple platform IdPs themselves.
 - Compliance / regulatory pressure on identity (data residency, age verification).
 
-> **Public Cloud caveat:** GDPR processes are not yet supported in AGS Public Cloud. Studios with GDPR requirements should confirm deployment type (Private Cloud or BYOC) with AccelByte sales before committing.
+> **Public Cloud caveat:** the Legal & Privacy (GDPR/CCPA) module is not yet supported in AGS Public Cloud at all — a hard feature gap, not a residency nuance. Studios with GDPR/CCPA requirements should confirm deployment type (Private Cloud or BYOC) with AccelByte sales before committing. See `../modules/legal.md` for the operation-type breakdown.
 
 ---
 

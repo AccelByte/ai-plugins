@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-08
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -8,6 +8,7 @@ see-also:
 - '[auth-provider-configuration.md](../platforms/auth-provider-configuration.md)'
 - '[debug.md](../../subskills/debug.md)'
 - '[doctor.md](../../subskills/doctor.md)'
+- '[5xx-diagnosis.md](../reliability/5xx-diagnosis.md)'
 ---
 
 # Debug — Auth Failures
@@ -157,17 +158,14 @@ Fix: depends on which side is broken. Platform-side failures are platform-side f
 
 ## Signature: 5xx on auth endpoint
 
-**Likely cause:** AGS-side incident or rate-limit.
+Read `../reliability/5xx-diagnosis.md` before diagnosing this one — a 5xx identifies a failure class, not a root cause. Don't state "AGS-side incident or rate-limit" as the cause until it's supported by evidence.
 
-Check:
+Gather first: the exact endpoint and method, the response body, a request/trace ID if present, the timestamp, the namespace, and the deployment model. Then check AccelByte status / Admin Portal for an active incident and the volume of recent auth attempts (a stuck retry loop can trip a rate-limit) — these are hypotheses to test against the evidence, not conclusions.
 
-1. AccelByte status / Admin Portal for incident notifications.
-2. Volume of auth attempts — rate-limits exist; a stuck retry loop can trip them.
-
-Fix: stop the retry loop, wait, retry with backoff. Open a support ticket if the issue persists beyond minutes.
+If neither an incident nor a rate-limit pattern is confirmed, say the cause is unconfirmed and recommend AccelByte support (with the evidence above) before offering any hypothesis. If a rate-limit pattern **is** confirmed by the evidence: stop the retry loop, wait, retry with backoff.
 
 ## When to escalate
 
-- Repeated 5xx with no platform-status incident → AccelByte support.
+- Any `5xx` with no confirmed cause after following `../reliability/5xx-diagnosis.md` → AccelByte support, before naming an unconfirmed hypothesis.
 - Auth working in dev but failing in prod (after env review) → check the prod Admin Portal IAM client config; common to find a misconfigured production client.
 - Player-reported auth issues that don't reproduce internally → use IAM's real-time auth debugging tooling (per `references/modules/iam.md`).

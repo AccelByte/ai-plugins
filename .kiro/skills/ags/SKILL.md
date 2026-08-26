@@ -118,6 +118,18 @@ For any IAM client, OAuth client, permission, permission group, `groupId`, resou
 
 Environment detection controls the answer format. Public Cloud answers must use the module / group / `groupId` / action shape. Private Cloud / BYOC answers use the discovered resource/action string as the final permission. If the environment cannot be identified from project config, AGS CLI profile/config, or the permission catalog behavior, report it as unknown and name the missing evidence instead of choosing a Public Cloud group.
 
+### Account deletion / GDPR gate
+
+For any GDPR, CCPA, data portability, data erasure, "right to be forgotten", account-deletion, or personal-data-request question, the selected workflow or subskill must read `references/modules/legal.md` before answering. This is a cross-cutting rule, not a separate subskill.
+
+Confirm or ask for the deployment model before answering, and surface the Public Cloud restriction when it applies — this module is not supported on Public Cloud at all, independent of data-residency reasoning. Distinguish user self-service, Admin Portal, and Admin SDK/S2S deletion operations rather than treating their namespace and user-ID requirements as interchangeable.
+
+### 5xx diagnosis gate
+
+For any unexplained `5xx`, `500`, `501`, `502`, `503`, `504`, "internal server error", "bad gateway", "service unavailable", or "gateway timeout" response from a live AGS API call, the selected workflow or subskill must read `references/reliability/5xx-diagnosis.md` before presenting a cause. This is a cross-cutting rule, not a separate subskill.
+
+A 5xx identifies a failure class, not a root cause. Gather the evidence checklist there (endpoint, method, response body, request/trace ID, timestamp, namespace, deployment model, logs) before diagnosing, and recommend AccelByte Support before presenting any unconfirmed causal hypothesis.
+
 ### Decision procedure
 
 Apply these checks in order. Stop at the first match.
@@ -163,6 +175,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 | `handoff`, "should I add Extend", "should I add ADT", "should I add AMS", "should I use Access", "should I move to private cloud", "do I need AMS", "is AGS even right", "is AGS right for this" | `subskills/handoff.md` |
 | `manage-permissions`, "add permission", "grant permission", "remove permission", "revoke permission", "delete permission", "edit permission", "update permission", "change permission", "configure permission", "set permission", "assign permission", "grant scope", "add scope", "edit client permissions", "update client permissions", "manage permissions" | `subskills/manage-permissions.md` with `references/security/iam-authorization-preflight.md` |
 | "what permission", "which permission", "client permission", "OAuth permission", "IAM permission", "permission group", `groupId`, "resource/action", "scope", `401`, `403`, `insufficient_permission`, "forbidden" | `subskills/ask.md` with `references/security/iam-authorization-preflight.md` |
+| "gdpr", "ccpa", "delete a user's account", "delete a player account", "account deletion", "data portability", "data erasure", "right to be forgotten", "personal data request" | `subskills/ask.md` with `references/modules/legal.md` |
 | `ask`, "what is", "what does AGS", "which module", "how does", "should I use" without an add / leave-scope decision, "vs", "compared to", "explain" | `subskills/ask.md` |
 | `explore`, "what's in my namespace", "show me my setup", "what modules am I using", "which clients exist" | `subskills/explore.md` |
 | `init`, "set up everything", "from scratch", "bootstrap", "start a new AGS project", "new namespace from zero" | `subskills/init.md` |
@@ -175,7 +188,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 | `integrate`, "wire up auth", "integrate lobby", "implement matchmaking", "hook up the store", "implement statistics", "wire statistics", "implement leaderboards" | `workflows/online-game-flow.md` (see step 9) |
 | `run-workflow`, "run workflow", "execute workflow", "ags workflow run", "ags workflow", "competitive multiplayer workflow", "competitive-multiplayer" | `subskills/run-workflow.md` (see step 7) |
 | `manage-resource`, "create a statistic configuration", "create a leaderboard config", "delete a store item", "update a platform item", "create stats config", "create leaderboard configuration" | `subskills/manage-resource.md` (see step 8) |
-| `debug`, "run locally", "test against AGS", "auth is failing", "I get a 401", "lobby keeps disconnecting" | `subskills/debug.md` |
+| `debug`, "run locally", "test against AGS", "auth is failing", "I get a 401", "lobby keeps disconnecting", "I get a 501", "I get a 502", "getting a 5xx", "internal server error", "bad gateway", "service unavailable" | `subskills/debug.md` with `references/reliability/5xx-diagnosis.md` when the symptom is a 5xx |
 | `observe`, "logs", "metrics", "live status", "PCCU dashboard", "events firing", "pccu", "production traffic" | `subskills/observe.md` |
 | `doctor`, "diagnose", "what's wrong", "something is off", "not sure what's broken", "help me narrow this down" | `subskills/doctor.md` |
 

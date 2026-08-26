@@ -1,9 +1,10 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-08-25
 sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[iam.md](../modules/iam.md)'
+- '[legal.md](../modules/legal.md)'
 - '[lobby.md](../modules/lobby.md)'
 - '[matchmaking.md](../modules/matchmaking.md)'
 - '[session.md](../modules/session.md)'
@@ -25,6 +26,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | Module | One-line | Full reference |
 |---|---|---|
 | **IAM** | Player accounts, OAuth 2.0, platform identity binding, ban management | `references/modules/iam.md` |
+| **Legal & Privacy** | GDPR/CCPA account deletion and data-access requests. **Not supported on Public Cloud at all.** | `references/modules/legal.md` |
 | **Lobby** | WebSocket-based party, presence, chat, invites (SDK service name; public docs now surfaces this as 'Chat' + 'Parties & Presence') | `references/modules/lobby.md` |
 | **Matchmaking** | Rule-based matchmaking; deep work in `/ags matchmaking` | `references/modules/matchmaking.md` |
 | **Session Management** | Game session lifecycle, server allocation, reconnection | `references/modules/session.md` |
@@ -54,6 +56,10 @@ The customer-facing AGS docs use marketing names (Foundations / Online / Multipl
 ## Modules that aren't AGS
 
 - **ADT** (build distribution / crash reporting / playtest) — separate AccelByte product. See `references/ecosystem/adt.md` and `/adt`.
+
+## Deployment-restricted modules
+
+- **Legal & Privacy (GDPR/CCPA)** — not supported on AGS Public Cloud, full stop, independent of any data-residency reasoning. Private Cloud / BYOC only. See `references/modules/legal.md` for the operation-type breakdown and `references/deployment/public-cloud.md` / `private-cloud.md` for the deployment-model story.
 
 ## Potentially Deprecated
 
