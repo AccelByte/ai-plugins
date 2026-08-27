@@ -1,6 +1,6 @@
 {
   "lockfileVersion": 1,
-  "version": "0.7.6",
+  "version": "0.7.7",
   "agents": {},
   "skills": {
     "accelbyte": {
@@ -21,6 +21,6 @@
   "generated": {
     ".gitignore": "139364e09a0807fb41d15b8eecbd7b898ec5ac31ed1b520845a2eb4a35ecd321",
     "INSTALL.md": "f4e3ad330acd4ef4d1b0407253a5779e9d5b4fa0cca0e39df89c7944e4f6d775",
-    "README.md": "3e5af945cc267b41ae6b70163108748743a14cd077abf798296dece885c77559"
+    "README.md": "74ccf309c816b3b69e4b818f83df12dd075fd89f1406fa43f319a19ef3fc3460"
   }
 }
