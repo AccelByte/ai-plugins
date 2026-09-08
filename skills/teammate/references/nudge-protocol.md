@@ -3,7 +3,7 @@ name: teammate-nudge-protocol
 description: When the teammate may surface a proactive nudge, and the limits it fires
   under. Read once per session before the first nudge; the rules a nudge is drawn
   from live in nudge-library.md.
-last-verified: 2026-08-10
+last-verified: 2026-09-04
 see-also:
 - '[nudge-library.md](nudge-library.md)'
 - '[memory-contract.md](memory-contract.md)'
@@ -76,6 +76,19 @@ colleague nudges this session" once and move on. Do not retry, do not warn the
 user, and do not mention memory. Most installs have no memory server, so absence
 is the ordinary case — every other rule in the library still works.
 
+**Decide that by looking for the tool, or by making the call — never by reading
+a start-up notice.** A session can hold a working memory tool *and* a start-up
+line saying a server of the same name failed to connect: the plugin declares
+`teammate_memory` as an http server, and a stdio server supplied at launch
+overrides it under the same name, so the failed declaration is still reported
+while the tools that replaced it work. Measured 2026-09-06: three sessions read
+that line, announced "Memory server is down" to the user, and took this branch
+while `wiki_memory_*` was present and answering — one of them adding that there
+was no history to draw on, over a store that held the record. So the condition
+is **the tool is not there, or the call it made came back an error** — a
+connection notice about a server is neither, and quoting one to the user is the
+warning this paragraph already forbids.
+
 ### What stamped an entry decides whether a colleague rule can fire at all
 
 Only entries whose identity the memory service verified may be repeated to a
@@ -116,14 +129,15 @@ Keyed, one document per topic, overwritten in place:
 
     key:  <scope>:<topic>
 
-`<scope>` is the repository the nudge is about, or the literal `machine` for a
-rule about the developer's setup rather than any repo. `<topic>` is the rule's
-slug from the library.
+`<scope>` is one of three: the repository the nudge is about, the namespace
+whose resources it is about, or the literal `machine` for a rule about the
+developer's setup rather than either. `<topic>` is the rule's slug from the
+library.
 
     {
       "schema_version": 1,
       "topic": "<the rule's slug>",
-      "scope": "<repo or 'machine'>",
+      "scope": "<repo, namespace, or 'machine'>",
       "shown_count": <integer>
     }
 
@@ -142,7 +156,12 @@ own identity, so the key cannot name one.
 
 For a rule about a repository, that is the behaviour you want: the condition
 belongs to the repo, and re-raising it with each teammate in turn is worse than
-raising it once.
+raising it once. A rule whose `<scope>` segment is an **AGS namespace** works the
+same way and for the same reason: a fleet that has gone unchecked for a month is
+that environment's condition, not any one developer's, and one teammate seeing it
+is enough for the team. (Two senses of the word meet in this paragraph. The
+sentence above is about how wide a stored record reaches, and this one is about
+what a key names.)
 
 For a rule about a *person* it is a real limit: one developer seeing it can put
 it in cooldown for the rest of the team. Rules that quote a colleague therefore
@@ -150,12 +169,14 @@ it in cooldown for the rest of the team. Rules that quote a colleague therefore
 once-per-session rule are what bound them. The library marks which rules those
 are.
 
-### The other read a nudge may rest on
+### The other reads a nudge may rest on
 
-A rule may draw on the studio's own counts instead of the feed
-([history-rollup.md](history-rollup.md)). The same once-per-session read
-applies: at most one `wiki_memory_rollup` per session, reused for the rest of
-it, and a rule that needs neither read makes neither.
+Two more, and the once-per-session bound above covers each of them separately: at
+most one of each per session, reused for the rest of it, and a rule that needs
+none of the three makes none.
+
+The first is the studio's own counts instead of the feed
+([history-rollup.md](history-rollup.md)) — at most one `wiki_memory_rollup`.
 
 It is a different kind of evidence and carries different limits:
 
@@ -174,6 +195,24 @@ It is a different kind of evidence and carries different limits:
   studio's history rather than a person, so nothing here suppresses a colleague
   rule.
 
+The second is the studio's own stored checks, read by key rather than by topic —
+at most one `wiki_memory_list` over the `resource-check` kind, narrowed with
+`key_prefix` to the namespace this session is already working in
+([memory-contract.md](memory-contract.md)). Four things about it:
+
+- **`key_prefix` and `projection` are allowed here and forbidden on the feed
+  above.** `resource-check` is a keyed kind and `activity` is not, which is what
+  decides it.
+- **Age comes off the envelope.** `updated_at` is the server's write stamp and
+  sits beside `doc`, never inside it. A record whose envelope carries none has no
+  age a rule may use.
+- **It is not a scan either.** The read returns checks somebody already ran. It
+  never lists what a namespace holds, so it can say a thing has not been checked
+  lately and can never say a thing exists that nobody has checked at all.
+- **An error here ends it, exactly as one on the feed does.** Bind "no stale-check
+  nudge this session" once and move on: no retry, no warning, no mention of
+  memory to the user.
+
 ## A nudge is grounded or it does not fire
 
 Every rule that asserts something about AccelByte carries at least one
@@ -189,8 +228,8 @@ honest:
   library carries the rule with its citation, or it does not carry it.
 
 A rule that asserts nothing about AccelByte — that a tool is not installed, that
-a repository changed since it was last scanned — needs no citation, because
-there is no external claim in it to ground.
+a repository changed since it was last scanned, that a check has not been run for
+a while — needs no citation, because there is no external claim in it to ground.
 
 ## What never nudges
 

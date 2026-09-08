@@ -8,11 +8,12 @@ description: Use when the user asks what one AMS fleet or one Extend app should 
   no published arithmetic. Answers about one named thing, and does not scan a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
 model: sonnet
-last-verified: 2026-08-06
+last-verified: 2026-09-04
 see-also:
 - '[sizing-sources.md](../references/sizing-sources.md)'
 - '[grounding-rules.md](../references/grounding-rules.md)'
 - '[memory-contract.md](../references/memory-contract.md)'
+- '[fleet-check.md](fleet-check.md)'
 - '[ags fleet.md](../../ags/capabilities/ams/fleet.md)'
 ---
 
@@ -159,8 +160,10 @@ answer:
 - Read the autoscaling target rather than assuming it, and remember the memory
   branch falls back to a different value from the CPU branch when no memory
   target is in force.
-- Round a fleet's server counts to a multiple of servers-per-VM. An unrounded
-  recommendation is one the service will not accept.
+- Round a fleet's server counts to a multiple of servers-per-VM, and say what
+  the rounding did. AMS accepts an unrounded count and adjusts it to the nearest
+  multiple itself, so an unrounded recommendation is not refused — it is
+  silently changed, and the number the operator set is not the number in force.
 
 With settings only, the findings available are still real: a request above the
 environment ceiling, a replica floor equal to its ceiling so nothing can scale, a
@@ -199,3 +202,8 @@ the answer, not an apology attached to it.
   density is instance type and servers-per-VM, and nothing else.
 - It does not compare two studios, two namespaces, or two environments.
 - It does not read code, and a sizing question is not a health check.
+- It does not check whether a fleet is configured sanely, whether its image and
+  artifacts are in order, or why its servers are exiting. This answers what one
+  thing should be set to; the wider question about one AMS fleet is
+  [fleet-check.md](fleet-check.md), which runs these stages inside itself rather
+  than repeating them.

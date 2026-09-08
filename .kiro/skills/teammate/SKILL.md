@@ -1,6 +1,6 @@
 ---
 name: teammate
-description: "Use when the user wants an AI colleague for their AccelByte integration — a health check of an AGS-integrated repo (incomplete integrations, deprecated APIs, auth-token safety, error resilience, cross-referenced against the live namespace when credentials are present), what an engine SDK upgrade would break, whether one AMS fleet or Extend app is sized right ('check my AMS or Extend app CPU and memory usage and advise the optimal settings'), wants a document kept in the studio's memory ('remember this technical design'), or asks what the teammate can do. Umbrella router for the dev and liveops teammate personas; routes to exactly one subskill per invocation."
+description: "Use when the user wants an AI colleague for their AccelByte integration — a health check of an AGS-integrated repo (incomplete integrations, deprecated APIs, auth-token safety, error resilience, cross-referenced against the live namespace when credentials are present), what an engine SDK upgrade would break, whether one AMS fleet or Extend app is sized right ('check my AMS or Extend app CPU and memory usage and advise the optimal settings'), whether one named AMS fleet is configured and running well ('check my prod-eu fleet', 'are our fleets ready for launch'), whether one named Extend app is healthy ('is my matchmaking-override app healthy', 'check my Extend app before we go live'), why one dedicated server or one Extend deployment stopped ('why did server ds-01j2 die', 'my app went down after the last deploy'), wants a document kept in the studio's memory ('remember this technical design'), or asks what the teammate can do. Umbrella router for the dev and liveops teammate personas; routes to exactly one subskill per invocation."
 ---
 
 # Teammate
@@ -58,6 +58,9 @@ procedure is not a use, and adds nothing.
 | 3 | [`subskills/sizing-check.md`](subskills/sizing-check.md) | asks what one named AMS fleet or Extend app should be set to — "check my AMS/Extend app CPU and memory usage and advise the optimal settings", "is this app over-provisioned", "what buffer should this fleet run". One named thing, not a repo. |
 | 4 | [`subskills/remember.md`](subskills/remember.md) | hands over a document to keep — a technical design, a milestone plan, meeting notes, a postmortem, a spec. "remember this", "ingest our plan", "add these notes to memory". It writes one record and stops; it does not scan and does not summarise. |
 | 5 | [`subskills/ask.md`](subskills/ask.md) | asks what the teammate is or can do, asks what the team keeps getting wrong across past scans, asks what this project already uses — "which AccelByte services do we call" — or the intent isn't yet a concrete scan. Explain, answer from a stored scan, and route; it reads what is stored and never scans, so a question that needs a fresh read goes to row 1. |
+| 6 | [`subskills/fleet-check.md`](subskills/fleet-check.md) | asks whether one named AMS fleet is set up right or running well — "check my prod-eu fleet", "are our fleets ready for launch", "are servers on this fleet crashing". Configuration, image and artifact hygiene, the crash picture from history, and min/max/buffer for one fleet. Row 3 owns the bare sizing question about a fleet; this row owns the rest of it. |
+| 7 | [`subskills/extend-app-check.md`](subskills/extend-app-check.md) | asks whether one named Extend app is healthy or safe to ship — "is my matchmaking-override app healthy", "check my Extend app before we go live", "why is my Extend app not running", "is our Extend app image safe". State, last deployments, image scan results, configuration drift, debug and alert hygiene, and CPU, memory and replicas for one app. Row 3 owns the bare sizing question about an app; this row owns the rest of it. |
+| 8 | [`subskills/why-did-it-die.md`](subskills/why-did-it-die.md) | asks why one thing that was running stopped — "server ds-01j2 died at 14:20, why", "my party-eh app went down after the last deploy, what happened", "why did this deployment fail", "what killed this dedicated server". One AMS dedicated server or one Extend deployment: the timeline first, then the causes that can be grounded, then the log or artifact that settles the rest. Row 7's "why is my Extend app not running" is the state it is in **now**, and stays there; this row is for one named thing that already stopped and the timeline behind it. |
 
 Pick one row and hand off. If two seem to fit, prefer `ask` and let it route.
 
@@ -69,7 +72,8 @@ the proactive surface: it rides a response this family was already invoked for,
 has no timer, and cannot speak first.
 
 Read [nudge-protocol.md](references/nudge-protocol.md) once per session before
-the first one. It holds the gate, the two limits, and the shared-activity read;
+the first one. It holds the gate, the two limits, and the three reads a nudge
+may rest on;
 [nudge-library.md](references/nudge-library.md) holds the closed set of rules a
 nudge may be drawn from, and the public page behind each rule that says
 something about AccelByte.
@@ -141,10 +145,38 @@ with no published method — instance type, servers-per-VM, replica count — it
 shows you the inputs instead of inventing a number. It reads the configured
 settings today; reading what a workload actually consumed needs a metrics tool
 this plugin does not yet bind, so it says which of its numbers were measured and
-which were not. Like the upgrade check, it recommends and never applies. Proactive
+which were not. Like the upgrade check, it recommends and never applies.
+`fleet-check` asks a wider question about one of those running things: for one
+named AMS fleet, is it configured sanely, is its image and artifact hygiene
+right, and what does the last day of server history say about crashes. It reads
+the fleet, the image it deploys, the artifacts it collected and the transitions
+its servers went through, and reports what is misconfigured or failing beside
+the min, max and buffer each region should carry — the sizing arithmetic is
+`sizing-check`'s, run inside the check rather than copied. Every finding either
+carries the AccelByte page it rests on or is about your own numbers and says so,
+and each run is stored under the fleet it is about so the next one can open with
+what changed. It reads, and it changes no setting.
+`extend-app-check` is the same shape on the other side: for one named Extend
+app, is it running, did its last deployment work, is the image it is serving
+free of critical findings, is the configuration in the Portal actually in force,
+and is anyone alerted when it goes down. It reads the app, its deployments, its
+images and scan results, its variables and secrets, and its debug and alert
+settings, and reports what is broken or unsafe beside what its CPU, memory and
+replicas should be — including how many virtual machines the namespace's current
+settings imply, since Extend bills by the machine and not by the allocation. It
+never reads a secret's value back to you, and like the fleet check it stores its
+result under the app so the next run opens with what changed.
+`why-did-it-die` is the narrow one beside those two: one dedicated server or one
+Extend app deployment that has already stopped, and what happened to it. It reads
+the transitions in the order they happened — the states, the reasons and the exit
+codes as the service returned them — names the causes it can put a published page
+behind, and hands over the log or the core dump for the rest rather than guessing
+at it. Where the answer is a setting it points at the fleet or app check that
+owns it, and where the honest answer is that the evidence was not kept it says
+which sampling rule decided that. Proactive
 nudges ride any response this family produces — at most one per session, drawn
 only from [nudge-library.md](references/nudge-library.md). Every rule that says
 something about AccelByte carries the public page it rests on, and none ships
-without one; the rules that say something about your own machine or project
-assert nothing about AccelByte and so cite nothing. The liveops `observe`
-persona is not available yet.
+without one; the rules that say something about your own machine, this project
+or what your studio has already stored assert nothing about AccelByte and so
+cite nothing. The liveops `observe` persona is not available yet.

@@ -5,11 +5,14 @@ description: Explain what the teammate can do and route to the right subskill. U
   use', or when the intent isn't yet a concrete scan.
 allowed-tools: Read
 model: sonnet
-last-verified: 2026-08-16
+last-verified: 2026-09-04
 see-also:
 - '[health-check.md](health-check.md)'
 - '[upgrade-check.md](upgrade-check.md)'
 - '[sizing-check.md](sizing-check.md)'
+- '[fleet-check.md](fleet-check.md)'
+- '[extend-app-check.md](extend-app-check.md)'
+- '[why-did-it-die.md](why-did-it-die.md)'
 - '[remember.md](remember.md)'
 - '[history-rollup.md](../references/history-rollup.md)'
 - '[cross-repo-surface.md](../references/cross-repo-surface.md)'
@@ -58,6 +61,22 @@ persona:
   - `sizing-check` — for one named AMS fleet or Extend app, what it is set to and
     what it should be, each number labelled by what it rests on. It recommends
     and never applies.
+  - `fleet-check` — for one named AMS fleet, the wider question: is it
+    configured sanely, is its image and artifact hygiene right, what does the
+    last day of its server history say about crashes, and what should min, max
+    and buffer be per region. Every finding carries the AccelByte page behind it
+    or is about your own numbers and says which. It reads, and changes no
+    setting.
+  - `extend-app-check` — the same wider question for one named Extend app: is it
+    running, did its last deployment work, is the image it serves free of
+    critical findings, is the configuration in the Portal actually in force, and
+    what should its CPU, memory and replicas be. It never reads a secret's value
+    back to you, and it changes no setting.
+  - `why-did-it-die` — for one dedicated server or one Extend app deployment that
+    has already stopped: what happened, in the order it happened, and which cause
+    fits. It reads the transitions as the service returned them, names only the
+    causes it can put a published page behind, and hands over the log or core
+    dump rather than reading it for you.
   - `remember` — hand it a document and it keeps it: a technical design, a milestone
     plan, meeting notes, a postmortem. Stored as you wrote it, in your studio's
     own memory, where the digest turns it into pages alongside your scans. It is
@@ -76,10 +95,12 @@ Two things ride alongside whichever check runs:
   missing from this machine — the AGS connection, the MCP server for your engine,
   or the sibling `ags` skill. Every rule that says something about AccelByte
   carries the public page it rests on, and none ships without one; the rules that
-  say something about *your machine* assert nothing about AccelByte and so cite
-  nothing. Most need only what the work just done already produced. A few ride a
-  live AGS read the session had already made, and the ones about colleagues need
-  a memory server — without one they simply do not fire.
+  say something about *your machine, this project, or what you have already
+  stored* assert nothing about AccelByte and so cite nothing. Most need only what
+  the work just done already produced. A few ride a live AGS read the session had
+  already made, and the ones that read what is already stored — a colleague's
+  run, this repo's last scan, this namespace's last checks — need a memory
+  server; without one they simply do not fire.
 - **Memory, where it is installed.** Configure the memory server and the teammate
   can offer a stored report instead of rescanning, and count what your team keeps
   running into across past scans. Mentioning what a *colleague* ran needs that
@@ -107,6 +128,25 @@ Two things ride alongside whichever check runs:
   memory or buffer should be, or whether it is over-provisioned → hand off to
   [`sizing-check`](sizing-check.md). A vague "is my AccelByte stuff sized right"
   belongs here too: ask which fleet or which app, then hand off.
+- **Asks whether one named AMS fleet is set up right or running well** — "check
+  my prod-eu fleet", "are our fleets ready for launch", "are servers on this
+  fleet crashing" → hand off to [`fleet-check`](fleet-check.md). A bare sizing
+  question about a fleet — what buffer should it run — stays with
+  [`sizing-check`](sizing-check.md); this row is for the wider check around it.
+- **Asks whether one named Extend app is healthy or safe to ship** — "is my
+  matchmaking-override app healthy", "check my Extend app before we go live",
+  "why is my Extend app not running", "is our Extend app image safe" → hand off
+  to [`extend-app-check`](extend-app-check.md). A bare sizing question about an
+  app — what its CPU and memory request should be — stays with
+  [`sizing-check`](sizing-check.md); this row is for the wider check around it.
+- **Asks why one thing that was running stopped** — "server ds-01j2 died at
+  14:20, why", "my party-eh app went down after the last deploy, what happened",
+  "why did this deployment fail" → hand off to
+  [`why-did-it-die`](why-did-it-die.md). One named server or one named
+  deployment, already over. "Why is my Extend app not running" is the state it is
+  in now and stays with [`extend-app-check`](extend-app-check.md); "are servers
+  on this fleet crashing" is a share over a window and stays with
+  [`fleet-check`](fleet-check.md).
 - **Asks what the team keeps getting wrong**, which problem comes up most, or
   anything else about their own scan history → answer it here, from
   [history-rollup.md](../references/history-rollup.md). Read the counts, then

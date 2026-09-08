@@ -4,10 +4,13 @@ description: Which source answers which half of a sizing question — the config
   setting from the AGS API, the observed usage from the metrics backend — for an AMS
   fleet and for an Extend app, with the recommendation arithmetic each one already
   publishes.
-last-verified: 2026-08-06
+last-verified: 2026-09-04
 sources:
 - https://docs.accelbyte.io/gaming-services/services/ams/
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-cpu-memory-replicas/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-pricing/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-vm-configurations/
 see-also:
 - '[sizing-check.md](../subskills/sizing-check.md)'
 - '[grounding-rules.md](grounding-rules.md)'
@@ -228,14 +231,51 @@ replica, subtracted before comparing against a VM's capacity. That is a packing
 question, not a recommendation question, and reading the scenario is worth doing
 only when packing is what is being answered.
 
-| Scenario | Reserved CPU | Reserved memory |
+Packing has **two** reserves, not one, and the second is easy to miss because it
+is charged once per virtual machine rather than per replica. Both are published
+on [extend-app-cpu-memory-replicas](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-cpu-memory-replicas/),
+whose own worked example subtracts them in that order:
+
+| Reserve | CPU | Memory |
 |---|---|---|
-| `event-handler` | 0.3 cores | 1,178,599,424 bytes |
-| `service-extension`, `function-override` | 0.1 cores | 104,960,000 bytes |
+| Per VM, once | 475 millicores | 1,498 MB |
+| Per replica, `event-handler` | 310 millicores | 1,144 MB |
+| Per replica, `service-extension` / `function-override` | 110 millicores | 120 MB |
+
+The per-replica figures are higher for an event handler for a stated reason —
+"each replica includes a Kafka Connect sidecar that handles event ingestion from
+AGS" — and the same page carries the tie-break a packing count needs: "If the CPU
+and memory have different calculations on how many replicas a VM can host, the
+system will always follow the lower limit." Take the lower of the two counts;
+never the CPU one because it was computed first.
+
+The VM those reserves are subtracted from is the one
+[extend-pricing](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-pricing/)
+names: "Hosted Extend services run in standardized VM with 2 cores and 4 GB, each
+priced at $0.198 per hour", with "a one-hour minimum charge per VM". Read the two
+pages rather than the numbers here; this table is a convenience index, and a
+figure a page has changed is a figure this file is wrong about.
 
 Billing is per VM, not per allocation. So the target is packing density across
 replicas, not shaving a single app — trimming one app that leaves its VM count
 unchanged saves nothing, and a report should say so rather than claim a saving.
+
+Whether a namespace's apps even share their VMs with each other is a per-app
+setting rather than a property of the namespace, and **the two pages disagree
+about it**. extend-pricing carries a callout saying "each namespace with Extend
+apps will have its own VM, as VMs cannot be shared between namespaces", while
+[extend-app-vm-configurations](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-vm-configurations/)
+documents the setting that decides it: an "All-Namespaces VMs" host that "Hosts
+your app on a VM shared across all namespaces", against a "Current-Namespace VMs"
+host that "Hosts your app on a VM dedicated to the current namespace". Take the
+specific page over the general callout — and take extend-pricing for the
+machine's shape and its rate, and for nothing else.
+
+`vmSharingConfiguration` is what a read returns it as, and an app on the shared
+host is packed alongside apps in namespaces a caller reading its own namespace
+cannot see. So a packing count taken over one namespace excludes those apps and
+says it did, and it reads the setting per app rather than assuming the namespace
+is uniform.
 
 ### AMS, per fleet and region
 
@@ -272,8 +312,15 @@ peak claimed servers, rising to 50% in rare surge cases, starting at 10–15% an
 calibrated once traffic has been observed. A recommendation resting on that must
 say it rests on guidance rather than on this fleet's own traffic.
 
-Server counts round to a multiple of servers-per-VM. A recommendation that does
-not round has recommended something the service will not accept.
+Server counts round to a multiple of servers-per-VM — and AMS does the rounding
+itself, to the nearest multiple, rather than refusing the value. The
+[fleet-sizing](https://docs.accelbyte.io/gaming-services/modules/multiplayer/multiplayer-servers/fleet-sizing/)
+page states it and
+[create-ams-fleet](https://docs.accelbyte.io/gaming-services/modules/multiplayer/multiplayer-servers/create-ams-fleet/)
+works it through: with 5 servers per instance, a minimum of 3 and a maximum of
+28, "the fleet adjusts to 5 and 30, respectively". So a recommendation that does
+not round is not rejected — it is silently changed, and the number the operator
+sets is not the number in force. Round it here, and say what the rounding did.
 
 ## When a half cannot be read
 

@@ -7,7 +7,7 @@ description: 'The closed set of rules a proactive nudge may be drawn from — wh
   assert, and the rule that offers to check the namespace offers and waits rather
   than reporting a config gap it has not read. Read with nudge-protocol.md, which
   decides whether a nudge fires at all.'
-last-verified: 2026-08-15
+last-verified: 2026-09-04
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authorization/manage-access-control-for-applications/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/accounts/how-account-works/
@@ -48,7 +48,8 @@ plausible-sounding reminders are absent from this file for exactly that reason �
 the page did not state them
 ([What is deliberately not here](#what-is-deliberately-not-here)). A rule that
 asserts nothing about AccelByte — that a tool is not installed, that a repository
-changed since it was last scanned — owes no citation and says so in its own text
+changed since it was last scanned, that a check has not been run for a while —
+owes no citation and says so in its own text
 ([nudge-protocol.md](nudge-protocol.md)).
 
 ## How to read a rule
@@ -295,6 +296,75 @@ variable names travel and the values do not.
 Scope this to source control, which is what the page speaks to. Whether a secret
 also reaches a container image is a different claim on a different page, and this
 rule does not make it.
+
+### `resource-check-stale`
+
+**Fires when** this session already holds a namespace of its own — a
+config-aware [`health-check`](../subskills/health-check.md), a
+[`sizing-check`](../subskills/sizing-check.md), or an
+[`ask`](../subskills/ask.md) that named one, never `unknown` — *and* the keyed
+read below came back holding at least one AMS fleet or Extend app record in that
+namespace whose last write is more than **30 days** old.
+
+Those three and no others, and the reason is that the other checks have already
+said it: a fleet or app check opens by naming how old the record it is diffing
+against was, so a session that just ran one has been told about that subject
+already, and a cause report on something that stopped is a lookup rather than a
+check. This rule is for the namespace a session is working in for some other
+reason.
+
+**The read it rests on** is one keyed list of its own, on the same
+once-per-session bound the activity feed and the rollup each carry separately —
+one of each per session, not one between them
+([nudge-protocol.md](nudge-protocol.md)):
+
+    wiki_memory_list({ kind: "resource-check", key_prefix: "<namespace>@" })
+
+Age is `updated_at` on the **envelope**, the server's own write stamp, and never
+a field under `doc` ([memory-contract.md](memory-contract.md) § What a read gives
+back). An envelope that carries none is one this rule cannot age: pass it over
+rather than guess at it. Where the page came back incomplete —
+`over.complete: false` — the rule fires on what it returned and says "at least".
+Where the call errors, this rule does not match and nothing is said about it, the
+same way an absent memory server is handled — one attempt, no retry, no mention
+([nudge-protocol.md](nudge-protocol.md)).
+
+**Only fleets and apps, and that is a decision rather than a filter.** The key
+names its own subject, so `<namespace>@ams-fleet:<id>` and
+`<namespace>@extend-app:<id>` are the two this rule reads and the only two. A
+record filed under a single dedicated server or a single deployment is one
+incident, looked up once and kept so the next reader does not repeat the lookup.
+Nothing re-runs it on a schedule, so its age measures how long ago that thing
+died and not whether anybody is watching — ageing it would nudge for a check no
+one skipped.
+
+**The nudge** One sentence: the stale subjects in that namespace, how old each
+one is, and the check that covers them. One nudge however many there are, never
+one per fleet.
+
+**It cannot see a subject nobody has ever checked**, and does not try. No record,
+no nudge — the rule never lists a namespace's fleets or apps to go looking for
+one, which is the scan this surface never makes
+([nudge-protocol.md](nudge-protocol.md)). Offering a first check belongs to the
+router's ordinary cues instead.
+
+**Cooldown record** keyed `<namespace>:resource-check-stale` — the namespace
+scope form ([nudge-protocol.md](nudge-protocol.md)), because the subject is a
+namespace's resources and is neither a repository nor this machine. It runs at
+the protocol default, and per namespace rather than per person is the behaviour
+wanted here: one teammate seeing that a fleet has gone a month unchecked is
+enough for the team.
+
+**The 30-day threshold lives in this rule**, not in the protocol, which bounds
+cooldowns and nothing else. It is a starting value, and moving it is a change to
+this file.
+
+**Where the memory tools are absent it does not match**, and nothing is said
+about them.
+
+**No citation, and none is owed**: the claim is the age of the studio's own
+record — which a colleague may well have written, since memory is scoped to
+the studio and not to a person.
 
 ## Modules and tooling
 

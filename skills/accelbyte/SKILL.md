@@ -14,7 +14,7 @@ Use this as the AccelByte skill-family preflight. Keep it small: route to the ri
 - Matchmaking rulesets, pools, MMR, tickets, region routing, backfill, and X-Ray debugging route to `/ags matchmaking`.
 - AMS, dedicated server fleet, server binary upload, watchdog, warmed pool, claim keys, or local DS lifecycle route to `/ags ams`.
 - Extend, Override, Event Handler, Service Extension, Extend App UI, or Extend SDK work -> `/ags-extend`.
-- Reviewing an AccelByte integration that already exists — "check my integration", "any deprecated APIs", "what breaks if we upgrade the SDK", "is this AMS fleet or Extend app sized right" — routes to `/teammate`. It scans and reports; it does not teach a module or wire one up, so a "how do I add X" question stays with `/ags`.
+- Reviewing an AccelByte integration that already exists, or checking one named AMS fleet or Extend app — "check my integration", "any deprecated APIs", "what breaks if we upgrade the SDK", "is this AMS fleet or Extend app sized right", "check my prod-eu fleet", "are servers on this fleet crashing", "is my Extend app healthy", "why is my Extend app not running", "why did this dedicated server die", "my app went down after the last deploy" — routes to `/teammate`. It scans and reports; it does not teach a module or wire one up, so a "how do I add X" question stays with `/ags`.
 - Handing over a document to keep — a technical design, a milestone plan, meeting notes, a postmortem — "remember this technical design", "add these notes to memory" — also routes to `/teammate`. It files the text as given and never summarises it, and it needs the teammate memory server.
 
 ## Tool Selection and Fallback

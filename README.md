@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.7.7-blue)
+![version](https://img.shields.io/badge/version-0.7.19-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -123,7 +123,14 @@ unsafe token handling, and calls with no path for failing — surfaced as a repo
 you can act on, held to a grounded-or-suppressed rule so no claim ships without a
 citation. It also answers two questions that are not about the code as it
 stands: what an engine SDK upgrade would break, and whether one AMS fleet or
-Extend app is sized right. And it keeps what the code never records — hand it a
+Extend app is sized right. For an AMS fleet it goes further than sizing — one
+named fleet's configuration, its image and artifact hygiene, and what the last
+day of its server history says about crashes — and for an Extend app it goes
+further too: whether it is running, whether its last deployment worked, whether
+the image it serves carries critical findings, and whether the configuration in
+the Portal is the configuration in force. When one of those stops — a dedicated
+server that died, a deployment that failed — it builds the timeline and names the
+cause. And it keeps what the code never records — hand it a
 design, a plan or a postmortem and it files the text in your studio's own memory,
 so a later answer can reach what the team decided.
 
@@ -134,6 +141,15 @@ so a later answer can reach what the team decided.
 ```
 ```
 /teammate check my Extend app CPU and memory usage and advise the optimal settings
+```
+```
+/teammate check my prod-eu fleet
+```
+```
+/teammate is my matchmaking-override Extend app healthy
+```
+```
+/teammate why did server ds-01j2 die at 14:20
 ```
 ```
 /teammate remember this technical design
@@ -147,6 +163,9 @@ so a later answer can reach what the team decided.
 - **Health check** — `/teammate health-check` — scan an AccelByte-integrated repo for integration gaps, deprecations, and auth-token-safety issues, and get a cited report.
 - **Upgrade check** — `/teammate upgrade-check` — for a version bump of your engine SDK, see which of your own call sites break, each at `file:line`. It reads only.
 - **Sizing check** — `/teammate sizing-check` — for one named AMS fleet or Extend app, see what it is set to and what it should be, with each number labelled by what it rests on.
+- **Fleet check** — `/teammate fleet-check` — for one named AMS fleet, see what is misconfigured, what its image and artifact hygiene misses, what its last day of server history says about crashes, and what min, max and buffer each region should carry.
+- **Extend app check** — `/teammate extend-app-check` — for one named Extend app, see whether it is running, what its last deployments did, whether its active image carries critical findings, which variables and secrets are not yet in force, and what its CPU, memory and replicas should be. It never reads a secret's value back to you.
+- **Why did it die** — `/teammate why-did-it-die` — for one dedicated server or one Extend app deployment that stopped, see what happened in the order it happened, which cause fits, and where the log or core dump is. It hands the artifact over; it does not read it for you.
 - **Remember** — `/teammate remember` — hand over a technical design, a milestone plan, meeting notes or a postmortem and it files the text, unedited, in your studio's memory. Needs the memory server; without one it stores nothing and says so.
 - **Ask** — `/teammate` — ask what the teammate can do, or what past scans already found, and get routed to the right check.
 

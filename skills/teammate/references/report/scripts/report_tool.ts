@@ -7,13 +7,17 @@
  * Anything the model composes passes through this tool before it is exported,
  * written to memory, or pushed to a git host — findings via `validate` +
  * `fingerprint` + `redact`; activity entries via `validate --kind activity` +
- * `redact`; a PR's branch, title and body via `pr-plan`, and the worktree it is
+ * `redact`; a resource check — the Extend / AMS checks' report — via
+ * `validate --kind resource-check` + `memory-doc --kind resource-check`; a PR's
+ * branch, title and body via `pr-plan`, and the worktree it is
  * cut from via `pr-guard`. Fingerprints, actors, timestamps and branch names are
  * never LLM-composed.
  *
  * Commands:
- *   validate [--kind report|activity|suppression|access-log] <f.json>  schema + grounded-or-suppressed
- *   memory-doc [--allow-dirty] <report.json>         exact wiki_memory_put payload
+ *   validate [--kind report|activity|suppression|access-log|resource-check] <f.json>
+ *                                                    schema + grounded-or-suppressed
+ *   memory-doc [--kind report|resource-check] [--allow-dirty] [--key <key>] <f.json>
+ *                                                    exact wiki_memory_put payload
  *   memory-lookup --repo-name <n> --mode <m> [--actor <id>] [--tree-hash <h>]
  *                 --commits <rev-list.txt> <envelopes.json>   rank stored reports
  *   fingerprint --detector <id> --path <p> [--snippet-file <f>] [--json]  finding id
@@ -1022,6 +1026,38 @@ function checkKeySafe(v: Validator, value: string, at: string, role: string): vo
 }
 
 /**
+ * A field that composes a key out of its own value: visible content first, and
+ * the key's own separators only if there is content to spell.
+ *
+ * The two are `if`/`else` and not both, because a value with nothing visible in
+ * it has already failed for the reason that matters — the row cannot be
+ * addressed — and a second message about the space it happens to contain names
+ * a different fix. A caller who removes the space still has a key nobody can
+ * type.
+ *
+ * Three fields are in this class: a report's `repo.name` and a resource check's
+ * `subject.namespace` and `subject.id`. Each hand-composed the pair until one
+ * of them wrote it as two unconditional calls and started reporting both
+ * problems for one value — the same defect that was found and closed against
+ * `repo.name` before it. `why` stays per-site, because what a
+ * reader loses differs: a report nobody can address, a check nobody can look
+ * up.
+ */
+function checkKeySegment(
+  v: Validator,
+  value: string,
+  at: string,
+  role: string,
+  why: string,
+): void {
+  if (isInvisibleOnly(value)) {
+    v.fail(at, `must contain ${NOT_ONLY_INVISIBLE} ${ONLY_INVISIBLE_GOT} — ${why}`);
+    return;
+  }
+  checkKeySafe(v, value, at, role);
+}
+
+/**
  * One spelling per path, because paths are compared, not just displayed.
  *
  * A suppression is recovered by matching detector + path + snippet hash, so
@@ -1379,56 +1415,15 @@ const FINDING_KEYS = [
   "signal",
 ] as const;
 
-function validateFinding(v: Validator, f: unknown, path: string): void {
-  const finding = v.object(f, path);
-  if (!finding) return;
-  v.only(finding, FINDING_KEYS, path);
-  // Both required, so neither has an absent form and neither is gated in the
-  // renderers — the check belongs here, the way a candidate's `signal` does.
-  // Measured before it existed: a `title` of one space rendered `## CRITICAL —`
-  // with nothing after the dash, and `pr-plan` derived the PR title and commit
-  // subject `fix(auth-token-safety):` from it. That string is published to a
-  // git host and outlives the branch. A blank `id` renders `- **Id:** ``` and is what a
-  // candidate's `finding_id` joins to; `buildPrPlan` happens to refuse it a
-  // step later for not being a fingerprint, which is a different check that
-  // would stop applying the moment ids stopped being hashes.
-  //
-  // Both are also single-line, and these two are where the rule bites hardest.
-  // `title` is interpolated into `## ${severity} — ${title}` and `id` into a
-  // `- **Id:** \`…\`` row, neither through `oneLine`, so a value carrying `\n## `
-  // does not merely wrap: it closes the row it was in and opens a heading of its
-  // own, and the exported page reads as though the report asserted it. Measured
-  // on the sample: four headings became five, from either field.
-  for (const field of ["id", "title"] as const) {
-    if (!v.requireString(finding[field], `${path}.${field}`)) continue;
-    if (isInvisibleOnly(finding[field] as string)) {
-      v.fail(
-        `${path}.${field}`,
-        `must contain ${NOT_ONLY_INVISIBLE} ${ONLY_INVISIBLE_GOT} — a ` +
-          `${field} that renders as nothing leaves the finding stated by its ` +
-          "severity alone",
-      );
-      continue;
-    }
-    checkSingleLine(v, finding[field] as string, `${path}.${field}`);
-  }
-  v.requireEnum(finding.detector_id, DETECTOR_IDS, `${path}.detector_id`);
-  v.requireEnum(finding.severity, SEVERITIES, `${path}.severity`);
-  v.requireEnum(finding.confidence, CONFIDENCES, `${path}.confidence`);
-
-  const suppressed = finding.suppressed === true;
-  const citations = finding.citations;
-  const cited =
-    Array.isArray(citations) && citations.length > 0 && citations.every(isCitation);
-
-  // grounded-or-suppressed: a live finding with no resolvable citation is
-  // rejected here so ungrounded claims can never reach a report or memory.
-  if (!suppressed && !cited) {
-    v.fail(
-      `${path}.citations`,
-      "a non-suppressed finding needs >=1 citation with an internal:// or https:// source",
-    );
-  }
+/**
+ * Every citation element, well-formed and on one line.
+ *
+ * Shared by a report finding and a resource-check finding, which owe the same
+ * thing of a citation once one is there. What *requires* a citation stays with
+ * the caller — grounded-or-suppressed on a report, the signal table on a
+ * resource check — so this checks elements and never counts them.
+ */
+function checkCitationList(v: Validator, citations: unknown, path: string): void {
   // Every citation element must be well-formed regardless of `suppressed`, so a
   // malformed citation is refused at validate time rather than crashing export.
   if (citations !== undefined && !Array.isArray(citations)) {
@@ -1490,6 +1485,59 @@ function validateFinding(v: Validator, f: unknown, path: string): void {
       checkSingleLine(v, c.note, `${path}.citations[${i}].note`);
     });
   }
+}
+
+function validateFinding(v: Validator, f: unknown, path: string): void {
+  const finding = v.object(f, path);
+  if (!finding) return;
+  v.only(finding, FINDING_KEYS, path);
+  // Both required, so neither has an absent form and neither is gated in the
+  // renderers — the check belongs here, the way a candidate's `signal` does.
+  // Measured before it existed: a `title` of one space rendered `## CRITICAL —`
+  // with nothing after the dash, and `pr-plan` derived the PR title and commit
+  // subject `fix(auth-token-safety):` from it. That string is published to a
+  // git host and outlives the branch. A blank `id` renders `- **Id:** ``` and is what a
+  // candidate's `finding_id` joins to; `buildPrPlan` happens to refuse it a
+  // step later for not being a fingerprint, which is a different check that
+  // would stop applying the moment ids stopped being hashes.
+  //
+  // Both are also single-line, and these two are where the rule bites hardest.
+  // `title` is interpolated into `## ${severity} — ${title}` and `id` into a
+  // `- **Id:** \`…\`` row, neither through `oneLine`, so a value carrying `\n## `
+  // does not merely wrap: it closes the row it was in and opens a heading of its
+  // own, and the exported page reads as though the report asserted it. Measured
+  // on the sample: four headings became five, from either field.
+  for (const field of ["id", "title"] as const) {
+    if (!v.requireString(finding[field], `${path}.${field}`)) continue;
+    if (isInvisibleOnly(finding[field] as string)) {
+      v.fail(
+        `${path}.${field}`,
+        `must contain ${NOT_ONLY_INVISIBLE} ${ONLY_INVISIBLE_GOT} — a ` +
+          `${field} that renders as nothing leaves the finding stated by its ` +
+          "severity alone",
+      );
+      continue;
+    }
+    checkSingleLine(v, finding[field] as string, `${path}.${field}`);
+  }
+  v.requireEnum(finding.detector_id, DETECTOR_IDS, `${path}.detector_id`);
+  v.requireEnum(finding.severity, SEVERITIES, `${path}.severity`);
+  v.requireEnum(finding.confidence, CONFIDENCES, `${path}.confidence`);
+
+  const suppressed = finding.suppressed === true;
+  const citations = finding.citations;
+  const cited =
+    Array.isArray(citations) && citations.length > 0 && citations.every(isCitation);
+
+  // grounded-or-suppressed: a live finding with no resolvable citation is
+  // rejected here so ungrounded claims can never reach a report or memory.
+  if (!suppressed && !cited) {
+    v.fail(
+      `${path}.citations`,
+      "a non-suppressed finding needs >=1 citation with an internal:// or https:// source",
+    );
+  }
+  checkCitationList(v, citations, path);
 
   if ((CONFIDENCES as readonly string[]).includes(finding.confidence as string)) {
     const problem = confidenceProblem(suppressed, finding.confidence as Confidence);
@@ -2193,23 +2241,20 @@ export function validateReport(data: unknown): string[] {
     // name carrying one splits the key somewhere the reader does not expect.
     if (repo.name !== undefined) {
       if (v.requireString(repo.name, "$.repo.name")) {
-        // The content rule *before* the separator rule, and this is the one
-        // field where "refusing a value that renders as nothing moves no key"
-        // is false — this **is** the key's first segment. `checkKeySafe`
-        // refuses whitespace, so a space was already out, but a zero-width
-        // spelling passed and minted `<U+200B>@<sha>:code-only`: a stored row
-        // nobody can type, that no `repo.name` filter can match, and that reads
-        // on a listing as a report belonging to no repository.
-        if (isInvisibleOnly(repo.name as string)) {
-          v.fail(
-            "$.repo.name",
-            `must contain ${NOT_ONLY_INVISIBLE} ${ONLY_INVISIBLE_GOT} — it is ` +
-              "the report key's first segment, so this one is not only a page " +
-              "nobody can read but a row nobody can address",
-          );
-        } else {
-          checkKeySafe(v, repo.name as string, "$.repo.name", "the report key's first segment");
-        }
+        // The content rule *before* the separator rule, because this **is** the
+        // key's first segment. `checkKeySafe` refuses whitespace, so a space was
+        // already out, but a zero-width spelling passed and minted
+        // `<U+200B>@<sha>:code-only`: a stored row nobody can type, that no
+        // `repo.name` filter can match, and that reads on a listing as a report
+        // belonging to no repository.
+        checkKeySegment(
+          v,
+          repo.name as string,
+          "$.repo.name",
+          "the report key's first segment",
+          "it is the report key's first segment, so this one is not only a page " +
+            "nobody can read but a row nobody can address",
+        );
       }
     } else if (generation >= 3) {
       v.fail(
@@ -2609,6 +2654,884 @@ export function validateAccessLog(data: unknown): string[] {
     v.fail("$.ts", `must be an ISO-8601 UTC stamp (got ${excerpt(e.ts as string)})`);
   }
   return v.errors;
+}
+
+// --- resource-check ----------------------------------------------------------
+//
+// The report `extend-app-check`, `fleet-check` and `why-did-it-die` emit. It is
+// not the health-check `Report`: that object is closed around a repository and
+// a commit, and a fleet has neither. What is borrowed is the report's *rules* —
+// key safety, one visible line, the citation checks, two instants in order —
+// and none of its fields, so nothing here reaches the report path.
+
+/** What a check is about. The key's middle segment, so a closed set. */
+export const SUBJECT_KINDS = [
+  "extend-app",
+  "ams-fleet",
+  "ams-server",
+  "extend-deployment",
+] as const;
+type SubjectKind = (typeof SUBJECT_KINDS)[number];
+
+/**
+ * Why a resource read settled nothing: the report's four, plus one. A window
+ * over a metric can be empty in a way a configuration read cannot — no server
+ * ran, the series was never emitted — and `no-data-in-window` is the
+ * `sizing-sources.md` spelling of that. Derived from `UNREADABLE_REASONS` and
+ * kept apart from it: a cross-reference candidate reads a namespace's config,
+ * where there is no window to be empty, so widening the report's set would
+ * admit a reason no report row can honestly carry.
+ */
+export const RESOURCE_UNREADABLE_REASONS = [
+  ...UNREADABLE_REASONS,
+  "no-data-in-window",
+] as const;
+
+/**
+ * What a finding or a knob row rests on.
+ *
+ * `configured-only` is the one with a rule attached: a setting or a count is a
+ * single sample, so the row carries `at` and never claims the window.
+ * `derived-from-history` is accepted here because a schema is the wrong place
+ * for a measurement gate — `fleet-check`'s history gate decides whether a
+ * subskill may *write* it.
+ */
+export const RESTS_ON = [
+  "measured",
+  "configured-only",
+  "guidance",
+  "derived-from-history",
+] as const;
+
+/** What a signal owes, and how often it may fire. */
+export interface ResourceSignal {
+  /**
+   * `true`: the claim is about AccelByte, so the finding needs an `https://`
+   * citation — the mechanical form of grounded-or-suppressed for a kind with
+   * no `suppressed` axis. The validator never classifies prose; it reads this.
+   * `false`: the claim is the studio's own numbers, cited through `evidence`.
+   */
+  page: boolean;
+  /**
+   * `true`: the signal can fire more than once per subject — per region, per
+   * image, per deployment — so `evidence.locator` is required; it is the one
+   * string the run-to-run diff matches on beside `signal`. `false`: a second firing is
+   * the bug, so a locator is refused rather than ignored.
+   */
+  locator: boolean;
+  /**
+   * `true`: the signal reads a single sample — `currentReplica`,
+   * `claimedServerCount` — so the finding may only ever rest on
+   * `configured-only`. A row relabelled `measured` is a claim about the window
+   * that the read behind it cannot support, and nothing else in this schema
+   * catches it: `checkPointInTime` holds `at` against `rests_on`, and a sample
+   * relabelled `measured` with no `at` satisfies it.
+   */
+  point_in_time: boolean;
+}
+
+// Every row states all three booleans, so a signal that is one sample is
+// spelled that way in the table rather than defaulted into the window.
+const PAGE = { page: true, locator: false, point_in_time: false } as const;
+const PAGE_LOCATED = { page: true, locator: true, point_in_time: false } as const;
+const OWN_NUMBERS = { page: false, locator: false, point_in_time: false } as const;
+const PAGE_SAMPLED = { page: true, locator: false, point_in_time: true } as const;
+const OWN_NUMBERS_LOCATED_SAMPLED = { page: false, locator: true, point_in_time: true } as const;
+
+/**
+ * The closed signal table, per subject kind — the rows each subskill's
+ * playbook names, and the same rows `report-schema.md` § Resource-check report
+ * prints.
+ *
+ * Closed for the reason `DETECTOR_IDS` is: a signal the table does not name is
+ * a finding nothing can join to a playbook row or to the previous run. Read
+ * through `subject.kind` and never flat, so a name may repeat across kinds.
+ */
+export const RESOURCE_SIGNALS: Record<SubjectKind, Record<string, ResourceSignal>> = {
+  "extend-app": {
+    "app-not-running": PAGE,
+    "last-deployment-failed": PAGE,
+    "active-image-has-critical-findings": PAGE,
+    "image-scan-pending": PAGE,
+    "config-undeployed": PAGE_LOCATED,
+    "debug-mode-enabled": PAGE,
+    "no-alert-subscribers": PAGE,
+    "image-count-near-cap": PAGE,
+    "cannot-scale": PAGE,
+    "pinned-at-max-replica": PAGE_SAMPLED,
+    "request-above-ceiling": PAGE,
+    "no-autoscaling-target": PAGE,
+    "namespace-packing-estimate": OWN_NUMBERS,
+  },
+  "ams-fleet": {
+    "active-region-cannot-warm": PAGE_LOCATED,
+    "counts-not-multiple-of-servers-per-vm": PAGE_LOCATED,
+    "image-scheduled-for-deletion": PAGE,
+    // OWN_NUMBERS, not PAGE: the claim is a ratio of two fields one read
+    // returned — `currentUsageBytes` against `quotaBytes`. No public page states
+    // the image storage quota at all, let alone that it is enforced, and the
+    // artifacts page says outright that *its* usage limit "is currently not
+    // enforced", so there is nothing to require an `https://` citation of. A
+    // `page: true` row here would compel a run to attach a page that does not
+    // settle the finding, which is the failure grounded-or-suppressed exists to
+    // stop. The advice the finding carries — protect what you need, let the rest
+    // age out — does rest on a page, and the playbook cites it there.
+    "image-storage-near-quota": OWN_NUMBERS,
+    "crashed-logs-sampling-off": PAGE,
+    "artifacts-failing": PAGE,
+    "crash-share-high": PAGE,
+    "creation-timeout-below-observed": PAGE,
+    "fallback-has-own-buffer": PAGE_LOCATED,
+    "dev-fleet-never-hibernates": PAGE,
+    "build-config-expiring": PAGE_LOCATED,
+    "instance-type-capacity": PAGE_LOCATED,
+    "idle-min-servers": OWN_NUMBERS_LOCATED_SAMPLED,
+  },
+  "ams-server": {
+    "oom-killed": PAGE,
+    "drain-idle-timeout": PAGE,
+    "session-timeout": PAGE,
+    "unresponsive-timeout": PAGE,
+    "creation-timeout": PAGE,
+    "never-ready": PAGE,
+  },
+  // why-did-it-die on an Extend app is about one *deployment*, and it is keyed
+  // that way: keyed by the app it would share `<ns>@extend-app:<app>` with
+  // `extend-app-check` and, latest-wins, overwrite it — the next check would
+  // diff against an incident report. One deployment per record, so no row here
+  // carries a locator, the Extend twin of `ams-server`.
+  "extend-deployment": {
+    "deployment-failed": PAGE,
+    "deployment-timeout": PAGE,
+    "image-blocked": PAGE,
+    "deployment-down": PAGE,
+    "debug-mode-restart": PAGE,
+    "stopped-by-human": PAGE,
+  },
+};
+
+/**
+ * The signal table, held to its own shape at load.
+ *
+ * A signal is a join key, so its name is held to the slug shape every other
+ * join key here has. The three booleans are held too, and that half is not
+ * belt-and-braces: this file is run through `tsx`, which strips types rather
+ * than checking them, so `ResourceSignal`'s required fields decide nothing at
+ * runtime. A row written `{ page: false }` therefore loads, and then reads
+ * `undefined` for the two it omits: `row.locator` falsy makes the locator
+ * *refusal* fire on a signal that owes one, and `row.point_in_time` falsy makes
+ * the point-in-time refusal vanish on a signal that is one sample. Both are
+ * silent, and both are wrong in the direction that writes a bad record.
+ *
+ * Raised rather than defaulted, because a row that does not state all three is
+ * a defect in this program and not in any document it reads. Exported so the
+ * raise is reachable on a table other than the one below — which is the only
+ * way to exercise it, since the real table is checked at load and a checkout
+ * whose table is broken never gets far enough to run anything.
+ */
+export function assertResourceSignalTable(
+  table: Record<string, Record<string, unknown>>,
+  kinds: readonly string[],
+): void {
+  for (const kind of kinds) {
+    const rows = table[kind];
+    if (rows === undefined) throw new Error(`RESOURCE_SIGNALS[${kind}] is missing`);
+    const names = Object.keys(rows);
+    if (names.length === 0) throw new Error(`RESOURCE_SIGNALS[${kind}] names no signal`);
+    for (const name of names) {
+      if (!ACTION_SHAPE.test(name)) {
+        throw new Error(`RESOURCE_SIGNALS[${kind}]: '${name}' is not a slug`);
+      }
+      const row = rows[name] as Record<string, unknown> | null;
+      if (row === null || typeof row !== "object") {
+        throw new Error(`RESOURCE_SIGNALS[${kind}]: '${name}' is not a row`);
+      }
+      for (const field of ["page", "locator", "point_in_time"] as const) {
+        if (typeof row[field] === "boolean") continue;
+        throw new Error(
+          `RESOURCE_SIGNALS[${kind}]: '${name}' must state ${field} as a boolean ` +
+            `(got ${describe(row[field])}) — an omitted flag reads as false, which ` +
+            "refuses a locator the signal owes and drops the point-in-time rule",
+        );
+      }
+    }
+  }
+}
+
+assertResourceSignalTable(RESOURCE_SIGNALS, SUBJECT_KINDS);
+
+export interface ResourceCheck {
+  schema_version: number | string;
+  subject: { kind: SubjectKind; namespace: string; id: string; name: string };
+  actor: { id: string; display: string };
+  actor_source: ActorSource;
+  over: {
+    window: { from: string; to: string };
+    reads: ResourceRead[];
+    complete: boolean;
+  };
+  timeline?: TimelineEntry[];
+  findings: ResourceFinding[];
+  recommendations: Recommendation[];
+  provenance: { started_at: string; scanned_at: string; tool_version?: string };
+}
+
+export interface ResourceRead {
+  read: string;
+  at: string;
+  result?: string;
+  unreadable_reason?: (typeof RESOURCE_UNREADABLE_REASONS)[number];
+}
+
+/**
+ * The subject kinds a `timeline` may be written on.
+ *
+ * A timeline is the ordered record of what happened to **one** thing that is
+ * over: a dedicated server's state transitions, a deployment's statuses. The
+ * other two kinds are a standing configuration read at an instant, and a
+ * subject that is still running has no last transition to explain — a timeline
+ * there would be a window over a thing that has not finished, which is a
+ * different claim from the one this field makes.
+ */
+export const TIMELINE_KINDS = ["ams-server", "extend-deployment"] as const;
+
+/**
+ * One row of the timeline: what the subject was doing, when, as read.
+ *
+ * `state` is the state or status the row is about and `from` is where it came
+ * from where the read gives one — the AMS history returns both ends of a
+ * transition, a deployment list returns only the status the deployment reached.
+ * `reason` is the service's own text, quoted rather than paraphrased, and
+ * `exit_code` is a number so that a run cannot print `137 (OOM)` in the field
+ * that is supposed to carry the code as read.
+ */
+export interface TimelineEntry {
+  at: string;
+  state: string;
+  from?: string;
+  reason?: string;
+  exit_code?: number;
+  read: string;
+}
+
+export interface ResourceFinding {
+  signal: string;
+  title: string;
+  severity: Severity;
+  confidence: Confidence;
+  rests_on: (typeof RESTS_ON)[number];
+  citations?: Citation[];
+  evidence: { read: string; field: string; locator?: string; at?: string; value?: string };
+}
+
+export interface Recommendation {
+  knob: string;
+  current: string;
+  recommended: string;
+  rests_on: (typeof RESTS_ON)[number];
+  saving: string;
+  at?: string;
+}
+
+// The closed key sets, beside the validator for the reason `REPORT_KEYS` is.
+const RESOURCE_CHECK_KEYS = [
+  "schema_version",
+  "subject",
+  "actor",
+  "actor_source",
+  "over",
+  "timeline",
+  "findings",
+  "recommendations",
+  "provenance",
+] as const;
+const SUBJECT_KEYS = ["kind", "namespace", "id", "name"] as const;
+const OVER_KEYS = ["window", "reads", "complete"] as const;
+const WINDOW_KEYS = ["from", "to"] as const;
+const RESOURCE_READ_KEYS = ["read", "at", "result", "unreadable_reason"] as const;
+const RESOURCE_FINDING_KEYS = [
+  "signal",
+  "title",
+  "severity",
+  "confidence",
+  "rests_on",
+  "citations",
+  "evidence",
+] as const;
+const EVIDENCE_KEYS = ["read", "field", "locator", "at", "value"] as const;
+const RECOMMENDATION_KEYS = ["knob", "current", "recommended", "rests_on", "saving", "at"] as const;
+const TIMELINE_KEYS = ["at", "state", "from", "reason", "exit_code", "read"] as const;
+const RESOURCE_PROVENANCE_KEYS = ["started_at", "scanned_at", "tool_version"] as const;
+
+/**
+ * An instant the clock could have produced, as milliseconds, or `null` with
+ * the failure recorded. Shape and parse together, the way the report holds
+ * its provenance: `2026-13-45T00:00:00Z` matches the pattern and is no instant.
+ */
+function requireInstant(v: Validator, value: unknown, at: string): number | null {
+  if (typeof value === "string" && ISO_8601_UTC.test(value) && !Number.isNaN(Date.parse(value))) {
+    return Date.parse(value);
+  }
+  v.fail(at, "must be an ISO-8601 UTC instant (YYYY-MM-DDTHH:MM:SSZ)");
+  return null;
+}
+
+/**
+ * Point-in-time is labelled point-in-time, in both directions.
+ *
+ * A `configured-only` row is one sample of a setting or a count, so it says
+ * when the sample was taken or it reads as the window. Every other `rests_on`
+ * claims the window, a guidance value or a reconstruction, and an instant on
+ * such a row says it is a sample when it is not. Skipped when `rests_on` is
+ * off the enum, which `requireEnum` has already reported.
+ */
+function checkPointInTime(v: Validator, restsOn: unknown, at: unknown, path: string): void {
+  if (!(RESTS_ON as readonly string[]).includes(restsOn as string)) return;
+  if (restsOn === "configured-only") {
+    if (at === undefined) {
+      v.fail(
+        `${path}.at`,
+        "is required when rests_on is 'configured-only' — a setting or a count " +
+          "is one sample, and a sample that does not say when it was taken " +
+          "reads as a statement about the window",
+      );
+      return;
+    }
+    requireInstant(v, at, `${path}.at`);
+    return;
+  }
+  if (at === undefined) return;
+  v.fail(
+    `${path}.at`,
+    `is refused when rests_on is '${restsOn}' — an instant marks a row as one ` +
+      "sample, and this row claims the window, a guidance value or a " +
+      "reconstruction",
+  );
+}
+
+/** A recorded value: one visible line, and bounded the way a candidate's `result` is. */
+function checkRecordedValue(v: Validator, value: unknown, at: string, why: string): void {
+  if (!checkVisibleLine(v, value, at, why)) return;
+  const text = value as string;
+  if (text.length <= RESULT_MAX) return;
+  v.fail(
+    at,
+    `must be at most ${RESULT_MAX} characters (got ${text.length}) — it records ` +
+      "what a read settled, not the body it settled from, and this report is " +
+      "written into a scope the whole studio reads",
+  );
+}
+
+function validateSubject(v: Validator, raw: unknown): SubjectKind | null {
+  const s = v.object(raw, "$.subject");
+  if (!s) return null;
+  v.only(s, SUBJECT_KEYS, "$.subject");
+  v.requireEnum(s.kind, SUBJECT_KINDS, "$.subject.kind");
+  // The key is `<namespace>@<kind>:<id>`, so two of these are key segments and
+  // are held to the key's separators; `kind` is an enum and cannot carry one.
+  //
+  // Both checks, and the content one first — the order the report's `path`
+  // fields already use. `checkKeySafe` reaches `checkSingleLine` and nothing
+  // else, so on its own it says nothing about whether the value renders as
+  // anything: two U+200B characters are separator-free and one line, and used
+  // to validate clean here. This is the chokepoint that composes the key, and
+  // the store recomposes it and holds both fields to one visible line on its
+  // own write path — so what passed here was a `put` the store then refused,
+  // which is the one failure a chokepoint exists to prevent.
+  if (v.requireString(s.namespace, "$.subject.namespace")) {
+    checkKeySegment(
+      v,
+      s.namespace as string,
+      "$.subject.namespace",
+      "the resource-check key's first segment",
+      "this is the key's first segment, and a key nobody can see is a key nobody can look up",
+    );
+  }
+  if (v.requireString(s.id, "$.subject.id")) {
+    checkKeySegment(
+      v,
+      s.id as string,
+      "$.subject.id",
+      "the resource-check key's last segment",
+      "this is the key's last segment, and a key nobody can see is a key nobody can look up",
+    );
+  }
+  checkVisibleLine(v, s.name, "$.subject.name", "this is how the subject is named to a reader");
+  if (!(SUBJECT_KINDS as readonly string[]).includes(s.kind as string)) return null;
+  return s.kind as SubjectKind;
+}
+
+/**
+ * The narrowing envelope: the window, every read attempted, and `complete`.
+ *
+ * Returns the reads that came back with a `result`, because that set is what
+ * a finding's `evidence.read` must name — a finding cannot rest on a read
+ * that was not made or that settled nothing. `null` when there is no array
+ * to take the set from.
+ */
+function validateOver(v: Validator, raw: unknown): Set<string> | null {
+  const o = v.object(raw, "$.over");
+  if (!o) return null;
+  v.only(o, OVER_KEYS, "$.over");
+
+  const w = v.object(o.window, "$.over.window");
+  if (w) {
+    v.only(w, WINDOW_KEYS, "$.over.window");
+    const from = requireInstant(v, w.from, "$.over.window.from");
+    const to = requireInstant(v, w.to, "$.over.window.to");
+    if (from !== null && to !== null && from > to) {
+      v.fail(
+        "$.over.window.from",
+        `must not be after $.over.window.to (${w.from} > ${w.to}) — a window ` +
+          "that ends before it begins covers nothing",
+      );
+    }
+  }
+
+  if (typeof o.complete !== "boolean") {
+    v.fail("$.over.complete", `must be a boolean (got ${describe(o.complete)})`);
+  }
+
+  if (!Array.isArray(o.reads)) {
+    v.fail("$.over.reads", `must be an array (got ${describe(o.reads)})`);
+    return null;
+  }
+  const settled = new Set<string>();
+  // A read name is a join key: `evidence.read` resolves a finding to a row of
+  // this ledger. Two rows of one name — one settled, one `errored` — leave that
+  // resolution to whichever the reader picks, so a finding can rest on a read
+  // that failed. Named the way a duplicate `knob` is, at the later row.
+  const readRows = new Map<string, string>();
+  o.reads.forEach((raw, i) => {
+    const at = `$.over.reads[${i}]`;
+    const entry = v.object(raw, at);
+    if (!entry) return;
+    v.only(entry, RESOURCE_READ_KEYS, at);
+    const named = checkVisibleLine(v, entry.read, `${at}.read`, "this names the read the row is about");
+    const earlier = named ? readRows.get(entry.read as string) : undefined;
+    if (named && earlier === undefined) readRows.set(entry.read as string, at);
+    if (earlier !== undefined) {
+      v.fail(
+        `${at}.read`,
+        `duplicates ${earlier}.read (${excerpt(entry.read as string)}) — a finding ` +
+          "names its read to say what it rests on, so two rows of one name leave " +
+          "that resting on whichever row the reader picks",
+      );
+    }
+    requireInstant(v, entry.at, `${at}.at`);
+    const hasResult = entry.result !== undefined;
+    const hasReason = entry.unreadable_reason !== undefined;
+    if (hasResult === hasReason) {
+      v.fail(
+        at,
+        "must carry exactly one of 'result' and 'unreadable_reason' — a read " +
+          "either came back or it did not, and a row saying both or neither " +
+          "cannot be told from one nobody looked at",
+      );
+      return;
+    }
+    if (hasReason) {
+      v.requireEnum(entry.unreadable_reason, RESOURCE_UNREADABLE_REASONS, `${at}.unreadable_reason`);
+      return;
+    }
+    checkRecordedValue(v, entry.result, `${at}.result`, "this is what the read settled");
+    if (named) settled.add(entry.read as string);
+  });
+  return settled;
+}
+
+/**
+ * The ordered record of what happened, on the two kinds that can carry one.
+ *
+ * Returns whether the report carries one **at all**, because the finding rule in
+ * `validateResourceCheck` turns on that: a cause candidate with no transition
+ * behind it is not written, so on these kinds a finding needs the timeline the
+ * report opened with. Presence and not validity — a timeline that is there and
+ * wrong draws the one message naming the field to change, rather than that
+ * message *and* "a timeline is required", which is the same suppression the
+ * point-in-time refusal makes over the `at` rule it contradicts.
+ *
+ * Three refusals do work no other rule here does. It is **refused whole** on
+ * `extend-app` and `ams-fleet`, because those subjects are still running and a
+ * list of instants under them reads as a window they never claimed. It is
+ * refused **empty**, so there is one spelling for "no timeline was read" and a
+ * present-but-empty field cannot be told from a run that read nothing. And the
+ * rows are held in **non-decreasing** `at` order, because the report opens with
+ * the ordered transitions and a candidate cites the one it explains — rows out
+ * of order name a sequence that did not happen.
+ */
+function validateTimeline(
+  v: Validator,
+  raw: unknown,
+  kind: SubjectKind | null,
+  settled: Set<string> | null,
+): boolean {
+  if (raw === undefined) return false;
+  if (kind !== null && !(TIMELINE_KINDS as readonly string[]).includes(kind)) {
+    v.fail(
+      "$.timeline",
+      `is refused on subject.kind '${kind}' — a timeline is the ordered record ` +
+        `of what happened to one thing that is over, and only ` +
+        `[${TIMELINE_KINDS.join(", ")}] are that; a check of a running app or ` +
+        "fleet reads its configuration at an instant and has no last transition " +
+        "to explain",
+    );
+    return false;
+  }
+  if (!Array.isArray(raw)) {
+    // `true`, not `false`: the field is *there*, so the author needs the one
+    // message naming what to change. Returning `false` here drew "must be an
+    // array" and "a timeline is required" together, and an author who read the
+    // second could satisfy it while leaving the first — which is the pair of
+    // contradicting messages the point-in-time refusal exists to avoid.
+    v.fail("$.timeline", `must be an array (got ${describe(raw)})`);
+    return true;
+  }
+  if (raw.length === 0) {
+    v.fail(
+      "$.timeline",
+      "is refused empty — omit it to say no timeline was read, so that an " +
+        "absence has one spelling and cannot be told from a run that read the " +
+        "history and found nothing",
+    );
+    return true;
+  }
+  let previous: number | null = null;
+  let previousText = "";
+  raw.forEach((row, i) => {
+    const at = `$.timeline[${i}]`;
+    const entry = v.object(row, at);
+    if (!entry) return;
+    v.only(entry, TIMELINE_KEYS, at);
+    const instant = requireInstant(v, entry.at, `${at}.at`);
+    if (instant !== null && previous !== null && instant < previous) {
+      v.fail(
+        `${at}.at`,
+        `is ${entry.at}, before $.timeline[${i - 1}].at (${previousText}) — the ` +
+          "report opens with the transitions in the order they happened, and a " +
+          "candidate cites the one it explains",
+      );
+    }
+    if (instant !== null) {
+      previous = instant;
+      previousText = entry.at as string;
+    }
+    // Bounded like `reason` and not merely held to one line: all three are
+    // strings a service returned, and this record is written into a scope the
+    // whole studio reads. A state name is short in practice, which is the
+    // reason to cap it rather than a reason not to — an unbounded field is one
+    // nothing stops a whole response body being pasted into.
+    checkRecordedValue(v, entry.state, `${at}.state`, "this is the state the row is about");
+    if (entry.from !== undefined) {
+      checkRecordedValue(v, entry.from, `${at}.from`, "this is the state the row moved out of");
+    }
+    if (entry.reason !== undefined) {
+      checkRecordedValue(v, entry.reason, `${at}.reason`, "this is the service's own reason text");
+    }
+    if (entry.exit_code !== undefined && !Number.isInteger(entry.exit_code)) {
+      v.fail(
+        `${at}.exit_code`,
+        `must be an integer (got ${describe(entry.exit_code)}) — it is the code ` +
+          "as read, and a string here is where a name gets attached to a number " +
+          "no page names",
+      );
+    }
+    if (!checkVisibleLine(v, entry.read, `${at}.read`, "this names the read the row came from")) return;
+    if (settled !== null && !settled.has(entry.read as string)) {
+      v.fail(
+        `${at}.read`,
+        `names no entry of $.over.reads that carries a result (got ${excerpt(entry.read as string)}) — ` +
+          "a transition cannot be recorded from a read that was not made or that " +
+          "came back unreadable",
+      );
+    }
+  });
+  return true;
+}
+
+function validateResourceFinding(
+  v: Validator,
+  raw: unknown,
+  path: string,
+  kind: SubjectKind | null,
+  settled: Set<string> | null,
+): void {
+  const f = v.object(raw, path);
+  if (!f) return;
+  v.only(f, RESOURCE_FINDING_KEYS, path);
+  checkVisibleLine(v, f.title, `${path}.title`, "a finding stated by its severity alone says nothing");
+  v.requireEnum(f.severity, SEVERITIES, `${path}.severity`);
+  v.requireEnum(f.confidence, CONFIDENCES, `${path}.confidence`);
+  v.requireEnum(f.rests_on, RESTS_ON, `${path}.rests_on`);
+
+  // The row is what decides the two rules below, so it is looked up first.
+  // With no `subject.kind` to look it up in there is no row, and the subject
+  // has already been reported; the finding's own fields are still checked.
+  let row: ResourceSignal | null = null;
+  if (v.requireString(f.signal, `${path}.signal`) && kind !== null) {
+    const rows = RESOURCE_SIGNALS[kind];
+    row = rows[f.signal] ?? null;
+    if (row === null) {
+      v.fail(
+        `${path}.signal`,
+        `must be one of [${Object.keys(rows).join(", ")}] for subject.kind ` +
+          `'${kind}' (got ${excerpt(f.signal)})`,
+      );
+    }
+  }
+
+  // A point-in-time signal reads one sample, so the only thing it can rest on
+  // is that sample. `checkPointInTime` below holds `at` against `rests_on` and
+  // never the other way round, so without this a sample relabelled `measured`
+  // — with the `at` dropped to satisfy that check — validates clean and reads
+  // as a statement about the window. Skipped when `rests_on` is off the enum,
+  // which `requireEnum` has already reported.
+  const restsOnOffEnum = !(RESTS_ON as readonly string[]).includes(f.rests_on as string);
+  const pointInTimeRefused =
+    row?.point_in_time === true && !restsOnOffEnum && f.rests_on !== "configured-only";
+  if (pointInTimeRefused) {
+    v.fail(
+      `${path}.rests_on`,
+      `must be 'configured-only' on signal '${f.signal}' (got ${excerpt(f.rests_on as string)}) — ` +
+        "the read behind it returns one sample, so a row claiming the window, " +
+        "a guidance value or a reconstruction is a claim the read cannot support",
+    );
+  }
+
+  // page: the mechanical form of "an uncited AccelByte claim is refused". The
+  // table says which signals make a claim about AccelByte; nothing here reads
+  // the prose to decide.
+  const citations = f.citations;
+  const cited =
+    Array.isArray(citations) &&
+    citations.some((c) => isCitation(c) && c.source.startsWith("https://"));
+  if (row?.page && !cited) {
+    v.fail(
+      `${path}.citations`,
+      `signal '${f.signal}' makes a claim about AccelByte, so it needs >=1 ` +
+        "citation with an https:// source — the page the claim rests on",
+    );
+  }
+  checkCitationList(v, citations, path);
+
+  const e = v.object(f.evidence, `${path}.evidence`);
+  if (!e) return;
+  v.only(e, EVIDENCE_KEYS, `${path}.evidence`);
+  if (checkVisibleLine(v, e.read, `${path}.evidence.read`, "this names the read the claim rests on")) {
+    if (settled !== null && !settled.has(e.read as string)) {
+      v.fail(
+        `${path}.evidence.read`,
+        `names no entry of $.over.reads that carries a result (got ${excerpt(e.read as string)}) — ` +
+          "a finding cannot rest on a read that was not made or that came back unreadable",
+      );
+    }
+  }
+  checkVisibleLine(v, e.field, `${path}.evidence.field`, "this names the field the claim rests on");
+  if (row !== null) {
+    const why =
+      `signal '${f.signal}' can fire more than once per subject, and this is ` +
+      "what tells two firings apart";
+    if (row.locator && e.locator === undefined) {
+      // Named here rather than left to `requireString`'s `got undefined`: the
+      // author of a finding with no locator needs the reason one is owed.
+      v.fail(`${path}.evidence.locator`, `is required — ${why}`);
+    } else if (row.locator) {
+      checkVisibleLine(v, e.locator, `${path}.evidence.locator`, why);
+    } else if (e.locator !== undefined) {
+      v.fail(
+        `${path}.evidence.locator`,
+        `is refused on signal '${f.signal}' — it fires at most once per subject, ` +
+          "so there is nothing for a locator to tell apart; a second firing is " +
+          "the bug",
+      );
+    }
+  }
+  // Skipped when the refusal above already fired, and only then. Those two
+  // rules contradict each other on one input: a point-in-time signal
+  // relabelled `guidance` and still carrying its `at` draws both "must be
+  // 'configured-only' on signal …" and "`at` is refused when rests_on is
+  // 'guidance'", and an author who obeys the second deletes the instant the
+  // first is about to require. One message, naming the one field to change;
+  // once `rests_on` is `configured-only` this rule applies normally, and it is
+  // untouched for a knob row and for every signal that is not one sample.
+  if (!pointInTimeRefused) checkPointInTime(v, f.rests_on, e.at, `${path}.evidence`);
+  if (e.value !== undefined) {
+    checkRecordedValue(v, e.value, `${path}.evidence.value`, "this is the value the read returned");
+  }
+}
+
+function validateRecommendation(
+  v: Validator,
+  raw: unknown,
+  path: string,
+  knobs: Map<string, string>,
+): void {
+  const r = v.object(raw, path);
+  if (!r) return;
+  v.only(r, RECOMMENDATION_KEYS, path);
+  if (checkVisibleLine(v, r.knob, `${path}.knob`, "this names the setting the row is about")) {
+    const knob = r.knob as string;
+    const earlier = knobs.get(knob);
+    if (earlier !== undefined) {
+      v.fail(
+        `${path}.knob`,
+        `duplicates ${earlier}.knob (${excerpt(knob)}) — the diff between two ` +
+          "runs matches a row on its knob, so two rows for one knob cannot be " +
+          "told apart",
+      );
+    } else {
+      knobs.set(knob, path);
+    }
+  }
+  checkVisibleLine(v, r.current, `${path}.current`, "this is what the knob is set to now");
+  checkVisibleLine(
+    v,
+    r.recommended,
+    `${path}.recommended`,
+    "this is the value proposed, or the literal 'not derivable'",
+  );
+  v.requireEnum(r.rests_on, RESTS_ON, `${path}.rests_on`);
+  checkVisibleLine(v, r.saving, `${path}.saving`, "this is what the change saves, or the literal 'none'");
+  checkPointInTime(v, r.rests_on, r.at, path);
+}
+
+function validateResourceProvenance(v: Validator, raw: unknown): void {
+  const p = v.object(raw, "$.provenance");
+  if (!p) return;
+  v.only(p, RESOURCE_PROVENANCE_KEYS, "$.provenance");
+  const started = requireInstant(v, p.started_at, "$.provenance.started_at");
+  const scanned = requireInstant(v, p.scanned_at, "$.provenance.scanned_at");
+  if (started !== null && scanned !== null && started > scanned) {
+    v.fail(
+      "$.provenance.started_at",
+      `must not be after $.provenance.scanned_at (${p.started_at} > ` +
+        `${p.scanned_at}) — both are read from the clock, so an ordering ` +
+        "this way round means one of them was composed",
+    );
+  }
+  if (p.tool_version === undefined) return;
+  checkVisibleLine(
+    v,
+    p.tool_version,
+    "$.provenance.tool_version",
+    "this says which version of the skill derived the findings",
+  );
+}
+
+/** Validate a resource-check report, returning the list of problems (empty = valid). */
+export function validateResourceCheck(data: unknown): string[] {
+  const v = new Validator();
+  const r = v.object(data, "$");
+  if (!r) return v.errors;
+  v.only(r, RESOURCE_CHECK_KEYS, "$");
+
+  // One generation so far, and a document claiming another is refused rather
+  // than read under this one's rules: a version this validator does not know
+  // grandfathers nothing (the report's `schemaMajor` argument).
+  v.requireVersion(r.schema_version, "$.schema_version");
+  const version = r.schema_version;
+  const stated = typeof version === "number" || (typeof version === "string" && version.length > 0);
+  if (stated && schemaMajor(version) !== 1) {
+    const got = typeof version === "string" ? excerpt(version) : String(version);
+    v.fail("$.schema_version", `must be 1 — the only resource-check generation there is (got ${got})`);
+  }
+
+  const kind = validateSubject(v, r.subject);
+
+  const actor = v.object(r.actor, "$.actor");
+  if (actor) {
+    for (const field of ["id", "display"] as const) {
+      checkVisibleLine(
+        v,
+        actor[field],
+        `$.actor.${field}`,
+        "this names who ran the check, and a run attributed to nothing is not attributed",
+      );
+    }
+  }
+  v.requireEnum(r.actor_source, ACTOR_SOURCES, "$.actor_source");
+
+  const settled = validateOver(v, r.over);
+  const timeline = validateTimeline(v, r.timeline, kind, settled);
+
+  if (!Array.isArray(r.findings)) {
+    v.fail("$.findings", `must be an array (got ${describe(r.findings)})`);
+  } else {
+    r.findings.forEach((f, i) => validateResourceFinding(v, f, `$.findings[${i}]`, kind, settled));
+    // Timeline first, verdict second. On a subject that is over, a cause
+    // candidate cites the transition it explains, so a report that names a
+    // cause without the transitions it read is one whose verdict rests on
+    // nothing this document carries. Checked here rather than per finding
+    // because the missing thing is the report's, not the row's.
+    if (
+      r.findings.length > 0 &&
+      !timeline &&
+      kind !== null &&
+      (TIMELINE_KINDS as readonly string[]).includes(kind)
+    ) {
+      v.fail(
+        "$.timeline",
+        `is required on subject.kind '${kind}' once $.findings names a cause — ` +
+          "the report opens with the transitions as read and each candidate " +
+          "cites the one it explains, so a cause with no timeline behind it " +
+          "rests on nothing this report carries",
+      );
+    }
+  }
+
+  if (!Array.isArray(r.recommendations)) {
+    v.fail("$.recommendations", `must be an array (got ${describe(r.recommendations)})`);
+  } else {
+    const knobs = new Map<string, string>();
+    r.recommendations.forEach((row, i) =>
+      validateRecommendation(v, row, `$.recommendations[${i}]`, knobs),
+    );
+  }
+
+  // Nothing read, nothing claimed. An empty `reads` is a real answer only when
+  // the report asserts nothing — a finding or a knob row beside it rests on a
+  // read the envelope says was never attempted.
+  const reads = asRecord(r.over)?.reads;
+  const claims =
+    (Array.isArray(r.findings) && r.findings.length > 0) ||
+    (Array.isArray(r.recommendations) && r.recommendations.length > 0);
+  if (Array.isArray(reads) && reads.length === 0 && claims) {
+    v.fail(
+      "$.over.reads",
+      "is empty while $.findings or $.recommendations is not — nothing was " +
+        "read, so nothing can be claimed",
+    );
+  }
+
+  if (r.provenance === undefined) {
+    v.fail("$.provenance", "must be recorded whole — started_at and scanned_at are how a later run says how old this check is");
+  } else {
+    validateResourceProvenance(v, r.provenance);
+  }
+  return v.errors;
+}
+
+/**
+ * The `wiki_memory_put` key for a resource check — the one place it is composed.
+ *
+ *     <namespace>@<subject.kind>:<subject.id>
+ *
+ * Latest-wins, one record per subject: the diff only ever needs
+ * the previous run, and a long series is what the digest and the activity feed
+ * are for. Composed from the document's own `subject`, never typed — the store
+ * recomposes the same key and refuses a `put` under any other.
+ */
+export function resourceCheckKey(doc: {
+  subject?: { kind?: unknown; namespace?: unknown; id?: unknown };
+}): string {
+  const subject = doc.subject;
+  for (const segment of ["namespace", "kind", "id"] as const) {
+    const value = subject?.[segment];
+    if (typeof value === "string" && value.length > 0) continue;
+    throw new Error(`resourceCheckKey: subject.${segment} is required to compose a key`);
+  }
+  const s = subject as { kind: string; namespace: string; id: string };
+  return `${s.namespace}@${s.kind}:${s.id}`;
 }
 
 // --- report rendering --------------------------------------------------------
@@ -6397,7 +7320,7 @@ function cmdValidate(argv: string[]): never {
   const file = argv[0];
   if (!file) {
     process.stderr.write(
-      "usage: report_tool.ts validate [--kind report|activity|suppression|access-log] <file.json>\n",
+      "usage: report_tool.ts validate [--kind report|activity|suppression|access-log|resource-check] <file.json>\n",
     );
     process.exit(2);
   }
@@ -6411,9 +7334,11 @@ function cmdValidate(argv: string[]): never {
     errors = validateAccessLog(data);
   } else if (kind === "report") {
     errors = validateReport(data);
+  } else if (kind === "resource-check") {
+    errors = validateResourceCheck(data);
   } else {
     process.stderr.write(
-      `error: unknown --kind '${kind}' (expected report|activity|suppression|access-log)\n`,
+      `error: unknown --kind '${kind}' (expected report|activity|suppression|access-log|resource-check)\n`,
     );
     process.exit(2);
   }
@@ -6516,6 +7441,51 @@ export function reportKeyOverrideProblem(
 }
 
 /**
+ * `memory-doc --kind resource-check`: the payload for one resource check.
+ *
+ * Neither of the report's flags applies, and each is a usage error rather
+ * than ignored: `--allow-dirty` answers a question about a working tree, and
+ * a resource check reads a namespace; `--key` replaces a per-person fragment
+ * the hosted store composed, and this key has none — the store recomposes
+ * `<namespace>@<kind>:<id>` from the document and refuses any other. A flag
+ * that is silently dropped is a caller who believes it did something.
+ */
+function emitResourceCheckDoc(file: string, allowDirty: boolean, keyOverride: string | null): never {
+  if (allowDirty) {
+    process.stderr.write(
+      "usage: --allow-dirty is not accepted with --kind resource-check — a " +
+        "resource check reads a namespace, not a working tree, so there is no " +
+        "dirty state for a human to agree to\n",
+    );
+    process.exit(2);
+  }
+  if (keyOverride !== null) {
+    process.stderr.write(
+      "usage: --key is not accepted with --kind resource-check — the key is " +
+        "composed from the document's subject and the store composes the same " +
+        "one, so there is no fragment to replace\n",
+    );
+    process.exit(2);
+  }
+  const data = readJson(file);
+  const errors = validateResourceCheck(data);
+  if (errors.length > 0) {
+    process.stderr.write(`invalid resource-check (${file}):\n`);
+    for (const e of errors) process.stderr.write(`  - ${e}\n`);
+    process.exit(1);
+  }
+  const doc = data as unknown as ResourceCheck;
+  // Cannot throw past validation — every segment was just checked — so a throw
+  // here is a defect in this file and is left to surface as one.
+  const key = resourceCheckKey(doc);
+  // The validated file, byte for byte, for the reason the report path gives.
+  process.stdout.write(
+    JSON.stringify({ kind: "resource-check", key, doc }, null, 2) + "\n",
+  );
+  process.exit(0);
+}
+
+/**
  * Emit the exact `wiki_memory_put` payload for a validated report.
  *
  * The run composed the memory doc by hand, from the same findings it had just
@@ -6542,6 +7512,10 @@ export function reportKeyOverrideProblem(
  * `reportKeyOverrideProblem`.
  */
 function cmdMemoryDoc(argv: string[]): never {
+  // `report` by default, so every caller written before the flag existed runs
+  // the same command it always did. The other kind takes its own path below
+  // and none of the report's flags with it.
+  const kind = takeFlag(argv, "--kind") ?? "report";
   const allowDirty = takeSwitch(argv, "--allow-dirty");
   // `takeFlag` already refuses `--key` with no value at all (exit 2); an empty
   // value reaches here and is refused below, where the reason can be said.
@@ -6549,8 +7523,13 @@ function cmdMemoryDoc(argv: string[]): never {
   const file = argv[0];
   if (!file) {
     process.stderr.write(
-      "usage: report_tool.ts memory-doc [--allow-dirty] [--key <key>] <report.json>\n",
+      "usage: report_tool.ts memory-doc [--kind report|resource-check] [--allow-dirty] [--key <key>] <file.json>\n",
     );
+    process.exit(2);
+  }
+  if (kind === "resource-check") emitResourceCheckDoc(file, allowDirty, keyOverride);
+  if (kind !== "report") {
+    process.stderr.write(`error: unknown --kind '${kind}' (expected report|resource-check)\n`);
     process.exit(2);
   }
 
@@ -7016,8 +7995,10 @@ function usage(): never {
       "report_tool.ts — teammate deterministic chokepoint",
       "",
       "commands:",
-      "  validate [--kind report|activity|suppression|access-log] <f.json>  schema-check",
-      "  memory-doc [--allow-dirty] <report.json>            exact wiki_memory_put payload",
+      "  validate [--kind report|activity|suppression|access-log|resource-check] <f.json>",
+      "                                                      schema-check",
+      "  memory-doc [--kind report|resource-check] [--allow-dirty] [--key <key>] <f.json>",
+      "                                                      exact wiki_memory_put payload",
       "  memory-lookup --repo-name <n> --mode <m> [--actor <id>] [--tree-hash <h>]",
       "                --commits <rev-list.txt> <envelopes.json>  rank stored reports",
       "  fingerprint --detector <id> --path <p> [--snippet-file <f>] [--json]  finding id",

@@ -680,6 +680,172 @@ parse by a fixed path is not an audit trail. A reuse run flushes too: reading a
 stored report is itself an access, logged as
 `{ kind: "read", value: "memory:report/<key>", note: "stage1b hit; …" }`.
 
+## Resource-check report (`--kind resource-check`)
+
+The report `extend-app-check`, `fleet-check` and `why-did-it-die` emit. It is
+not the health-check Report above: that object is closed around a repository
+and a commit, and a fleet has neither. It borrows the report's
+*rules* — key safety, one visible line, the citation checks, two instants in
+order — and none of its fields. Closed at every level, like a finding: a field
+no table below names is refused, not carried. There is no `suppressed`, no
+`fingerprint`, no `id`, no `path` and no `snippet_hash` — there is no code for
+a fingerprint to hash, and a resource finding is cheap to re-derive.
+
+| Field | Type | Rule |
+|---|---|---|
+| `schema_version` | number \| string | Generation `1`, the only one. Another is refused rather than read under this one's rules. |
+| `subject.kind` | string | `extend-app`, `ams-fleet`, `ams-server` or `extend-deployment`. Selects the signal table below. A cause report on an Extend app is about one **deployment** and is keyed that way: keyed by the app it would share `<namespace>@extend-app:<app>` with `extend-app-check` and, latest-wins, overwrite it. |
+| `subject.namespace` | string | The caller's own namespace, **one visible line**, free of the key's own separators (`@ : + /` and whitespace) — it is the key's first segment. Both halves, because the separator rule alone says nothing about whether the value renders: a segment of two zero-width spaces is separator-free and composes a key nobody can look up, and the store refuses it on its own write path. |
+| `subject.id` | string | The app name, fleet id, server id or deployment id. Same visible-line rule, same separator refusal: the key's last segment, so no id can compose another subject's key. |
+| `subject.name` | string | One visible line — how the subject is named to a reader. |
+| `actor.id`, `actor.display` | string | Both required, one visible line each. |
+| `actor_source` | string | `iam`, `iam-client` or `git-config`. |
+| `over.window.from`, `over.window.to` | string | ISO-8601 UTC instants, `from <= to`. |
+| `over.reads` | array | Every read **attempted**, in order, each `{ read, at, result }` or `{ read, at, unreadable_reason }` — exactly one of the two. `read` and `result` are one visible line; `read` is **unique** within the ledger, because a finding names it to say what it rests on and two rows of one name leave that resting on whichever row the reader picks; `result` is bounded at 200 characters, because it records what a read settled and not the body it settled from. `unreadable_reason` is `no-operation`, `errored`, `unauthorized`, `answers-another-question` or `no-data-in-window`. Empty only when `findings` and `recommendations` are both empty: nothing read, nothing claimed. |
+| `over.complete` | boolean | Whether the reads covered the window. |
+| `timeline` | array | Optional, and **only** on `subject.kind` `ams-server` or `extend-deployment` — refused on `extend-app` and on `ams-fleet`, which are subjects still running rather than something that is over. What happened, in the order it happened: `{ at, state, from?, reason?, exit_code?, read }` per row, `at` non-decreasing across the array. Refused **empty**, so an absence has one spelling; **required** once `findings` names a cause on either of them, because a candidate cites the transition it explains and one with no timeline behind it rests on nothing the report carries. |
+| `timeline[].at` | string | ISO-8601 UTC instant. |
+| `timeline[].state`, `from` | string | One visible line each, bounded at 200 characters like `over.reads[].result` — all three are strings a service returned, into a record the whole studio reads. The state or status the row is about, and the one it moved out of where the read gives one: a server history returns both ends of a transition, a deployment list returns only the status reached. |
+| `timeline[].reason` | string | Optional, one visible line, bounded like `over.reads[].result` at 200 characters. The service's own text, quoted and never paraphrased. |
+| `timeline[].exit_code` | number | Optional, an **integer**. The code as read: a string here is where `137 (OOM)` gets written into the field that is supposed to carry the number, and the name belongs in the finding's text beside its citation. |
+| `timeline[].read` | string | Must equal the `read` of an `over.reads` entry that carries a `result`, as a finding's `evidence.read` must. A transition cannot be recorded from a read that was not made. |
+| `findings[].signal` | string | A row of the signal table for `subject.kind`, below. |
+| `findings[].title` | string | One visible line. |
+| `findings[].severity` | string | `info`, `low`, `medium`, `high`, `critical`. |
+| `findings[].confidence` | string | `low`, `medium`, `high`. |
+| `findings[].rests_on` | string | `measured`, `configured-only`, `guidance` or `derived-from-history`. `derived-from-history` is accepted by the validator; `fleet-check`'s history gate decides whether a subskill may *write* it. |
+| `findings[].citations` | array | `{ source, note? }` on the Finding object's rules — `internal://` or `https://`, one line, a `note` that renders as something. **Required** on a `page: true` signal, with at least one `https://` source; optional on a `page: false` one, and checked element-wise when present. |
+| `findings[].evidence.read` | string | Must equal the `read` of an `over.reads` entry that carries a `result`. A finding cannot rest on a read that was not made or that came back unreadable. |
+| `findings[].evidence.field` | string | One visible line — the field the claim rests on. |
+| `findings[].evidence.locator` | string | **Required** on a `locator: true` signal and **refused** on a `locator: false` one. The one string — region, image id, deployment id, variable name — that tells two firings of one signal apart; the run-to-run diff ([memory-contract.md](../memory-contract.md) § Resource-check records) matches on it beside `signal`. |
+| `findings[].evidence.at` | string | ISO-8601 UTC. **Required** when `rests_on` is `configured-only`, **refused** otherwise — see *Point-in-time* below. |
+| `findings[].evidence.value` | string | Optional, one visible line, bounded like `result`. |
+| `recommendations[].knob` | string | One visible line, **unique** within the report — the diff between two runs matches a row on it. |
+| `recommendations[].current`, `recommended`, `saving` | string | One visible line each. `recommended` may be the literal `not derivable`; `saving` may be the literal `none`. |
+| `recommendations[].rests_on` | string | As a finding's. |
+| `recommendations[].at` | string | As a finding's `evidence.at`: required on `configured-only`, refused otherwise. |
+| `provenance.started_at`, `provenance.scanned_at` | string | Both required, ISO-8601 UTC, `started_at <= scanned_at`. |
+| `provenance.tool_version` | string | Optional, one visible line. |
+
+**Point-in-time is labelled point-in-time**, in both directions. A
+`configured-only` row is one sample of a setting or a count — `currentReplica`,
+`claimedServerCount` — so it carries `at` and says "at `<instant>`", never "over
+the window". Every other `rests_on` claims the window, a guidance value or a
+reconstruction, and an instant on such a row would mark it as a sample when it
+is not, so `at` is refused there. The validator holds both halves on findings
+(`evidence.at`) and on knob rows (`at`).
+
+**The signal table is closed, per subject kind.** Each row says two things:
+whether the signal owes a **page** — the claim is about AccelByte, so the
+finding needs an `https://` citation, the mechanical form of *an uncited
+AccelByte claim is refused* for a kind with no `suppressed` axis — and whether
+it carries a **locator**, because it can fire more than once per subject. The
+validator reads the table and never classifies prose: a finding worded as the
+studio's own numbers under a `page: true` signal is refused all the same. A
+`page: false` signal is one whose claim *is* the studio's own numbers, cited
+through `evidence`. The table is `RESOURCE_SIGNALS` in `report_tool.ts`, and
+these rows are the same rows; a subskill that adds a signal adds it there,
+with tests, and here.
+
+`extend-app`:
+
+| Signal | Page | Locator |
+|---|---|---|
+| `app-not-running` | yes | — |
+| `last-deployment-failed` | yes | — |
+| `active-image-has-critical-findings` | yes | — |
+| `image-scan-pending` | yes | — |
+| `config-undeployed` | yes | variable or secret name |
+| `debug-mode-enabled` | yes | — |
+| `no-alert-subscribers` | yes | — |
+| `image-count-near-cap` | yes | — |
+| `cannot-scale` | yes | — |
+| `pinned-at-max-replica` | yes | — |
+| `request-above-ceiling` | yes | — |
+| `no-autoscaling-target` | yes | — |
+| `namespace-packing-estimate` | — | — |
+
+`ams-fleet`:
+
+| Signal | Page | Locator |
+|---|---|---|
+| `active-region-cannot-warm` | yes | region |
+| `counts-not-multiple-of-servers-per-vm` | yes | region |
+| `image-scheduled-for-deletion` | yes | — |
+| `image-storage-near-quota` | — | — |
+| `crashed-logs-sampling-off` | yes | — |
+| `artifacts-failing` | yes | — |
+| `crash-share-high` | yes | — |
+| `creation-timeout-below-observed` | yes | — |
+| `fallback-has-own-buffer` | yes | region |
+| `dev-fleet-never-hibernates` | yes | — |
+| `build-config-expiring` | yes | build config |
+| `instance-type-capacity` | yes | region |
+| `idle-min-servers` | — | region |
+
+`ams-server` — one server per record, so no row carries a locator:
+
+| Signal | Page | Locator |
+|---|---|---|
+| `oom-killed` | yes | — |
+| `drain-idle-timeout` | yes | — |
+| `session-timeout` | yes | — |
+| `unresponsive-timeout` | yes | — |
+| `creation-timeout` | yes | — |
+| `never-ready` | yes | — |
+
+`extend-deployment` — the Extend twin of `ams-server`: one deployment per
+record, so no row carries a locator either. These are the cause classes a
+report on a dead Extend app carries, and they sit here rather than on
+`extend-app` so that a cause report and a check on the same app never share a
+key:
+
+| Signal | Page | Locator |
+|---|---|---|
+| `deployment-failed` | yes | — |
+| `deployment-timeout` | yes | — |
+| `image-blocked` | yes | — |
+| `deployment-down` | yes | — |
+| `debug-mode-restart` | yes | — |
+| `stopped-by-human` | yes | — |
+
+Two rows are **point-in-time by definition** — `pinned-at-max-replica` above
+and `idle-min-servers` — because the field behind each is one sample
+(`currentReplica`, `claimedServerCount`), so a finding on either may rest on
+nothing but `configured-only` and any other value is refused at `rests_on`.
+That is a property of the signal rather than of the row's instant, and it is
+held apart from the `at` rule above, which a sample relabelled `measured` with
+no `at` satisfies.
+
+**The key** is composed from the document and never typed:
+
+```
+<namespace>@<subject.kind>:<subject.id>     e.g. shooter-prod@ams-fleet:fleet-01hz…
+                                                shooter-prod@extend-deployment:dep-01j3…
+```
+
+```bash
+npx tsx "$TOOL" validate --kind resource-check "$RUNDIR/resource-check.json"
+npx tsx "$TOOL" memory-doc --kind resource-check "$RUNDIR/resource-check.json"   # { kind, key, doc }
+```
+
+Latest-wins, one record per subject, read back before it is written and
+replaced ([memory-contract.md](../memory-contract.md) § Resource-check records).
+`--allow-dirty` and `--key` are usage errors here: there is no tree to be dirty
+and no per-person fragment for the store to have composed.
+
+**Redacted before it reaches here.** `over.reads[].result`, `evidence.value`,
+`recommendations[].current`, every `timeline[].reason` and every `title` are free
+one-line text taken from what a read returned — `current` is the live setting a
+knob row is proposing to change, read the same way the others are, and a
+`reason` is a service's own message about a thing that just
+failed — and `memory-doc` does not
+redact: it emits the file it just validated, byte for byte. So the run passes
+each through `report_tool.ts redact` **before** `validate`, the same rule an
+activity entry's `summary` and `target` already carry. A connection string or a
+bearer token in a read's result would otherwise land in a record the whole
+studio reads.
+
 ## Commands
 
 `report_tool.ts` is the single gate every model-composed artifact passes before
@@ -697,11 +863,11 @@ chokepoint — each at exit `0`.
 
 | Command | Purpose |
 |---|---|
-| `validate [--kind report\|activity\|suppression\|access-log] <file.json>` | Schema-check + grounded-or-suppressed. Fails (`1`) on any problem. |
-| `memory-doc [--allow-dirty] [--key <key>] <report.json>` | Emit the exact `wiki_memory_put` payload — `{ kind, key, doc }` — built from the file it just validated. The key comes from the document, so there is no `--repo-name` to disagree with it. Refuses (`1`) an invalid report, one with no `repo.name`, one that does not state `repo.tree_state`, and a `repo.tree_state` of `dirty` unless `--allow-dirty` says a human agreed to store it this run. **The `doc` is never composed by hand**: a stored report once carried `detectors_run` and `prior_report_diff` — fields the schema does not define and `validate` refuses — because the object that was checked and the object that was persisted were built twice. `--key` files the payload under the key the hosted store named: that store composes a dirty report's key from the principal it stamped from the verified token, so it refuses the first write of every dirty report and quotes the key it computed — re-run with `--key <that key>` rather than hand-editing the emitted JSON, which is the step this command exists to remove. It is not a passthrough: it is accepted only on a dirty report, only when the `<repo-name>@<commit_sha>` base and the trailing `:<mode>` are the document's own, and only when the part between them is `+u` and exactly 12 lowercase hex characters. |
+| `validate [--kind report\|activity\|suppression\|access-log\|resource-check] <file.json>` | Schema-check + grounded-or-suppressed. Fails (`1`) on any problem. `--kind resource-check` holds the Extend / AMS checks' report to § Resource-check report — the closed signal table, the evidence-names-a-read rule and the point-in-time rule included. |
+| `memory-doc [--kind report\|resource-check] [--allow-dirty] [--key <key>] <file.json>` | Emit the exact `wiki_memory_put` payload — `{ kind, key, doc }` — built from the file it just validated. `--kind` defaults to `report`, and that path is unchanged by the flag's existence; `--kind resource-check` validates with the resource-check rules, composes `<namespace>@<subject.kind>:<subject.id>` from the document's `subject`, and refuses (`2`) `--allow-dirty` and `--key`, which answer questions a resource check does not raise. The key comes from the document, so there is no `--repo-name` to disagree with it. Refuses (`1`) an invalid report, one with no `repo.name`, one that does not state `repo.tree_state`, and a `repo.tree_state` of `dirty` unless `--allow-dirty` says a human agreed to store it this run. **The `doc` is never composed by hand**: a stored report once carried `detectors_run` and `prior_report_diff` — fields the schema does not define and `validate` refuses — because the object that was checked and the object that was persisted were built twice. `--key` files the payload under the key the hosted store named: that store composes a dirty report's key from the principal it stamped from the verified token, so it refuses the first write of every dirty report and quotes the key it computed — re-run with `--key <that key>` rather than hand-editing the emitted JSON, which is the step this command exists to remove. It is not a passthrough: it is accepted only on a dirty report, only when the `<repo-name>@<commit_sha>` base and the trailing `:<mode>` are the document's own, and only when the part between them is `+u` and exactly 12 lowercase hex characters. |
 | `memory-lookup --repo-name <n> --mode <m> [--actor <id>] [--tree-hash <h>] --commits <rev-list.txt> <envelopes.json>` | Rank the stored reports that could stand in for this scan, from a `wiki_memory_list({ kind: "report" })` result. Emits `{ candidates, rejected, unplaceable, read_complete }`: at most one of `exact`, `own-dirty-here`, `clean-ancestor`, `own-dirty-ancestor`, each with its distance from HEAD and the reason it matched, plus every stored report it cannot honestly offer — one that no longer validates, or one that never stated its `tree_state` and so cannot be placed in any rank — and a count of those naming no repo (pre-generation-3, unplaceable). Both are scoped to this run's own history, by two filter sets that are not the same one. A record is *counted* in `unplaceable` once this run's mode, this repo's rev-list and — for uncommitted work — this person have kept it. A record is *reported* in `rejected` only after one filter more: `repo.name` matching this repo. The list result covers every namespace this identity may read, and `rejected` prints a key, so a fault reported before that match names another team's repo and commit to this user. `read_complete` echoes the page's own `over.complete` — `null` when the input made no claim, never `true` — and a `false` there makes both `rejected` and `unplaceable` floors rather than counts, warned on stderr. Do not narrow this read with `key_prefix`: it drops exactly the nameless records `unplaceable` counts. `unplaceable` never takes that match, because its whole population is the records naming no repo — which is why it is a count and not a list. Another person's dirty report is never a candidate. Exits `2` on a list result it cannot read — an entry that is not an envelope, or an envelope with no `doc` — because a flattened result silently matches nothing and prints exactly like an empty store. |
 | `fingerprint --detector <id> --path <repo-path> [--snippet-file <f>] [--json]` | Line-independent finding id — `hash(detector_id ∥ path ∥ normalized snippet)`. Snippet on stdin when `--snippet-file` is omitted. Survives reindent / blank-line / whitespace churn, so it keys suppressions across code drift. `--json` emits `{ id, snippet_hash }`; take both when minting a finding, since only the hash survives to make the id checkable on a later run. Bare output stays the id alone. |
-| `redact [--in <file>]` | Strip secrets (private keys, JWTs, AWS ids, bearer tokens, named `secret=`/`token=` assignments) from stdin or a file. Run on a finding snippet before persist/export, and on an activity `summary`/`target` before append. |
+| `redact [--in <file>]` | Strip secrets (private keys, JWTs, AWS ids, bearer tokens, named `secret=`/`token=` assignments) from stdin or a file. Run on a finding snippet before persist/export, on an activity `summary`/`target` before append, and on a resource check's `over.reads[].result`, `evidence.value`, `recommendations[].current`, every `timeline[].reason` and every `title` before validate. |
 | `export [--format md\|html] [--out <file>] [--at-commit <sha>] <report.json>` | Render a report to Markdown (canonical) or a self-contained single-file HTML. **Validates first and refuses (`1`) an invalid report** — the chokepoint holds at the export boundary. `--at-commit` is the commit being looked at now: the render compares it to `repo.commit_sha` and marks the report `STALE` when they differ. Omitting it renders `freshness unverified` — an absent check never reads as a passed one. PDF = print-to-PDF from the HTML; no PDF library ships. |
 | `pr-plan --finding <id> [--at-commit <sha>] <report.json>` | The one-fix PR's `{ branch, title, body, path }` (Stage 7). Validates the report first and refuses (`1`) an invalid one, then refuses the finding itself when it is **suppressed** — the report never asserted it, so a PR would ship a claim the run withheld — when it has no `location.path`, or when it carries no citation. `branch` is derived, never composed: `teammate/fix-<detector-id>-<finding-id>`, so two runs fixing one finding collide loudly instead of opening a duplicate, and the only interpolated value is a 16-char hex fingerprint. `title` and `body` are redacted, because a PR body is world-readable on a public repo and outlives the branch — further than an export ever travels. The body carries the citation, the pinned commit, the mode and the finding id, so a reviewer who did not run the scan can check it. |
 | `pr-guard --expect <path> [--expect <path>…] [--expect-branch <name>] [--in <f>]` | Hold a worktree to what the fix declared: `git status --porcelain` on stdin, one `--expect` per declared path. Fails (`1`) on any undeclared change, on an empty tree (there is no fix to open), and on output it cannot parse — including a path git quoted, which it refuses to decode rather than match approximately. This is the mechanical form of *no writes outside the PR branch*, and `--expect-branch` is the branch half of that sentence: pipe `git status --porcelain -b` and the `## <branch>` header arrives in the same read as the paths, so the branch compared is git's answer and not the run's — there is no flag that takes the branch on the caller's word, because a run asserting its own compliance is the failure the whole stage is built around. It fails (`1`) when HEAD is on any other branch, when HEAD is detached, and when the output carries no header at all, since a check that could not be made is not a check that passed. Omit it and the branch is not read, which is what the path-only callers before it did — but omitting it is the only way to get there, and it took three refusals to make that sentence true. A `--expect-branch` whose value went missing is a usage error under the flag rule above; an empty one (`--expect-branch ""`) is refused here for the same reason; and a *misspelt* one (`--expect-branchh`) is refused as an unrecognized argument, because until it was, the flag simply vanished and this command printed the path-only green, exit `0`, on a worktree sitting on `master`. Reading any of the three as *no branch was expected* prints that green over the check the caller asked for. The failures it exists to stop: `git add -A` on a tree that already held unrelated edits, sweeping someone's unfinished work into a PR opened in their name — and skipping `git checkout -b`, which leaves the paths byte-identical while every edit lands on the developer's own branch. |

@@ -2,7 +2,7 @@
 name: teammate-memory-contract
 description: The memory surface the teammate skill codes against — tools, kinds, scope/identity
   rules, retention, and how to point at your studio's memory service.
-last-verified: 2026-08-18
+last-verified: 2026-09-04
 see-also:
 - '[report-schema.md](report/report-schema.md)'
 - '[cross-repo-surface.md](cross-repo-surface.md)'
@@ -72,7 +72,7 @@ never a positional list:
 |---|---|
 | `wiki_memory_put({ kind, key, doc })` | Save a run report, a scan-history entry, a call-site index or a studio document. Exact-key overwrite — with one exception: a `surface` record is **write-once** and a second write to its key is refused, see § Surface records. |
 | `wiki_memory_get({ kind, key })` | Read one record whose exact key is already known — the read-before-write at Stage 6, not the reuse lookup. Reuse lists and ranks (below); an exact `get` misses on a working repo almost every time. |
-| `wiki_memory_list({ kind, since?, exclude_self?, nudge_read?, limit?, key_prefix?, projection?, cursor? })` | Changes-since-last-scan, load suppressions, read the activity feed. Returns a **page**, not an array — see below. `key_prefix` and `projection` apply to the keyed kinds (`report`, `suppression`, `last-nudged`, `surface`, `document`) only; passing either on an append kind is an error rather than a no-op. `nudge_read` keeps only entries that may be quoted to someone who did not write them. |
+| `wiki_memory_list({ kind, since?, exclude_self?, nudge_read?, limit?, key_prefix?, projection?, cursor? })` | Changes-since-last-scan, load suppressions, read the activity feed. Returns a **page**, not an array — see below. `key_prefix` and `projection` apply to the keyed kinds (`report`, `suppression`, `last-nudged`, `surface`, `document`, `resource-check`) only; passing either on an append kind is an error rather than a no-op. `nudge_read` keeps only entries that may be quoted to someone who did not write them. |
 | `wiki_memory_append({ kind, entry })` | Append-only: access log, feedback, and activity. |
 | `wiki_memory_rollup({ topic?, key_prefix? })` | Group your stored reports and return counts plus **complete** evidence keys. Computed for this call and never stored, so there is no saved summary and no prose — you write the sentence. Returns `{ groups, over }`; `over` says what the numbers were taken over. See [history-rollup.md](history-rollup.md). |
 | `wiki_memory_topics({ key_prefix? })` | Which rollup topics have data in your scope, with a count each. Ask it when you do not already know what the records carry — the topic set is not a fixed enum. |
@@ -162,9 +162,9 @@ read** — see the reuse walk below, which must not use it.
 
 ## Kinds
 
-Eight, in two families. `report`, `suppression`, `last-nudged`, `surface` and
-`document` are **keyed documents** — you compose the key, `get` reads one back, and
-`key_prefix` and `projection` narrow a `list` over them. `access-log`,
+Nine, in two families. `report`, `suppression`, `last-nudged`, `surface`,
+`document` and `resource-check` are **keyed documents** — you compose the key,
+`get` reads one back, and `key_prefix` and `projection` narrow a `list` over them. `access-log`,
 `feedback` and **`activity`** — the cross-persona colleague feed — are
 **append-only**: they have no key, so both of those arguments are refused on
 them rather than ignored. Every subskill run ends by
@@ -174,8 +174,9 @@ later quotes it.
 
 `action` vocabulary (documented, **non-exhaustive** — validators do not enum it):
 `ran-health-check`, `reused-report`, `opened-pr`, `found-error-increase`,
-`found-deprecations`, `found-auth-risk`, `suppressed-finding`. Extend as personas
-grow. Use `reused-report` when a run served a stored report without rescanning —
+`found-deprecations`, `found-auth-risk`, `suppressed-finding`,
+`ran-extend-app-check`, `ran-fleet-check`, `ran-why-did-it-die`. Extend as
+personas grow. Use `reused-report` when a run served a stored report without rescanning —
 the feed must not imply a scan that did not happen.
 
 ## Report keys
@@ -511,6 +512,66 @@ fact opens the file the record named and cites that. A re-derive always wins —
 see [cross-repo-surface.md](cross-repo-surface.md) for the studio-wide read, and
 [upgrade-check.md](../subskills/upgrade-check.md) Stage 2 for the single-repo one.
 
+## Resource-check records
+
+A `resource-check` record is the report one Extend / AMS check produced —
+`extend-app-check`, `fleet-check` or `why-did-it-die` — keyed on the subject it
+is about: an app, a fleet, a server, or the **deployment** a cause report on an
+Extend app explains. Validated by
+`report_tool.ts validate --kind resource-check`
+([report-schema.md](report/report-schema.md) § Resource-check report). It is
+stored, not discarded, because two things read it back and neither works on
+the `activity` feed alone: a later run says *what changed since the last
+check*, and a nudge says *this fleet has not been checked in 40 days*.
+
+```
+<namespace>@<subject.kind>:<subject.id>       e.g.  prod-eu@ams-fleet:fleet-01hz…
+                                                     prod-eu@extend-app:matchmaking-override
+                                                     prod-eu@ams-server:ds-01j2…
+                                                     prod-eu@extend-deployment:dep-01j3…
+```
+
+**Latest-wins, one record per subject, overwritten in place** (`WRITE_ONCE:
+false`). One record per subject bounds cardinality to the number of things a
+studio runs, the diff only ever needs the *previous* run, and a long series is
+what the digest and the `activity` feed are for. The previous record is read
+before the new one is written — the Stage 6 read-before-write idiom — the diff
+is **computed in that run and never stored**, the rule `rollup` follows, and the
+new report replaces the old. A finding is matched across runs on `signal` plus
+`evidence.locator`; a knob row on `knob`; three outcomes per finding — `new`,
+`still-open`, `cleared`.
+
+**The key is composed, never typed.** `report_tool.ts memory-doc --kind
+resource-check` builds it from the document's own `subject`, the store
+recomposes the same key from `subject.namespace`, `subject.kind` and
+`subject.id`, and refuses a `put` whose key is not that one — naming the
+composed key in the refusal. `subject.namespace` is the caller's own namespace,
+because a `put` never lands elsewhere; both it and `subject.id` are one visible
+line refused any of `@ : + /` or whitespace — the refusal a `surface` record's
+`repo.name` already carries — so no id can compose another subject's key, and
+neither segment can be a run of invisible characters that composes a key nobody
+can look up. The CLI holds both halves too, in the same order the store does:
+the store's refusal is what the emitted `put` would have met.
+
+**Durable, on a correctness argument.** The stale nudge exists to catch a
+subject nobody has checked in a long time. A record that aged out would make a
+120-day-stale fleet read as *never checked* — the one state the nudge cannot
+see — so the rule would go quiet exactly when it should fire. The kind sits in
+the explicit durable list the store asserts at configuration.
+
+**Digested, explicitly.** `DIGESTED_KINDS` is a negative filter that opts a new
+kind in silently, so the inclusion is written at the filter and asserted in a
+test. A digested page over a fleet's successive checks is the long series that
+latest-wins does not keep.
+
+**Nothing else is persisted.** Nothing a read returned verbatim beyond what the
+report already carries — no raw history page, no log tail, no secret values. A
+`resource-check` record is the report and nothing else. On the two kinds that
+carry one, the ordered `timeline` **is** part of the report and is stored with
+it: it is the transitions a cause candidate cites, one bounded line each, and it
+goes through `redact` on the way in like every other field taken from what a read
+returned.
+
 ## Scope & identity (security-critical)
 
 - **`scope` is server-derived from the caller's identity, never client-asserted.**
@@ -588,11 +649,14 @@ fail-closed direction and not a bug to work around.
 ## Retention
 
 `activity`, `access-log`, `feedback` and **`surface`** are kept for **~90 days**.
-`report`, `suppression`, `last-nudged` and **`document`** are durable — nothing
-deletes them on a schedule. A document is durable on a correctness argument and
-not a preference: a digested page's statements carry source keys that are checked
-to name records that exist, so a document that aged out would leave every page
-citing it unable to resolve. Every kind sits in exactly one of those two lists and the split is
+`report`, `suppression`, `last-nudged`, **`document`** and **`resource-check`**
+are durable — nothing deletes them on a schedule. A document is durable on a
+correctness argument and not a preference: a digested page's statements carry
+source keys that are checked to name records that exist, so a document that aged
+out would leave every page citing it unable to resolve. A resource check is
+durable on the same footing: its stale nudge cannot tell a record that aged out
+from a subject never checked, so ageing it out silences the rule exactly when it
+should fire. Every kind sits in exactly one of those two lists and the split is
 checked when the store is configured: a kind in neither would get no rule, which
 reads identically to durable.
 
