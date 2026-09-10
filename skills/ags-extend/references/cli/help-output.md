@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-08-24
 authoritative: true
 note: --help output captured from the extend-helper-cli binary, as captured except
   for the one host-specific default noted in the body. This is the ground-truth grounding
@@ -12,11 +12,11 @@ see-also:
 
 # extend-helper-cli — `--help` output (authoritative grounding artifact)
 
-Captured: 2026-07-20. Source: `https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-darwin_arm64`.
+Captured: 2026-08-24. Source: `https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-linux_amd64`.
 
 This file is the output of `extend-helper-cli --help` for every subcommand, and the ground truth for CLI syntax — `references/deploy/cli-commands.md` is its readable restatement.
 
-One substitution: `--ssh-path` prints a default built from the home directory of whoever runs it, so the capture host's own path is replaced with `/Users/you/.ssh/id_rsa`. On your machine the CLI prints yours. Everything else is as captured.
+One substitution: `--ssh-path` prints a default built from the home directory of whoever runs it, so the capture host's own path is replaced with `~/.ssh/id_rsa`. On your machine the CLI prints yours. Everything else is as captured.
 
 ## Top-level
 
@@ -28,7 +28,7 @@ USAGE:
    extend-helper-cli [global options] command [command options] [arguments...]
 
 VERSION:
-   v0.0.13
+   v0.0.14
 
 COMMANDS:
    dockerlogin     Log in to the Extend docker registry.
@@ -45,6 +45,7 @@ COMMANDS:
    clone-template  Clone a Git repository template to a local destination
    tunnel          Start listening on user’s local port. Forwards traffic to the specified database resource through a tunnel.
    remote-debug    Manage remote debug sessions for an Extend app
+   logs            Get or stream logs from an Extend app.
    login           Log in to AccelByte using browser-based authentication (OAuth 2.0 with PKCE).
    logout          Log out and clear saved credentials.
    status          Show current authentication status.
@@ -321,7 +322,7 @@ OPTIONS:
    --token value                  Personal Access Token (for token auth)
    --username value               Username (for basic auth)
    --password value               Password (for basic auth)
-   --ssh-path value               SSH private key path (default: "/Users/you/.ssh/id_rsa")
+   --ssh-path value               SSH private key path (default: "~/.ssh/id_rsa")
    --ssh-pass value               SSH key passphrase (if needed)
    --output value                 Output format. Supported value: "json". Emits a single machine-readable JSON object to stdout; all log output is redirected to stderr.
    --help, -h                     show help
@@ -362,6 +363,44 @@ COMMANDS:
 
 OPTIONS:
    --help, -h  show help
+```
+
+## `logs`
+
+```
+NAME:
+   extend-helper-cli logs - Get or stream logs from an Extend app.
+
+USAGE:
+   extend-helper-cli logs command [command options] [arguments...]
+
+COMMANDS:
+   stream   Show recent logs from an Extend app, and optionally keep streaming new ones.
+   help, h  Shows a list of commands or help for one command
+
+OPTIONS:
+   --help, -h  show help
+```
+
+## `logs stream`
+
+```
+NAME:
+   extend-helper-cli logs stream - Show recent logs from an Extend app, and optionally keep streaming new ones.
+
+USAGE:
+   extend-helper-cli logs stream [command options]  
+
+OPTIONS:
+   --namespace value, -n value       Game Namespace.
+   --app value, -a value             Extend App Name.
+   --verbosity value, -v value       Verbosity level. (0 or panic, 1 or fatal, 2 or error, 3 or warn, 4 or info, 5 or debug, 6 or trace) (default: info)
+   --follow, -f                      Stream logs (keep printing new lines). (default: false)
+   --tail-lines value, --tail value  Lines of recent logs to display per replica. (default: 100)
+   --previous                        Show logs from the previous container instance, if it exists. (default: false)
+   --pods value                      How many running replicas to include. (default: 1)
+   --since-seconds value             Only show logs newer than N seconds. (default: 0)
+   --help, -h                        show help
 ```
 
 ## `login`

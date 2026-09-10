@@ -125,7 +125,7 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 **Health check** — liveness/readiness probe AGS uses to decide whether to promote a replica. Failing health checks are the most common reason a deploy gets stuck.
 
-**Grafana** — AccelByte-provided observability UI (Grafana Cloud). Logs, metrics, dashboards. Access via Admin Portal → app detail → Open Grafana Cloud. There is no CLI command for logs — Grafana is the primary interface.
+**Grafana** — AccelByte-provided observability UI (Grafana Cloud). Logs, metrics, dashboards. Access via Admin Portal → app detail → Open Grafana Cloud.
 
 **Signal** — any datapoint that tells you what the app is doing: log line, status field, metric, event delivery count. The "signal-guide" is about interpreting these.
 

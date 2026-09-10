@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-07-29
 sources:
 - https://github.com/AccelByte/extend-helper-cli
 - https://api.github.com/repos/AccelByte/extend-helper-cli/releases/latest
@@ -10,7 +10,7 @@ see-also:
 
 # AGS Extend CLI Installer
 
-Install `extend-helper-cli` — the command-line tool that drives `image-upload`, `deploy-app`, `get-app-info`, `update-var`, `tunnel`, and other supported subcommands (see `references/deploy/cli-commands.md`). Downloads a single binary from the official GitHub release, validates it, and places it on the user's `PATH`.
+Install `extend-helper-cli` — the command-line tool that drives `image-upload`, `deploy-app`, `get-app-info`, `logs stream`, `update-var`, `tunnel`, and other supported subcommands (see `references/deploy/cli-commands.md`). Downloads a single binary from the official GitHub release, validates it, and places it on the user's `PATH`.
 
 ## Behavior Constraints
 

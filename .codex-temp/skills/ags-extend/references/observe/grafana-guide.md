@@ -7,6 +7,7 @@ sources:
 see-also:
 - '[signal-guide.md](signal-guide.md)'
 - '[cli-commands.md](cli-commands.md)'
+- '[deploy-cli-commands.md](../deploy/cli-commands.md)'
 - '[common-errors.md](../deploy/common-errors.md)'
 - '[install-mcp.md](../../subskills/install-mcp.md)'
 - '[grafana-mcp.md](../../../ags/references/observe/grafana-mcp.md)'
@@ -14,7 +15,7 @@ see-also:
 
 # Grafana Cloud for Extend Logs
 
-Deployed Extend apps send their logs and metrics to **Grafana Cloud**, provided by AccelByte as part of the Extend package. `extend-helper-cli` has **no** `logs` command (see `cli-commands.md`) — Grafana Cloud is the only place to read a deployed app's logs. This guide covers getting in, finding your app's logs, and querying them, plus the one gotcha that makes logs look "missing" when they aren't.
+Deployed Extend apps send their logs and metrics to **Grafana Cloud**, provided by AccelByte as part of the Extend package. Use Grafana to view and search app logs (and metrics). You can also use `extend-helper-cli logs stream` for live logs from a running Extend app (see `cli-commands.md` and `references/deploy/cli-commands.md#stream-app-logs`). This guide covers getting in, finding your app's logs, and querying them, plus the one gotcha that makes logs look "missing" when they aren't.
 
 ## Read this first: logs are not instant
 
@@ -49,7 +50,7 @@ Both tiers use the **same** managed Grafana Cloud instance — Public Cloud just
 
 **If "Open Grafana Cloud" is missing or greyed out on Public Cloud,** the Extend package isn't unlocked for that namespace — that's an entitlement/tier matter, not a bug. Contact AccelByte.
 
-> On Public Cloud, Grafana access is SSO-only and scoped to your own resources — there is no service-account token or API key, so the browser flow described here is the only way in. `extend-helper-cli` has no logs command on either tier.
+> On Public Cloud, Grafana access is SSO-only and scoped to your own resources — there is no service-account token or API key, so the browser flow described here is the only way into Grafana. For live/recent app logs you can also use `extend-helper-cli logs stream` (see `cli-commands.md`).
 
 ## Programmatic access: the Grafana MCP server
 

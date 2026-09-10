@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-08-24
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -83,7 +83,7 @@ HTTP request bodies over 4.5 MB are rejected at the ingress. For large uploads (
 
 ### Log retention (30 days)
 
-Grafana Cloud log retention is 30 days. (The `extend-helper-cli` does NOT have a logs subcommand — see `references/observe/cli-commands.md`.) For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
+Grafana Cloud log retention is 30 days. For live/recent logs, `extend-helper-cli logs stream` is also available — see `references/deploy/cli-commands.md#stream-app-logs`. For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
 
 ### Metrics retention (13 months)
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "accelbyte-ai-plugins",
-  "version": "0.7.19",
+  "version": "0.7.20",
   "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
   "author": {
     "name": "AccelByte",

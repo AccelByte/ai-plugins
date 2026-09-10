@@ -29,12 +29,20 @@ chmod +x "$BIN"
 
 OUT="$(dirname "$0")/../help-output.md"
 
+# After a parent that only lists subcommands, capture nested --help immediately.
+nested_after() {
+  case "$1" in
+    logs) echo "stream" ;;
+  esac
+}
+
 {
   echo "---"
   echo "last-verified: $(date -u +%Y-%m-%d)"
   echo "authoritative: true"
-  echo "note: Verbatim --help output captured from the extend-helper-cli binary. This is the"
-  echo "  ground-truth grounding artifact every other CLI claim in this skill defers to."
+  echo "note: --help output captured from the extend-helper-cli binary, as captured except"
+  echo "  for the one host-specific default noted in the body. This is the ground-truth"
+  echo "  grounding artifact every other CLI claim in this skill defers to."
   echo "sources:"
   echo "- https://github.com/AccelByte/extend-helper-cli"
   echo "see-also:"
@@ -46,22 +54,37 @@ OUT="$(dirname "$0")/../help-output.md"
   echo
   echo "Captured: $(date -u +%Y-%m-%d). Source: \`$URL\`."
   echo
-  echo "This file is the verbatim output of \`extend-helper-cli --help\` for every subcommand. It is the ground truth for the skill — \`references/deploy/cli-commands.md\` is its skill-friendly restatement; this file is the unedited source."
+  echo "This file is the output of \`extend-helper-cli --help\` for every subcommand, and the ground truth for CLI syntax — \`references/deploy/cli-commands.md\` is its readable restatement."
+  echo
+  echo "One substitution: \`--ssh-path\` prints a default built from the home directory of whoever runs it, so the capture host's own path is replaced with \`~/.ssh/id_rsa\`. On your machine the CLI prints yours. Everything else is as captured."
   echo
   echo "## Top-level"
   echo
   echo '```'
   "$BIN" --help 2>&1
   echo '```'
-  for cmd in dockerlogin image-upload create-app get-app-info list-images deploy-app start-app stop-app delete-app update-var update-secret clone-template tunnel remote-debug login logout status appui; do
+  for cmd in dockerlogin image-upload create-app get-app-info list-images deploy-app start-app stop-app delete-app update-var update-secret clone-template tunnel remote-debug logs login logout status appui; do
     echo
     echo "## \`$cmd\`"
     echo
     echo '```'
     "$BIN" "$cmd" --help 2>&1
     echo '```'
+    while IFS= read -r sub; do
+      [[ -z "$sub" ]] && continue
+      echo
+      echo "## \`$cmd $sub\`"
+      echo
+      echo '```'
+      "$BIN" "$cmd" "$sub" --help 2>&1
+      echo '```'
+    done < <(nested_after "$cmd")
   done
 } > "$OUT"
+
+# The CLI's --ssh-path default is $HOME/.ssh/id_rsa of the capture host.
+# Replace it with a host-neutral example so usernames never ship.
+sed -i -E 's|(--ssh-path value[[:space:]]+SSH private key path \(default: ")[^"]+("\))|\1~/.ssh/id_rsa\2|' "$OUT"
 
 rm -f "$BIN"
 echo "Wrote $OUT ($(wc -l < "$OUT") lines)"

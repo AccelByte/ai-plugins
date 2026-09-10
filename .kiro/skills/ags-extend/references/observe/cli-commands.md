@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-07-29
 sources:
 - https://github.com/AccelByte/extend-helper-cli
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
@@ -14,7 +14,7 @@ see-also:
 
 ## CLI: Check App Status
 
-The only CLI command relevant to observability is `get-app-info`, which returns app metadata including current status:
+`get-app-info` returns app metadata including current status:
 
 ```bash
 extend-helper-cli get-app-info \
@@ -33,6 +33,25 @@ extend-helper-cli get-app-info \
   --path /appStatus
 ```
 
+## CLI: Stream App Logs
+
+```bash
+# Recent window (prints and exits)
+extend-helper-cli logs stream \
+  --namespace <my-game-namespace> \
+  --app <my-extend-app>
+
+# Keep streaming new lines until Ctrl-C
+extend-helper-cli logs stream \
+  --namespace <my-game-namespace> \
+  --app <my-extend-app> \
+  --follow
+```
+
+Optional flags (`--tail-lines` / `--tail`, `--previous`, `--pods`, `--since-seconds`, `--verbosity`) are documented in `references/deploy/cli-commands.md#stream-app-logs`. Use this command when the user asks to tail, follow, or stream live logs from a deployed app.
+
+If `logs` is missing from `extend-helper-cli --help`, the installed CLI is too old — offer `/ags-extend install-cli` before declaring streaming unsupported.
+
 ## App Lifecycle States
 
 From the upstream lifecycle documentation, an app transitions through these states:
@@ -48,7 +67,7 @@ See `signal-guide.md` for interpreting log patterns once an app is running.
 
 ## Grafana Cloud (Logs and Metrics)
 
-The CLI does **not** have `logs`, `status`, or `list` subcommands. All log and metric observability is through **Grafana Cloud**, provided by AccelByte as part of the Extend package. For the full walkthrough — access by deployment tier, how Grafana is organized, LogQL filters, and a "find the last error" recipe — see `grafana-guide.md`. The essentials:
+The CLI does **not** have `status` or `list` subcommands. Log and metric observability is through **Grafana Cloud**, provided by AccelByte as part of the Extend package. For the full walkthrough — access by deployment tier, how Grafana is organized, LogQL filters, and a "find the last error" recipe — see `grafana-guide.md`. The essentials:
 
 ### Access
 

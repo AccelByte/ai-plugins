@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-07-29
 authoritative: true
 note: This file is the SINGLE SOURCE OF TRUTH for extend-helper-cli command syntax
   inside this skill. Every other file in this bundle that mentions a CLI command,
@@ -20,7 +20,7 @@ see-also:
 
 This file is the only place inside this skill that quotes CLI command names, flag names, and environment variables. If you are about to write `extend-helper-cli <something>` somewhere else, stop — link here instead. The `<grounding_rules>` of every CLI-touching subskill enforces this.
 
-The CLI is distributed as binary releases. The verbatim command help captured from v0.0.13 is bundled at `references/cli/help-output.md`; re-capture it with `references/cli/scripts/capture-cli-help.sh` whenever a new release ships.
+The CLI is distributed as binary releases. The verbatim command help is bundled at `references/cli/help-output.md`; re-capture it with `references/cli/scripts/capture-cli-help.sh` whenever a new release ships.
 
 ## Authentication
 
@@ -191,6 +191,38 @@ Use `--path /appStatus` to extract a single field (JSON pointer; default `/`).
 
 This is the canonical "what's running?" command — there is no `extend-helper-cli list` and no `extend-helper-cli status {app}`. To enumerate multiple apps, you need the Admin Portal (or your repo layout — one Makefile+Dockerfile dir per app).
 
+## Stream App Logs
+
+```bash
+extend-helper-cli logs stream \
+  --namespace {namespace} \
+  --app {app-name}
+```
+
+Shows recent log lines from a deployed Extend app. Without `--follow`, prints the recent window and exits. With `--follow` / `-f`, keeps printing new lines until interrupted (Ctrl-C).
+
+Required flags:
+
+- `--namespace {namespace}` (or `-n`) — game namespace.
+- `--app {app-name}` (or `-a`) — Extend app name.
+
+Optional flags:
+
+- `--follow` / `-f` — keep streaming new lines (default `false`).
+- `--tail-lines {n}` / `--tail {n}` — recent lines to display **per replica** (default `100`).
+- `--previous` — show logs from the previous container instance, if it exists (default `false`).
+- `--pods {n}` — how many running replicas to include (default `1`).
+- `--since-seconds {n}` — only show logs newer than N seconds (default `0` = no since filter).
+- `--verbosity {0..6}` / `-v` — same verbosity scale as other subcommands (default `info`).
+
+`--output json` is **not** supported for `logs stream` — log lines always print to stdout; passing the flag warns on stderr and the command still streams text lines.
+
+`logs` is a parent command; the only subcommand today is `stream`. There is no `extend-helper-cli logs` action without a subcommand.
+
+Use this for live / recent pod stdout. Grafana Cloud remains available for historical search, LogQL, metrics, and dashboards (see `references/observe/cli-commands.md`).
+
+If `extend-helper-cli logs --help` fails on an installed binary, the CLI is older than the `logs` command — offer `/ags-extend install-cli` before declaring log streaming unsupported.
+
 ## Start / Stop
 
 ```bash
@@ -298,7 +330,7 @@ Useful flags:
 These are the most common invented commands and flags. If you're tempted to write any of them, you're hallucinating — defer to this section.
 
 - `extend-helper-cli list` — no list command. Use `get-app-info` per app, or the Admin Portal to enumerate.
-- `extend-helper-cli logs` — no log subcommand. Logs are in Grafana Cloud (see `references/observe/cli-commands.md`).
+- `extend-helper-cli logs` with no subcommand — parent only; use `logs stream`. Invented siblings like `logs get` / `logs tail` do not exist.
 - `extend-helper-cli deploy` (without the `-app` suffix) — the command is `deploy-app`.
 - `--base-url {url}` on any command except `login` — `AB_BASE_URL` is set via env or `.env`; only `login` accepts an inline override.
 - `--cpu` / `--memory` on `deploy-app`, `start-app`, `stop-app`, or `update-var` — they exist only on `create-app` (initial allocation). Post-create resource changes go through Admin Portal or CSM API.
@@ -327,7 +359,7 @@ Envelope shape:
 
 On failure, `result` contains the error message and the process exits with code 1. `serverResponse` is omitted for commands with no server calls (`status`, `clone-template`).
 
-`--output json` is **not** supported on `dockerlogin`, `image-upload`, or `tunnel` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally.
+`--output json` is **not** supported on `dockerlogin`, `image-upload`, `tunnel`, or `logs stream` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally.
 
 When `--output json` is set and the command would normally show an interactive confirmation prompt (`create-app` / `delete-app` without `--confirm`), the prompt is skipped automatically.
 
