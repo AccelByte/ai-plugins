@@ -8,6 +8,7 @@ sources:
 see-also:
 - '[leaderboards.md](leaderboards.md)'
 - '[achievements.md](achievements.md)'
+- '[rewards.md](rewards.md)'
 - '[matchmaking.md](matchmaking.md)'
 - '[analytics.md](analytics.md)'
 ---

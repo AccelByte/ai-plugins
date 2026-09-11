@@ -1,8 +1,9 @@
 ---
-last-verified: 2026-06-24
+last-verified: 2026-09-09
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/device-id-identity/
 - https://docs.accelbyte.io/gaming-services/tutorials/byte-wars/unreal-engine/learning-modules/general/module-initial-setup/unreal-module-initial-setup-install-the-accelbyte-game-sdk/
 - https://github.com/AccelByte/accelbyte-unreal-oss
 - https://github.com/AccelByte/accelbyte-unreal-sdk-plugin
@@ -66,7 +67,16 @@ Enable all three plugins in the `.uproject`, add the modules to the relevant tar
 
 Installing the plugin set does not require `.env` or namespace/client values. If AGS config is missing, install and enable the plugins first, then route to `/ags connect-portal` before config and login verification. Do not add empty placeholder config values; `connect-portal` owns using the AGS CLI to create/select IAM clients, enable login methods such as Device ID when exposed by the CLI, and write real project config.
 
-Configure AGS through `Config/DefaultEngine.ini`: SDK base settings go under `[/Script/AccelByteUe4Sdk.AccelByteSettings]` (client credentials, base URL, namespace) and `[/Script/AccelByteUe4Sdk.AccelByteServerSettings]` (dedicated server settings). `[OnlineSubsystemAccelByte]` is the OSS-layer configuration, on top of those base settings. For device ID login in an OSS project, verify through the OSS identity login path rather than direct `FRegistry::User.LoginWithDeviceId(...)`.
+Configure AGS through `Config/DefaultEngine.ini`: SDK base settings go under `[/Script/AccelByteUe4Sdk.AccelByteSettings]` (client credentials, base URL, namespace) and `[/Script/AccelByteUe4Sdk.AccelByteServerSettings]` (dedicated server settings). `[OnlineSubsystemAccelByte]` is the OSS-layer configuration, on top of those base settings. For Device ID login in an OSS project, use and verify the OSS identity login path rather than direct `FRegistry::User.LoginWithDeviceId(...)`; confirm version-specific signatures against the installed SDK source or AGS tooling. Treat Device ID as development-oriented unless production includes an explicit account-upgrade or account-linking plan.
+
+A failed or unavailable SDK-source lookup is a stop on exact code, not
+permission to fill the gap from memory. This applies to every Unreal SDK and
+OSS answer, not only to login: when the installed source cannot be read, show
+the stable call shape as pseudocode and tell the user to confirm credential
+type strings, delegate registration, subsystem accessors, and method signatures
+against the installed SDK version or AGS tooling. Present compile-ready code
+only when matching installed or version-pinned source established those
+details.
 
 ## Common gotchas
 

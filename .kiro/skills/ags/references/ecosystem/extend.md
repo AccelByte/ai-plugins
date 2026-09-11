@@ -1,10 +1,13 @@
 ---
-last-verified: 2026-04-29
+last-verified: 2026-09-09
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/online/statistics/
 - https://accelbyte.github.io/extend-apps-directory/
 see-also:
 - '[handoff.md](../../subskills/handoff.md)'
+- '[rewards.md](../modules/rewards.md)'
+- '[statistics.md](../modules/statistics.md)'
 ---
 
 # Ecosystem — Extend
@@ -38,7 +41,8 @@ The user mentions any of these (case-insensitive):
 
 - "Extend", "Override", "Event Handler", "Service Extension", "App UI"
 - "custom backend logic", "custom matchmaking logic", "custom purchase validation"
-- "react when X happens" (event-driven workflows)
+- "react when X happens" only after the relevant native AGS module has been
+  considered and cannot express the workflow
 - "we need an API AGS doesn't have"
 - `extend-helper-cli`, "deploy a custom service to AGS", "build a custom service"
 - "Extend Apps Directory"
@@ -61,6 +65,13 @@ The question is about Extend *adjacency* but the real work is still on the AGS s
 
 When in doubt: if the next concrete action is on an Extend app (scaffold, deploy, debug, observe an Extend service), hand off. If the next action is on AGS proper (configure the Admin Portal, integrate the SDK, troubleshoot a Lobby disconnect), stay.
 
+For a one-time reward after first login, do not jump from “event-driven” to an
+Extend Event Handler. First evaluate the native Statistics-to-Rewards path:
+update a player statistic from the trusted login-completion flow, then configure
+Rewards to listen for that statistic update and grant when its condition is met.
+Code Redemption and Extend remain alternatives when their different tradeoffs
+fit, but neither is the only available path.
+
 ---
 
 ## Upsell signals (for AccelByte staff using this skill)
@@ -72,6 +83,9 @@ A studio is a candidate for adopting Extend when they say things like:
 - "We want to override the matchmaking algorithm."
 - "We need to validate purchases against our own anti-fraud system."
 - "We want to push AGS events into our analytics warehouse."
+
+A reward or progression workflow already expressible through native
+Statistics and Rewards is not, by itself, an Extend adoption signal.
 
 For these conversations, `/ags handoff` walks the trade-off. The actual Extend conversation moves to `/ags-extend ask`.
 

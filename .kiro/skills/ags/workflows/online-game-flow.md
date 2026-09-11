@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-09-10
 sources:
 - https://docs.accelbyte.io/
 ---
@@ -23,6 +23,7 @@ This workflow owns player-facing game integration. Read module and capability fi
 Read these only when the confirmed player-facing slice needs them:
 
 - Skill-based matchmaking, MMR, ratings, ranked state, win/loss history, or role performance -> `../references/modules/statistics.md` plus `../capabilities/matchmaking/router.md`.
+- Granting an item, currency, or entitlement when something happens to a player — first login, a milestone, a progression threshold, a daily streak -> `../references/modules/rewards.md` plus `../references/modules/statistics.md`, because Rewards is triggered by statistic update events rather than by a direct client claim. Read both before proposing Code Redemption or an Extend Event Handler.
 - Dedicated-server matchmaking, Play Online, or session join that must claim AMS -> `../capabilities/matchmaking/router.md`, `../capabilities/ams/router.md`, and `../references/modules/session.md`.
 - P2P or listen-server matchmaking -> `../capabilities/matchmaking/router.md`, `../references/modules/session.md`, and `../references/modules/turn-stun-p2p.md`; for Unreal P2P/listen-server networking, also read `../references/sdks/game-engine/unreal-p2p.md`; for browser/web games, also read `../references/sdks/web/webrtc-p2p.md`.
 
@@ -72,6 +73,7 @@ Examples:
 - `skill-based matchmaking + update MMR statistics after a win` -> multi-slice. Recommend `statistics/MMR` first because matchmaking consumes the stat.
 - `matchmaking + dedicated server travel + AMS fleet/debug` -> multi-slice unless the prompt confirms the earlier pieces already exist. Recommend the earliest missing player-flow slice.
 - `leaderboard + post-match score update + achievement unlock` -> multi-slice. Recommend `statistics/score update` first when leaderboard or achievement criteria depend on it.
+- `grant a first-login reward` -> one slice, but two modules. The player-facing trigger is login; the grant runs through a statistic update that Rewards listens for. Do not split it into a Statistics slice and a Rewards slice.
 
 Requests can stay one slice when the modules are part of one narrow flow and prerequisites are already explicit, such as wiring an existing Play Online button to submit a matchmaking ticket using an already configured session template.
 

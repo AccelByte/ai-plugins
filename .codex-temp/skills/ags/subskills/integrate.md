@@ -6,7 +6,7 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-07-20
+last-verified: 2026-09-10
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -15,6 +15,7 @@ see-also:
 - '[matchmaking.md](../references/modules/matchmaking.md)'
 - '[session.md](../references/modules/session.md)'
 - '[store-entitlements.md](../references/modules/store-entitlements.md)'
+- '[rewards.md](../references/modules/rewards.md)'
 - '[statistics.md](../references/modules/statistics.md)'
 - '[leaderboards.md](../references/modules/leaderboards.md)'
 - '[achievements.md](../references/modules/achievements.md)'
@@ -57,6 +58,8 @@ Module behavior must trace to `references/modules/<name>.md`. Cross-module flows
 Read `../workflows/online-game-flow.md` for player-facing login, matchmaking, session join, or DS/P2P travel requests.
 
 Before implementing storage for player/game data, choose the most purpose-built AGS service first. Read `../references/catalogs/marketing-to-service.md` when the right service is not obvious, then prefer native modules such as Statistics, Leaderboards, Achievements, Store/Entitlements, Inventory, Rewards, Challenges, Legal, GDPR, Lobby/Friends/Presence, Session, Matchmaking, Analytics, UGC, or Chat when the requested behavior matches them. Treat Cloud Save as a generic key-value fallback for save blobs, player preferences, drafts, snapshots, or custom data that does not need native AGS behavior. Do not create Cloud Save records to emulate stats, rankings, achievements, legal agreements, inventory/economy state, rewards, matchmaking inputs, analytics events, social state, or session/lobby state unless you have first recorded why the native service cannot satisfy the requirement.
+
+Choosing the module is not the end of the service check. Once a module is selected, read its own reference for the trigger paths it exposes — event topics, conditions, and which other module raises the event — before deciding how the flow is driven. A module with no public client call may still be reachable through another module's public call: Rewards has no public claim endpoint, but a client-writable statistic update triggers it. When the selected module turns out to be unreachable from the caller you have, look for that indirect path before switching modules or reaching for Extend; record why no native path exists if you conclude there is none.
 
 Per-engine code idioms (delegate vs. callback vs. coroutine vs. Promise) trace to the matching `references/sdks/game-engine/<engine>.md` or `references/sdks/web/typescript.md`.
 

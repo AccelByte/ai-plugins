@@ -12,6 +12,7 @@ see-also:
 - '[leaderboards.md](../modules/leaderboards.md)'
 - '[achievements.md](../modules/achievements.md)'
 - '[store-entitlements.md](../modules/store-entitlements.md)'
+- '[rewards.md](../modules/rewards.md)'
 - '[analytics.md](../modules/analytics.md)'
 - '[social.md](../modules/social.md)'
 - '[marketing-to-service.md](marketing-to-service.md)'
@@ -34,6 +35,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | **Leaderboards** | Global / seasonal leaderboards, score ingestion | `references/modules/leaderboards.md` |
 | **Achievements** | Configurable achievements & progression systems | `references/modules/achievements.md` |
 | **Store / Entitlements** | Catalog, purchase flows, wallet, DLC reconciliation | `references/modules/store-entitlements.md` |
+| **Rewards** | Event-driven grants; measured `rewardCode` naming constraints | `references/modules/rewards.md` |
 | **Analytics** | Event ingestion, telemetry pipeline | `references/modules/analytics.md` |
 | **Social** | Friends, blocking, notifications (internal grouping; public docs surfaces 'Friends' under Online, 'Multiplayer Notifications' separately) | `references/modules/social.md` |
 

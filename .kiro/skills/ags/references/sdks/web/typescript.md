@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-09
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/knowledge-base/developer-faq/#handling-cors-cross-origin-resource-sharing-in-web-development
 see-also:
 - '[unreal.md](../game-engine/unreal.md)'
 - '[unity.md](../game-engine/unity.md)'
@@ -41,7 +42,13 @@ The AGS **TypeScript SDK** for web apps that talk to AGS — admin / live-ops da
 
 ## Common gotchas
 
-- **CORS** — AGS endpoints are CORS-aware, but custom domains or admin endpoints may need explicit allow-listing. Check Admin Portal config or AccelByte support if a fetch fails CORS.
+- **CORS** — the public AGS guidance does not establish an Admin Portal field or
+  public API for changing browser origins. Private Cloud customers can request
+  that AccelByte add their web domains to the server allow list; this is not
+  available for Public Cloud. Before changing configuration, verify the active
+  deployment and current setting with AccelByte support. For local development,
+  use a local proxy such as Vite or `http-proxy-middleware`; do not disable
+  browser security or repurpose an OAuth redirect URI as a CORS setting.
 - **Token storage** — browser-side OAuth tokens need careful handling. The SDK uses `withCredentials` to send cookies automatically; avoid storing tokens in `localStorage`.
 - **Bundle size** — the SDK is modular. Install only the `@accelbyte/sdk-*` packages you actually use. If you install multiple modules, tree-shake aggressively.
 

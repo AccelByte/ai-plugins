@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-08
+last-verified: 2026-09-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/steam-identity/
@@ -13,6 +13,7 @@ sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/twitch-identity/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/oidc-identity/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/google-identity/
+- https://developers.google.com/identity/oauth2/web/guides/use-code-model
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/discord-identity/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/awscognito-identity/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/identity-access/authentication/device-id-identity/
@@ -171,7 +172,21 @@ configuration.
 - Google-side prerequisite: Google Cloud project, OAuth consent screen with
   `openid`, OAuth credentials, and authorized redirect URIs including the AGS
   Google authenticate/link URLs.
-- Runtime token: Google auth token from the platform/engine flow.
+- Runtime credential: an authorization code, not an access token and not an ID
+  token. Google's three credentials are not interchangeable, and passing an
+  access token where the code is expected fails at the AGS token exchange with
+  `invalid_grant` / `Malformed auth code`, not at the browser.
+- In Google Identity Services, `initTokenClient()` returns an access token and
+  is the wrong client for this flow; the authorization-code flow uses
+  `initCodeClient()` with `requestCode()`. Keep the Google OAuth client and its
+  authorized redirect URI aligned with the client and redirect URI configured
+  for the AGS flow, or the code is issued to an audience AGS will not accept.
+- The public AGS Unreal Android flow explicitly requests a Google server
+  authorization code and supplies it alongside the ID token. The public guide
+  does not establish a direct browser-token login contract: for browser login,
+  use the documented AGS-hosted web flow where available, or verify the exact
+  credential handoff against the confidential guide or with the AccelByte
+  Technical Producer before implementing it.
 - Stop if missing: OAuth client ID or client secret.
 
 ### Google Play Games
