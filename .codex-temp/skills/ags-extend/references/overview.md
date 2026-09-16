@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 source: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
@@ -9,6 +9,8 @@ sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-cpu-memory-replicas/
 - https://docs.accelbyte.io/gaming-services/services/utilities/grafana-cloud-observability/access-grafana-cloud/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-in-depth-topics/extend-app-dev-containers/
+- https://github.com/AccelByte/accelbyte-go-sdk
+- https://github.com/AccelByte/accelbyte-python-sdk
 see-also:
 - '[glossary.md](glossary.md)'
 - '[faq.md](faq.md)'
@@ -169,6 +171,10 @@ Extend apps run inside AccelByte's cloud, same network as AGS.
 ## Supported Languages
 
 Go, C#, Java, Python. AccelByte publishes open-source starter templates on GitHub per pattern × language; see `references/init/templates.md` for repo URLs.
+
+**Calling AGS from inside an app — check the operation before you call it.** A large share of AGS operations are deprecated, and the Extend SDKs carry that flag through from the AGS API specs. In the Go SDK it appears as a `// Deprecated: <date> - Use <Name>Short instead` comment on the wrapper function, which names its substitute but is only a vet or editor hint, never a build error. In the Python SDK the operation wrappers are largely unmarked, so an absent marker there establishes nothing. The C# and Java marking convention is not established here — treat those two as unmarked as well, and confirm against the source below rather than assuming they carry the Go SDK's marker.
+
+So do not select an SDK call by name from the package surface alone. Read the declaration's own comment, and take the answer from the AccelByte Extend SDK MCP server, which searches and describes symbols across all four Extend SDK languages offline: a deprecated symbol states that the endpoint is being deprecated, names the substitute endpoint, and returns a source link to cite. Note that the AGS API MCP server is not a substitute for this — its generator strips deprecated operations, so they never appear in its results and their absence there is not evidence they are current.
 
 Sample apps (full reference implementations beyond starter templates): https://accelbyte.github.io/extend-apps-directory/
 

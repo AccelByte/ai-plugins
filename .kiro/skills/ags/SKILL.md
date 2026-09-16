@@ -58,6 +58,30 @@ Use the maps when a request needs product, dependency, service-name, or migratio
 - `maps/service-map.md`
 - `maps/migration-map.md`
 
+## Selecting an SDK method
+
+Before naming or writing any AGS SDK call, in any language, read
+`references/sdks/deprecation-check.md`. A method found by searching a type
+surface — a `.d.ts` file, a C++ header, a package's class list — is a name and a
+signature, not a decision.
+
+Deprecation in the AGS SDKs is carried in documentation on the declaration, and
+in most families the compiler does not enforce it: the call builds clean, the
+editor shows no warning, and the failure appears against a live namespace or
+when the operation is removed in a later release. So a clean build establishes
+nothing, and on SDKs whose convention is weak an absent marker establishes
+nothing either. Read the whole declaration block, not the line the search
+matched.
+
+When a deprecation names a replacement, that replacement is a candidate, not an
+answer: some are admin or server operations a player token cannot call, so
+adopting one unchecked moves the failure rather than fixing it. Check it against
+the caller and token type before adopting it. Take the deprecation answer from
+the source that owns it — the AGS release notes, the SDK source at the version
+the project uses, or the AccelByte Extend SDK MCP server — never from memory.
+
+To sweep code that already exists for deprecated calls, run `/teammate`.
+
 ## Cross-Service Workflows
 
 Use exactly one workflow when the request describes a cross-service player-facing outcome:

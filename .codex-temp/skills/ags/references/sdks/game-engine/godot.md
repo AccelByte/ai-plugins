@@ -1,8 +1,9 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 see-also:
+- '[deprecation-check.md](../deprecation-check.md)'
 - '[unreal.md](unreal.md)'
 - '[unity.md](unity.md)'
 - '[roblox.md](roblox.md)'
@@ -31,6 +32,10 @@ The AGS **Godot SDK** for game clients and dedicated game servers built on Godot
 
 - Godot 4.x and Godot 3.x have meaningful differences in scripting and signal APIs; the SDK release notes specify which Godot major version is supported.
 - The Godot SDK is the newest Game Engine SDK in the AGS family — feature parity with Unreal / Unity may lag for new AGS capabilities; check release notes for any module-specific gaps.
+
+## Checking a method is current
+
+The deprecation marking convention for the Godot SDK is not established here. Treat a method as unmarked, which means the absence of a marker establishes nothing, and confirm against the sources in `../deprecation-check.md` before selecting one to call.
 
 ## Where this SDK ends
 

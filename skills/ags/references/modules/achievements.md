@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -21,7 +21,7 @@ Configurable achievement and progression systems. Defines achievements in the Ad
 - **Progress tracking** — per-player progress across multiple achievements simultaneously.
 - **Statistic-backed progression** — achievements can use a Statistics stat code as the progression source. For counter-style achievements, configure the stat as an incrementing counter, then update that statistic from gameplay; achievement progress advances from the stat value instead of requiring a separate custom achievement counter.
 - **Unlock events** — when criteria are met, AGS emits an achievement unlock event (verify the exact topic name in the AGS event catalog). Clients can listen; Extend Event Handlers can react (e.g. post to Discord).
-- **Reward grant** — entitlement grants on unlock require configuring the Rewards module to listen to achievement events. The Rewards module manages the reward conditions and grant logic.
+- **Reward grant** — entitlement grants on unlock require configuring the Rewards module to listen to achievement events: `userAchievementUnlocked` when a player unlocks an achievement, and `achievementRewardClaimed` when a global achievement reward is claimed. The Rewards module manages the reward conditions and grant logic; see [rewards.md](rewards.md) for the condition syntax.
 
 ## Statistic-backed achievement setup
 

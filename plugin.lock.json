@@ -1,16 +1,16 @@
 {
   "lockfileVersion": 1,
-  "version": "0.7.21",
+  "version": "0.7.22",
   "agents": {},
   "skills": {
     "accelbyte": {
       "computedHash": "baa011a35444cc1cc01b04c53312137e77e0673113cc9ecd4e14c477e90fa388"
     },
     "ags": {
-      "computedHash": "2b8e61729358618685f3e3880c0c9384ba3954e6db10f428801f2c494f2ca92b"
+      "computedHash": "a311efbea3952e428dd42eddf61ad815d7d530baf278600d9829d76d609b1cc6"
     },
     "ags-extend": {
-      "computedHash": "a762e0ca60a6820a658cc4d4e1c9b92558816180c62f5eeb57aae3976307be8e"
+      "computedHash": "c5484e6e4f33bf78f4126cca955d9a4cf5ef627243347276a52125278ea8b551"
     },
     "teammate": {
       "computedHash": "d39d3d8d5c42314576e24a527c80670bf68158b2fa73abbab8f692baccb25a26"
@@ -21,6 +21,6 @@
   "generated": {
     ".gitignore": "139364e09a0807fb41d15b8eecbd7b898ec5ac31ed1b520845a2eb4a35ecd321",
     "INSTALL.md": "f4e3ad330acd4ef4d1b0407253a5779e9d5b4fa0cca0e39df89c7944e4f6d775",
-    "README.md": "0885535333558b8af233903e3a0c781486546efc23ac2a89a3a2b8435c3af3dc"
+    "README.md": "880e58b652495c59395d95a16510e000818d863eddf9ea03ebbce66ef0b185bd"
   }
 }

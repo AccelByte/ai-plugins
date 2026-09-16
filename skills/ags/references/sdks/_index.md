@@ -1,8 +1,9 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 see-also:
+- '[deprecation-check.md](deprecation-check.md)'
 - '[unreal.md](game-engine/unreal.md)'
 - '[unity.md](game-engine/unity.md)'
 - '[godot.md](game-engine/godot.md)'
@@ -45,10 +46,12 @@ All three families wrap the same underlying **AGS REST + OpenAPI surface**. Cust
 
 - **"Should I use the Go SDK?"** — In the AGS context, the Go SDK is an **Extend SDK**, not a Game Engine SDK. Game servers in Go would integrate via REST directly (or use the Go Extend SDK if the game server is itself an Extend app, which is unusual). For most studios the question is "use the Unreal / Unity / Godot / Roblox SDK in the game, and use an Extend SDK in any custom backend service that lives in AGS infra."
 - **"Can I use the TypeScript SDK in my game?"** — Only if the game runs in a browser context. For native games on Unreal / Unity / Godot / Roblox, use the engine SDK. For browser P2P, the TypeScript SDK can help with AGS APIs, but WebRTC owns the peer transport.
+- **"Is this method still the one to use?"** — a question for every family, and it is not answered by the signature. Each SDK marks deprecation differently and in most of them the compiler does not enforce it, so a deprecated call builds clean. Read `references/sdks/deprecation-check.md` before selecting a method to call.
 - **"What about Native C++ / non-engine projects?"** — REST + OpenAPI. There isn't a separate "Native C++ Game SDK" — the four supported game engines are the only Game Engine SDKs.
 
 ## See also
 
+- `references/sdks/deprecation-check.md` — checking a method is current before you call it, in any family
 - `references/sdks/game-engine/unreal.md`, `unity.md`, `godot.md`, `roblox.md`
 - `references/sdks/web/typescript.md`
 - `references/sdks/web/webrtc-p2p.md`

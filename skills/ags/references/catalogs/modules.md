@@ -35,7 +35,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | **Leaderboards** | Global / seasonal leaderboards, score ingestion | `references/modules/leaderboards.md` |
 | **Achievements** | Configurable achievements & progression systems | `references/modules/achievements.md` |
 | **Store / Entitlements** | Catalog, purchase flows, wallet, DLC reconciliation | `references/modules/store-entitlements.md` |
-| **Rewards** | Event-driven grants; measured `rewardCode` naming constraints | `references/modules/rewards.md` |
+| **Rewards** | Event-driven grants from Statistic, Achievement, and User Account events; JSON path condition syntax; measured `rewardCode` naming constraints | `references/modules/rewards.md` |
 | **Analytics** | Event ingestion, telemetry pipeline | `references/modules/analytics.md` |
 | **Social** | Friends, blocking, notifications (internal grouping; public docs surfaces 'Friends' under Online, 'Multiplayer Notifications' separately) | `references/modules/social.md` |
 

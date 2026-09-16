@@ -1,8 +1,9 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 see-also:
+- '[deprecation-check.md](../deprecation-check.md)'
 - '[unreal.md](unreal.md)'
 - '[unity.md](unity.md)'
 - '[godot.md](godot.md)'
@@ -32,6 +33,10 @@ The AGS **Roblox SDK** for experiences built on Roblox. Note: the Roblox SDK is 
 - Roblox runs servers itself; the AMS / dedicated-server pattern doesn't apply the same way — server-side AGS calls happen from Roblox-managed server scripts using a Roblox-style server identity. (Verify this IAM integration pattern against the SDK GitHub README.)
 - Outbound HTTP from a Roblox experience uses Roblox's HttpService with allow-listing constraints. The AGS SDK abstracts this but the experience must be configured to allow outbound calls to AGS endpoints. (Specific AGS domains to allow-list are not documented in public sources — verify against the SDK README or AccelByte support.)
 - DataStore interplay: Roblox experiences typically use Roblox DataStores for persistent state. AGS may overlap with specific DataStore use cases (Store, leaderboards, achievements) — verify coexistence pattern against the SDK integration guide. Both can coexist; the choice is usually about cross-platform identity and crossplay needs.
+
+## Checking a method is current
+
+The deprecation marking convention for the Roblox SDK is not established here. Treat a method as unmarked, which means the absence of a marker establishes nothing, and confirm against the sources in `../deprecation-check.md` before selecting one to call.
 
 ## Where this SDK ends
 

@@ -1,10 +1,11 @@
 ---
-last-verified: 2026-07-14
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 - https://github.com/AccelByte/accelbyte-unity-sdk
 - https://github.com/AccelByte/accelbyte-unity-networking
 see-also:
+- '[deprecation-check.md](../deprecation-check.md)'
 - '[unreal.md](unreal.md)'
 - '[godot.md](godot.md)'
 - '[roblox.md](roblox.md)'
@@ -49,6 +50,8 @@ Default to pinned UPM Git URLs in `Packages/manifest.json`:
 Only add `com.accelbyte.networking` when the project needs it or the user requests the full Unity networking setup. Pin tags, branches, or commits compatible with the project's Unity version. Do not copy package directories from arbitrary local checkouts. If UPM cannot resolve a Git URL because the repo is private or invite-only, authenticate rather than substituting a local copy — UPM uses the system `git`, so `gh` or an SSH key unblocks the same URL (see the AccelByte preflight's git-acquisition guidance).
 
 ## Common gotchas
+
+- **Deprecated methods carry `[Obsolete]`, and often nothing else.** The attribute produces a compiler warning (`CS0612` / `CS0618`) rather than an error, so the build still succeeds and the warning is easy to lose in Unity's output. Many occurrences are the bare `[Obsolete]` with no message, which names no replacement at all — in that case the substitute has to come from the AGS release notes or the pinned SDK source, not from a similarly named method. Whichever way you find it, see `../deprecation-check.md` § Checking the substitute before adopting it.
 
 - **iOS / Android build settings** — iOS and Android AGS SDK support lives in separate repositories (see AccelByte GitHub for iOS and Android Google packages); platform-specific OAuth flows also require their respective platform SDKs.
 - **AOT-only platforms** (iOS, consoles) — Reflection-heavy patterns can hit IL2CPP edge cases; favor the SDK's typed call paths.

@@ -1,9 +1,10 @@
 ---
-last-verified: 2026-09-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/knowledge-base/developer-faq/#handling-cors-cross-origin-resource-sharing-in-web-development
 see-also:
+- '[deprecation-check.md](../deprecation-check.md)'
 - '[unreal.md](../game-engine/unreal.md)'
 - '[unity.md](../game-engine/unity.md)'
 - '[godot.md](../game-engine/godot.md)'
@@ -50,6 +51,7 @@ The AGS **TypeScript SDK** for web apps that talk to AGS — admin / live-ops da
   use a local proxy such as Vite or `http-proxy-middleware`; do not disable
   browser security or repurpose an OAuth redirect URI as a CORS setting.
 - **Token storage** — browser-side OAuth tokens need careful handling. The SDK uses `withCredentials` to send cookies automatically; avoid storing tokens in `localStorage`.
+- **Deprecated methods** — a deprecated operation is marked with a `@deprecated` tag in its JSDoc block and nothing else. It is not a TypeScript diagnostic, so the call typechecks, builds, and passes CI unchanged; a method picked out of the type surface by name can already be deprecated. Read the whole JSDoc block on the declaration before calling it. When the tag names a substitute, see `../deprecation-check.md` § Checking the substitute before adopting it — on this SDK several substitutes are admin-only operations a player token cannot call.
 - **Bundle size** — the SDK is modular. Install only the `@accelbyte/sdk-*` packages you actually use. If you install multiple modules, tree-shake aggressively.
 
 ## Where this SDK ends

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/
@@ -9,6 +9,7 @@ sources:
 - https://github.com/AccelByte/accelbyte-unreal-sdk-plugin
 - https://github.com/AccelByte/accelbyte-unreal-network-utilities
 see-also:
+- '[deprecation-check.md](../deprecation-check.md)'
 - '[unity.md](unity.md)'
 - '[godot.md](godot.md)'
 - '[roblox.md](roblox.md)'
@@ -79,6 +80,8 @@ only when matching installed or version-pinned source established those
 details.
 
 ## Common gotchas
+
+- **Deprecated methods are a comment, not a compiler error.** In this SDK a deprecated call is usually marked only in the doc comment above the declaration — `@brief [DEPRECATED]`, `[DEPRECATED - Will be removed in <version>]`, or `@deprecated`. A `[[deprecated]]` attribute is used only occasionally, so in most cases the build says nothing and the editor shows no warning. Grepping a header for a matching function name will happily land on one. Read the full comment block above any method before calling it; this is the weakest deprecation signal of any AGS SDK. When the comment names a replacement, that replacement is a candidate and not yet the fix — see `../deprecation-check.md` § Checking the substitute.
 
 - **Public vs. confidential client mixup** — using the dedicated-server SDK with a public client (or vice versa) silently fails at token-exchange time. The error usually shows up in a Lobby or Session call later.
 - **UE 5 module renames** — engine version transitions occasionally rename modules; pin SDK version against the engine version when supporting multiple branches.

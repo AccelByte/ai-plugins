@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/implementing-server-authoritative-player-statistics/
@@ -38,7 +38,7 @@ Persistent user-stat tracking for gameplay values such as wins, MMR, XP, item us
 | **Leaderboards** | Leaderboards commonly rank players from a stat code, optionally within a statistic cycle |
 | **Achievements** | Achievement criteria can evaluate statistic updates such as item use, wins, XP, or milestones |
 | **Matchmaking** | Rulesets can use stats such as MMR or skill bands |
-| **Rewards** | The Rewards module listens to stat update events and grants rewards when configured conditions are met |
+| **Rewards** | The Rewards module listens to the `statItemCreated`, `statItemUpdated`, and `statItemCycleUpdated` events this module publishes, and grants rewards when a configured condition matches. The condition is a JSON path filter over the event payload, usually on `statCode` and `latestValue` — see [rewards.md](rewards.md) |
 | **Cloud Save** | Use Cloud Save instead when the value is only player attribute storage and does not need stat-driven integrations |
 | **Extend** | Use Extend for custom validation, scoring formulas, post-processing, or APIs that native Statistics cannot express |
 

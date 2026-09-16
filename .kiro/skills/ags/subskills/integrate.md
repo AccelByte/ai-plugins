@@ -6,7 +6,7 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
 model: sonnet
-last-verified: 2026-09-10
+last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -28,6 +28,7 @@ see-also:
 - '[lobby-session.md](../references/integrate/lobby-session.md)'
 - '[crossplay-identity.md](../references/integrate/crossplay-identity.md)'
 - '[live-ops-rollout.md](../references/cookbook/live-ops-rollout.md)'
+- '[deprecation-check.md](../references/sdks/deprecation-check.md)'
 - '[unreal-verification.md](../references/sdks/game-engine/unreal-verification.md)'
 - '[install-sdk.md](install-sdk.md)'
 - '[unreal-install.md](../references/sdks/game-engine/unreal/install.md)'
@@ -59,7 +60,7 @@ Read `../workflows/online-game-flow.md` for player-facing login, matchmaking, se
 
 Before implementing storage for player/game data, choose the most purpose-built AGS service first. Read `../references/catalogs/marketing-to-service.md` when the right service is not obvious, then prefer native modules such as Statistics, Leaderboards, Achievements, Store/Entitlements, Inventory, Rewards, Challenges, Legal, GDPR, Lobby/Friends/Presence, Session, Matchmaking, Analytics, UGC, or Chat when the requested behavior matches them. Treat Cloud Save as a generic key-value fallback for save blobs, player preferences, drafts, snapshots, or custom data that does not need native AGS behavior. Do not create Cloud Save records to emulate stats, rankings, achievements, legal agreements, inventory/economy state, rewards, matchmaking inputs, analytics events, social state, or session/lobby state unless you have first recorded why the native service cannot satisfy the requirement.
 
-Choosing the module is not the end of the service check. Once a module is selected, read its own reference for the trigger paths it exposes — event topics, conditions, and which other module raises the event — before deciding how the flow is driven. A module with no public client call may still be reachable through another module's public call: Rewards has no public claim endpoint, but a client-writable statistic update triggers it. When the selected module turns out to be unreachable from the caller you have, look for that indirect path before switching modules or reaching for Extend; record why no native path exists if you conclude there is none.
+Choosing the module is not the end of the service check. Once a module is selected, read its own reference for the trigger paths it exposes — event topics, conditions, and which other module raises the event — before deciding how the flow is driven. A module with no public client call may still be reachable through another module's public call: Rewards has no public claim endpoint, but a client-writable statistic update triggers it. When the flow turns out to be an event and a configured condition rather than a call, the supported events, the condition syntax and the event payload fields are in that module's reference — for Rewards they are in `references/modules/rewards.md` — so take them from there rather than fetching them during the session or writing a condition from the desired outcome. When the selected module turns out to be unreachable from the caller you have, look for that indirect path before switching modules or reaching for Extend; record why no native path exists if you conclude there is none.
 
 Per-engine code idioms (delegate vs. callback vs. coroutine vs. Promise) trace to the matching `references/sdks/game-engine/<engine>.md` or `references/sdks/web/typescript.md`.
 
@@ -70,6 +71,8 @@ Auth integration is a specialization inside this subskill. For IAM work, always 
 For every AGS API integration, read `references/security/iam-authorization-preflight.md` and complete the authorization preflight before code edits. Caller type decides the token/client strategy. Select live permission discovery with the shared `accelbyte` policy: prefer AGS API MCP for overlapping remote discovery, and use AGS CLI when MCP is unavailable or lacks the required capability.
 
 Don't fabricate SDK method signatures. When the user needs a specific signature, point at the SDK's docs / GitHub.
+
+A method found by searching an SDK's type surface — a `.d.ts` file, a C++ header, a package's class list — is a name and a signature, not a decision. Read `references/sdks/deprecation-check.md` before writing a call. Each SDK family marks deprecation differently and most of them do not enforce it at compile time, so a deprecated call builds clean and fails only against a live namespace or when the operation is removed in a later release: a clean build establishes nothing, and neither does an absent marker on an SDK whose convention is weak. When a deprecation names a substitute, `references/sdks/deprecation-check.md` § Checking the substitute governs what happens next. Take the deprecation answer from the source that owns it, never from memory.
 
 Do not treat backend/API/log success alone as player-flow completion. For game-facing integration requests, completion requires both service evidence and game-flow evidence from the player-facing trigger named in `../workflows/online-game-flow.md`.
 
@@ -100,7 +103,8 @@ Before wiring a module:
    - IAM client kind matches the caller (`Public client` only for game-client login/bootstrap or browser-safe user flows; `Confidential` for game server / backend / trusted tooling);
    - planned SDK methods or REST endpoints are listed, including secondary calls such as profile/display-name lookups;
    - required permissions were discovered through the selected live tool, or the capability gap and allowed fallback are recorded;
-   - configured client/token access is verified or the missing permission is named.
+   - configured client/token access is verified or the missing permission is named;
+   - each planned SDK method has been checked for a deprecation marker on its own declaration per `references/sdks/deprecation-check.md`, and any substitute adopted in place of a deprecated method has been run through this same caller/token check.
 3. The Service Selection check is recorded:
    - desired player/game state or behavior is named;
    - the purpose-built AGS service is selected when one exists;
