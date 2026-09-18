@@ -105,7 +105,7 @@ Matchmaking, Session, AMS, Statistics, and engine-specific references are suppor
 | 4  | `subskills/connect-portal.md` | scaffold | Bootstrap a namespace + IAM client + `.env` for a new project | wizard (typically) |
 | 5  | `subskills/install-sdk.md` | scaffold | Detect the target SDK and install/scaffold Unreal, Unity, Godot, Roblox, Web SDK, or custom-engine REST fallback | wizard (typically) |
 | 6  | `subskills/install-cli.md` | scaffold | Install the AGS CLI for namespace + IAM management | — |
-| 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed (Public Cloud default / per-studio / Private Cloud). The MCP itself ships with the plugin. | — |
+| 7  | `subskills/install-mcp.md` | scaffold | Customize the AGS API MCP server URL after the plugin is installed. The MCP itself ships with the plugin. | — |
 | 8  | `subskills/generate-ui.md` | build | Detect the game engine and route AGS UI generation to the engine-specific UI workflow; Unreal and Unity are supported | install-sdk |
 | 9  | `subskills/init.md` | scaffold | Orchestrates wizard + connect-portal + install-sdk + install-cli + optional install-mcp | — |
 | 10 | `subskills/integrate.md` | build | Module-by-module SDK integration guide (auth, lobby, matchmaking, store, etc.) | install-sdk |
