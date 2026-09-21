@@ -19,7 +19,7 @@ NEVER modify, patch, or edit any of the following during a UI generation session
 
 - `Packages/com.accelbyte.ui-tools/` â€” the Unity UI Tools package (C# Editor and Runtime source)
 - Any Python file in the accelbyte-unity-mcp server (e.g. `unity_ui_tools.py`, `server.py`)
-- Any skill or reference markdown in `ab-external-marketplace/content/`
+- Any skill or reference markdown shipped with this plugin
 
 These are stable infrastructure files owned by the AccelByte SDK team. They are not edited during user sessions. Allowed write targets are:
 

@@ -163,10 +163,10 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **MCP server.** Model Context Protocol server. AccelByte ships **two** MCP servers that connect AI IDEs to AGS context:
 
-- **`AGS API MCP`** (`ags-api-mcp-server`) — exposes AccelByte API operations as MCP tools so AI assistants can search and call AGS endpoints from inside the editor. There is no shared default endpoint: Public Cloud uses `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}` (the `{studio}-{game}` namespace appears in both the host and the path); Private Cloud uses `https://{environment_name}.accelbyte.io/mcp`. Owned by `/ags install-mcp`. Source: `content/mcps/ags-api.yaml`.
-- **`AGS Extend SDK MCP`** (`ags-extend-sdk-mcp-server`) — exposes Extend SDK symbols and code-gen tooling to AI assistants for Extend app development. Owned by `/ags-extend install-mcp`. Source: `content/mcps/ags-extend-sdk.yaml`.
+- **`AGS API MCP`** (`ags-api-mcp-server`) — exposes AccelByte API operations as MCP tools so AI assistants can search and call AGS endpoints from inside the editor. There is no shared default endpoint: Public Cloud uses `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}` (the `{studio}-{game}` namespace appears in both the host and the path); Private Cloud uses `https://{environment_name}.accelbyte.io/mcp`. Owned by `/ags install-mcp`.
+- **`AGS Extend SDK MCP`** (`ags-extend-sdk-mcp-server`) — exposes Extend SDK symbols and code-gen tooling to AI assistants for Extend app development. Owned by `/ags-extend install-mcp`.
 
-Both ship as part of the plugin via the MCP configuration the compiler emits to `plugins/<target>/.mcp.json` (or the platform-equivalent file). Optional but high-leverage for AI-assisted workflows.
+Both ship with this plugin's MCP configuration, in whichever file your IDE reads (`.mcp.json` or the platform equivalent). Optional but high-leverage for AI-assisted workflows.
 
 **SDK (Game Engine).** The AGS client library for a specific game engine. Currently: **Unreal, Unity, Godot, Roblox**. Used by game clients and dedicated game servers. Each Game Engine SDK wraps the same underlying REST + OpenAPI surface.
 

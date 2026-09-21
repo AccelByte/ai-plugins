@@ -45,4 +45,4 @@ Ambiguous. Disambiguate by context:
 
 ## Cross-reference
 
-- For Extend SDK details (Go / Python / C# / Java install, idioms, versions), invoke `/ags-extend ask` or read `content/skills/ags-extend/`.
+- For Extend SDK details (Go / Python / C# / Java install, idioms, versions), invoke `/ags-extend ask` or read the `ags-extend` skill.

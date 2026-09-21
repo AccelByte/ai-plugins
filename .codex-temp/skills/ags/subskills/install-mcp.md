@@ -28,13 +28,13 @@ It has four paths:
 3. **Grafana MCP** - read-only querying of the tenant's Grafana (AGS service metrics and logs). **Private Cloud only.** Owned here, and used by `/ags-extend` too.
 4. **AGS Extend SDK MCP** - owned by `/ags-extend install-mcp`; redirect there.
 
-The AGS API MCP server source of truth is `content/mcps/ags-api.yaml`. Engine SDK MCP behavior lives in `references/sdks/game-engine/<engine>/mcp.md`. Grafana MCP behavior lives in `references/observe/grafana-mcp.md`.
+The AGS API MCP server ships with this plugin as the `AGS API MCP Server` entry. Engine SDK MCP behavior lives in `references/sdks/game-engine/<engine>/mcp.md`. Grafana MCP behavior lives in `references/observe/grafana-mcp.md`.
 
 ## Behavior Constraints
 
 <grounding_rules>
 
-For the AGS API MCP Server, the URL patterns are exactly what `content/mcps/ags-api.yaml` declares. There is no shared default endpoint — every deployment has its own host:
+For the AGS API MCP Server, the URL patterns are exactly what the `AGS API MCP Server` entry declares. There is no shared default endpoint — every deployment has its own host:
 
 - **Public Cloud:** `https://{studio}-{game}.prod.gamingservices.accelbyte.io/mcp/{studio}-{game}` — the `{studio}-{game}` namespace appears in both the host and the path.
 - **Private Cloud / BYOC:** `https://{environment_name}.accelbyte.io/mcp`

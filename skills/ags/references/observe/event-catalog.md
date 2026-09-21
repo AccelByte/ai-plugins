@@ -37,7 +37,7 @@ Specific event names, payload shapes, and required scopes change over time. **Al
 
 ## Cross-references
 
-- For Extend's perspective on events (which ones are subscribable as Event Handler triggers, which ones aren't), see `content/skills/ags-extend/references/catalogs/events.md`. That file is also pointer-shaped.
+- For Extend's perspective on events (which ones are subscribable as Event Handler triggers, which ones aren't), see the `ags-extend` skill's `references/catalogs/events.md`. That file is also pointer-shaped.
 
 ## Where to look
 

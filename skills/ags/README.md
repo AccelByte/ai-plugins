@@ -88,7 +88,7 @@ For new Matchmaking and AMS work, use `/ags matchmaking ...` and `/ags ams ...`.
 | `install-sdk` | Detects the target SDK and installs/scaffolds Unreal, Unity, Godot, Roblox, the standalone **TypeScript Web SDK**, or custom-engine REST fallback. Unreal and Unity specifics live in engine references under `references/sdks/game-engine/`. **Extend SDKs (Go, Python, C#, Java) are owned by `/ags-extend`** — they're for Extend apps, not game clients. |
 | `generate-ui` | Detects the game engine and routes AGS UI generation to the engine-specific workflow. Unreal is supported through `AccelByteUITools`; Unity is supported through the AccelByte Unity MCP server; Godot is explicitly unsupported for now. |
 | `install-cli` | Installs the AGS CLI for namespace + IAM management |
-| `install-mcp` | Picks and applies the right AGS API MCP URL for the user's deployment. The MCP entry itself ships with the plugin via `content/mcps/ags-api.yaml`; this subskill is the URL-customization conversation. |
+| `install-mcp` | Picks and applies the right AGS API MCP URL for the user's deployment. The `AGS API MCP Server` entry itself ships with this plugin; this subskill is the URL-customization conversation. |
 | `init` | End-to-end setup: runs wizard → connect-portal → install-sdk → install-cli → optional install-mcp |
 | `integrate` | Module-by-module SDK wiring guide — auth, lobby, matchmaking, sessions, store, statistics, leaderboards, achievements, social, analytics |
 | `debug` | Runs a game locally against AGS and traces integration failures (auth errors, lobby disconnects, matchmaking timeouts) |

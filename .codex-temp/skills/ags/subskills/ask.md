@@ -62,7 +62,7 @@ If the user pastes an actual `5xx` response they hit (not a hypothetical), do no
 - For permission-shaped questions, read `references/security/iam-authorization-preflight.md` before any module or synthetic permission reference. Use `Bash` only for read-only evidence gathering: locating project runtime config, reading AGS base URLs, checking `ags config`, `ags profile`, `ags auth status`, `ags describe`, generated command help only as fallback, and `ags iam client-config list-permissions --exclude-permissions false --output -`. Do not run `ags auth login`, create, update, delete, grant, revoke, or any other mutation from `ask`.
 - If the user actually wants to **apply** a permission change (add / update / delete a permission on an existing IAM or OAuth client) rather than understand one, scope it with the preflight as usual, then hand off: tell them to run `/ags manage-permissions` to apply it. `ask` explains and scopes; it never mutates.
 - Never read subskill files. Those are for other subskills.
-- Never read peer skill files directly, including `content/skills/ags-extend/`. For deep Matchmaking or AMS questions, route to `capabilities/matchmaking/router.md` or `capabilities/ams/router.md` rather than answering from memory. For ADT operations, hand off to `/adt`.
+- Never read peer skill files directly, including the `ags-extend` skill's files. For deep Matchmaking or AMS questions, route to `capabilities/matchmaking/router.md` or `capabilities/ams/router.md` rather than answering from memory. For ADT operations, hand off to `/adt`.
 
 </tool_usage_rules>
 

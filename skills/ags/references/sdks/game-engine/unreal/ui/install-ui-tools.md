@@ -25,7 +25,7 @@ The plugin folder is the complete reusable package: `AccelByteUITools.uplugin`, 
 
 <grounding_rules>
 
-- The AccelByte UI Tools package comes from the AccelByte Unreal SDK MCP server declared in `content/mcps/unreal-sdk.yaml`.
+- The AccelByte UI Tools package comes from the AccelByte Unreal SDK MCP server declared by this plugin's `AccelByte Unreal SDK MCP Server` entry.
 - Do not assume a user-specific MCP install path. Discover the MCP server checkout/cache location, then use its `data/AccelByteUITools` directory.
 - For Codex, first check the preferred local clone path from `/ags init`: `.codex/mcp/unreal-sdk-mcp-server/data/AccelByteUITools`.
 - For non-Codex IDEs where the server is managed by the published MCP declaration, discover the checkout/cache location through the IDE's MCP status, the configured command, or a targeted cache search. The published declaration may run `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main accelbyte-unreal-sdk-mcp-server`, but Codex should prefer the local clone path unless the user explicitly chose the `uvx` fallback.
@@ -57,7 +57,7 @@ The plugin folder is the complete reusable package: `AccelByteUITools.uplugin`, 
 Before installing:
 
 1. Confirm exactly one Unreal project root, or ask which `.uproject` to target.
-2. Confirm the Unreal SDK MCP server is installed or available through the user's AI IDE MCP configuration. For Codex, check `.codex/mcp/unreal-sdk-mcp-server` first. For non-Codex IDEs, the published MCP declaration is `content/mcps/unreal-sdk.yaml` and may run `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main accelbyte-unreal-sdk-mcp-server`.
+2. Confirm the Unreal SDK MCP server is installed or available through the user's AI IDE MCP configuration. For Codex, check `.codex/mcp/unreal-sdk-mcp-server` first. For non-Codex IDEs, the published MCP declaration is this plugin's `AccelByte Unreal SDK MCP Server` entry and may run `uvx --from git+https://github.com/AccelByte/unreal-sdk-mcp-server@main accelbyte-unreal-sdk-mcp-server`.
 3. Discover the MCP server package directory and confirm `data/AccelByteUITools` exists and contains:
    - `AccelByteUITools.uplugin`
    - `Source/`

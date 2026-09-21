@@ -15,7 +15,7 @@ The AccelByte Unreal SDK MCP Server provides Unreal SDK lookup, SDK symbols, sni
 ## Behavior Constraints
 
 - Use the user's active IDE MCP mechanism and native IDE MCP config or cache location.
-- The published MCP declaration is `content/mcps/unreal-sdk.yaml`.
+- The published MCP declaration is this plugin's `AccelByte Unreal SDK MCP Server` entry.
 - For Codex, prefer a project-local `.codex/mcp/unreal-sdk-mcp-server` clone when present.
 - For other IDEs, discover the Unreal SDK MCP checkout/cache from the IDE's MCP status, configured command, or targeted cache search.
 - If the MCP server `git clone` fails, authenticate (via `gh` or SSH) and retry before giving up — see the AccelByte preflight's git-acquisition guidance for the full ladder.
@@ -24,7 +24,7 @@ The AccelByte Unreal SDK MCP Server provides Unreal SDK lookup, SDK symbols, sni
 ## Workflow
 
 1. Confirm the active IDE and use its native MCP setup surface.
-2. Confirm the `AccelByte Unreal SDK MCP Server` entry is configured from `content/mcps/unreal-sdk.yaml`, or route the user to the plugin `INSTALL.md` for their IDE's MCP setup.
+2. Confirm the `AccelByte Unreal SDK MCP Server` entry is configured from this plugin's MCP configuration, or route the user to the plugin `INSTALL.md` for their IDE's MCP setup.
 3. Discover the server checkout/cache location. For Codex, prefer `.codex/mcp/unreal-sdk-mcp-server`; for other IDEs, do not assume that path.
 4. For Codex, use the local-clone setup below unless the user explicitly asks for the `uvx` fallback.
 5. For non-Codex IDEs, use the IDE's native MCP config and cache location.
@@ -35,7 +35,7 @@ Codex needs a project-scoped `.codex/config.toml` entry because it does not cons
 
 - Check whether the project-scoped Codex config exists at `<project>/.codex/config.toml`.
 - Codex plugin install intentionally leaves `plugins/accelbyte-ai-plugins/.codex/config.toml` empty. Do not merge that file as a ready-made MCP config.
-- The MCP declaration source is `content/mcps/unreal-sdk.yaml`, but for Codex prefer a project-scoped local clone over `uvx --from git`.
+- The `AccelByte Unreal SDK MCP Server` entry ships with this plugin, but for Codex prefer a project-scoped local clone over `uvx --from git`.
 - Clone the MCP server into `.codex/mcp/unreal-sdk-mcp-server` if it is not already present.
 - Install its Python requirements.
 - Generate the symbol/snippet cache.

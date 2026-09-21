@@ -18,7 +18,7 @@ alongside it for live namespace and service context.
 
 ## Behavior Constraints
 
-- The published MCP declaration is `content/mcps/unity-mcp.yaml`.
+- The published MCP declaration is this plugin's `AccelByte Unity MCP` entry.
 - For Codex, prefer a project-local `.codex/mcp/accelbyte-unity-mcp` clone.
 - If the MCP server `git clone` or a UPM Git-URL resolve fails, authenticate (via `gh` or SSH) and retry before giving up — see the AccelByte preflight's git-acquisition guidance for the full ladder.
 - Install `com.accelbyte.ui-tools` via Unity Package Manager by adding it to `Packages/manifest.json` before generating UI (see workflow below).
