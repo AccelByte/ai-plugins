@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -42,7 +42,7 @@ In Step 1, run all environment-detection commands in parallel (single message wi
 Step 1 is the dependency check for the entire flow. Before handing off to `wizard`, report findings but do not block on:
 
 - Missing language runtime (user may not have picked a language yet; re-check inside `install-dep`)
-- Missing `extend-helper-cli` (not needed until `deploy`; `install-cli` runs later in this flow)
+- Missing the AGS CLI (`ags`; not needed until `deploy`; `install-cli` runs later in this flow)
 
 Do block on:
 
@@ -83,7 +83,7 @@ The active stage runs its own subskill output normally. After each stage complet
 1. Step 1 (environment check) has surfaced all missing/present tools.
 2. `wizard` has produced an app directory with `IMPLEMENTATION_PLAN.md` (and any patches applied passed Verify).
 3. `install-dep` has run for the scaffolded app (or every app dir, if multiple) — either success, or an explicit skip with the reason (runtime missing) reported.
-4. `install-cli` has installed `extend-helper-cli` or reported it was already installed.
+4. `install-cli` has installed the AGS CLI (via `/ags install-cli`) or reported it was already installed.
 5. `install-mcp` has run if the user said yes, or been explicitly skipped if they said no.
 6. Final summary printed with next steps.
 
@@ -102,7 +102,7 @@ Done initializing {app-name}.
   Scaffold:         ./{app-name}/ (pattern={pattern}, language={language})
   Integrations:     {list or "none"}
   Dependencies:     installed / skipped ({reason})
-  extend-helper-cli: installed / already present / skipped
+  AGS CLI:          installed / already present / skipped
   MCP integration:  installed / declined / skipped
 
 Next:
@@ -130,7 +130,7 @@ go version 2>&1
 python3 --version 2>&1
 dotnet --version 2>&1
 java --version 2>&1
-command -v extend-helper-cli || echo "not installed"
+command -v ags || echo "not installed"
 ```
 
 Report as:
@@ -144,7 +144,7 @@ Environment:
   ✗ python3     not found
   ✗ dotnet      not found
   ✗ java        not found
-  ✗ extend-helper-cli  not found — will install in Stage 3
+  ✗ ags         not found — will install in Stage 3
 ```
 
 Interpret:
@@ -152,7 +152,7 @@ Interpret:
 - `git` missing → stop. Say: "Install git from git-scm.com and re-run `/ags-extend init`."
 - `docker` missing or daemon not running → stop. Say: "Install Docker from docs.docker.com (or start Docker Desktop) and re-run."
 - All four language runtimes missing → warn but don't stop; the user may install whichever matches their chosen language during the wizard interview.
-- `extend-helper-cli` missing → note "will install in Stage 3" and continue.
+- `ags` missing → note "will install in Stage 3" and continue.
 
 ### Step 2 — Stage 1: Wizard
 
@@ -187,7 +187,7 @@ Print:
 ━━━ Stage 3/4: Install CLI ━━━
 ```
 
-Read `subskills/install-cli.md` and follow its freshness check even when `extend-helper-cli` is already on `PATH`. Skip the download only when that flow reports `Status: current`. If the user declines an install or upgrade, record the reported status plus `declined` and continue — deploy will surface the same prerequisite later.
+Read `subskills/install-cli.md` and follow its freshness check even when `ags` is already on `PATH`. Skip the install step only when that flow reports `Status: current`. If the user declines an install or upgrade, record the reported status plus `declined` and continue — deploy will surface the same prerequisite later.
 
 ### Step 5 — Stage 4: Install MCP (optional)
 
@@ -213,7 +213,7 @@ Print the summary from `output_contract`. Then stop.
 If the user comes back and says "I already ran wizard, now run the rest" (or something like it):
 
 1. Check whether the current directory (or one level up) holds an Extend app: `Makefile` + `Dockerfile` together. If found, treat Stage 1 as already done. If `go.sum` / `.venv` / `target/` / `bin/` is present alongside, treat Stage 2 as already done too.
-2. Check `command -v extend-helper-cli`, then read and run `subskills/install-cli.md` to classify freshness. Skip the Stage 3 download only when it reports `Status: current`; do not infer freshness from presence alone.
+2. Check `command -v ags`, then read and run `subskills/install-cli.md` to classify freshness. Skip the Stage 3 install step only when it reports `Status: current`; do not infer freshness from presence alone.
 3. Ask about MCP (Stage 4).
 
 Do not re-run earlier stages once their artifact (cloned app dir, installed deps, installed binary, merged MCP config) is in place. Users invoke `init` to get to a ready state, not to redo work.
@@ -246,7 +246,7 @@ Skill: Environment:
          ✗ python3     not found
          ✗ dotnet      not found
          ✗ java        not found
-         ✗ extend-helper-cli  not found — will install in Stage 3
+         ✗ ags         not found — will install in Stage 3
 
        ━━━ Stage 1/4: Scaffold ━━━
 
@@ -266,7 +266,7 @@ Skill: [runs wizard]
        ━━━ Stage 3/4: Install CLI ━━━
 
        [runs install-cli]
-       ✓ extend-helper-cli 0.4.1 installed to /usr/local/bin/
+       ✓ ags 0.5.1 installed to /usr/local/bin/
 
        ━━━ Stage 4/4: Install MCP (optional) ━━━
 
@@ -282,7 +282,7 @@ Skill: Skipping MCP setup. Run /ags-extend install-mcp anytime.
          Scaffold:          ./matchmaking-override/ (override, go)
          Integrations:      none
          Dependencies:      installed
-         extend-helper-cli: installed (0.4.1)
+         AGS CLI:           installed (0.5.1)
          MCP integration:   declined
 
        Next:
@@ -334,8 +334,8 @@ Skill: Detected ./guild-service/Makefile + Dockerfile and go.sum — treating
 
        ━━━ Stage 3/4: Install CLI ━━━
 
-       ✓ extend-helper-cli <version> at /usr/local/bin/extend-helper-cli
-         Latest version: <version> — status current, download skipped.
+       ✓ ags <version> at /usr/local/bin/ags
+         Latest version: <version> — status current, install skipped.
 
        ━━━ Stage 4/4: Install MCP (optional) ━━━
        ...

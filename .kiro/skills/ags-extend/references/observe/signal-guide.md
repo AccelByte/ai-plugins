@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -49,10 +49,10 @@ There is **no** `gRPC server listening on :8080` line. The gRPC server binds `:6
 |---|---|---|
 | `panic:` / `runtime error` | Unhandled nil pointer or out-of-bounds in the app code | Check the stack trace in the log; fix the nil check in the handler |
 | `SIGSEGV` | Segfault — usually a language runtime issue | Redeploy; if recurring, check for memory issues in the code |
-| `OOMKilled` | App exceeded its memory limit | Raise the memory limit in the AGS Admin Portal (app detail → resource configuration), then redeploy with `extend-helper-cli deploy-app` (see `references/deploy/cli-commands.md`) |
+| `OOMKilled` | App exceeded its memory limit | Raise the memory limit in the AGS Admin Portal (app detail → resource configuration), then redeploy with `ags extend deploy-app` (see `references/deploy/cli-commands.md`) |
 | `permission denied` (calling AGS API) | OAuth client lacks a required AGS permission | Add the missing permission to the OAuth client in the Admin Portal (IAM → Clients → {client} → Permissions), then redeploy |
 | `invalid argument` / `unknown field` | Payload schema mismatch — app received unexpected input | Check if AGS updated the proto contract; regen protos if needed |
-| `failed to connect to AGS` | `AB_BASE_URL` is wrong or unreachable, or the CLI didn't see it | Verify `AB_BASE_URL` is set for the deployed app in the AGS Admin Portal (app detail → environment variables). For the CLI itself, ask the user for `AB_BASE_URL` if it's not already in their env or the `.env` in the CLI's working directory — note that the CLI reads `.env` from its OWN cwd, not the Extend app's local `.env`. |
+| `failed to connect to AGS` | `AB_BASE_URL` is wrong or unreachable, or the CLI didn't see its own base URL | Verify `AB_BASE_URL` is set for the deployed app in the AGS Admin Portal (app detail → environment variables). For the CLI itself, ask the user for `AGS_BASE_URL` if it's not already resolvable — the CLI has no `.env` file support; it resolves via `--base-url` → the `AGS_BASE_URL` environment variable → its own config → an interactive prompt. |
 
 ## Reading a Panic Stack Trace
 
@@ -74,5 +74,5 @@ If the app shows `error` (Portal: "Degraded") but logs look clean:
 1. **Rule out "the logs just aren't there yet."** Logs are ingested into Grafana asynchronously — they lag the app by seconds to a couple of minutes, longer right after a deploy. Widen the Explore time range and refresh before trusting an empty or clean view. See `grafana-guide.md`.
 2. Open Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud) and expand the time range or increase the line limit in Explore to see more log output
 3. Check if the health check endpoint is failing — the app may be alive but not responding on the expected port
-4. Check the app's status and recent state with `extend-helper-cli get-app-info --namespace {ns} --app {app}` — `OOMKilled` may not always appear in app logs (see `references/observe/cli-commands.md`)
+4. Check the app's status and recent state with `ags extend get-app-info --namespace {ns} --app {app}` — `OOMKilled` may not always appear in app logs (see `references/observe/cli-commands.md`)
 5. If still unclear, redeploy with `/ags-extend deploy` and monitor the fresh startup

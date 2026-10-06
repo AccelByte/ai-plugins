@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -20,7 +20,7 @@ One skill, one entry point. `/ags-extend <subskill>` covers everything from unde
  1. design       — shape a multi-app project before scaffolding (optional; read-only)
  2. wizard       — interview → clone templates → apply patches
  3. install-dep  — install project dependencies (go mod tidy, pip install, etc.)
- 4. install-cli  — install extend-helper-cli (required to deploy)
+ 4. install-cli  — install the AGS CLI (`ags`, required to deploy)
  5. install-mcp  — install Extend MCP servers for AI IDE integration (optional)
  6. proto        — regenerate proto-derived code after contract or SDK changes
  7. debug        — run and test locally before shipping
@@ -56,14 +56,14 @@ One skill, one entry point. `/ags-extend <subskill>` covers everything from unde
 | `design` | Read-only multi-app design session: shapes pattern combinations and data/contract boundaries before scaffolding |
 | `wizard` | Guides you through what you want to build, clones the right templates, applies patches |
 | `install-dep` | Checks language runtimes and installs project-level dependencies |
-| `install-cli` | Installs `extend-helper-cli` |
+| `install-cli` | Points to `/ags install-cli` to install the AGS CLI (`ags`), required before deploy |
 | `install-mcp` | Installs the two Extend MCP servers (ags-api and ags-extend-sdk) for AI IDE integration |
 | `init` | End-to-end setup: runs wizard → install-dep → install-cli → install-mcp |
 | `proto` | Regenerates proto-derived code (Go/Python/Java/C#) after contract or SDK bumps |
 | `debug` | Runs an Extend app locally and guides you through testing it |
 | `test` | Writes and runs unit, integration, or contract tests |
 | `deploy` | Builds, pushes, and deploys one or more apps to AGS |
-| `ci` | Wires `extend-helper-cli image-upload` + `deploy` into GitHub Actions or GitLab CI |
+| `ci` | Wires `ags extend image-upload` + `deploy` into GitHub Actions or GitLab CI |
 | `observe` | Fetches logs, health status, and runtime signals for deployed apps |
 | `doctor` | Read-only symptom → cause diagnosis; hands off to the subskill that owns the fix |
 | `upgrade` | Guided SDK or proto contract version bump with breakage surfacing |
@@ -104,7 +104,7 @@ ags-extend/
       overridables.md            — known override surfaces (pointer + starter table)
       events.md                  — known event types (pointer + starter table)
     deploy/
-      cli-commands.md            — extend-helper-cli deploy commands
+      cli-commands.md            — ags extend deploy commands
       common-errors.md           — known deploy errors and fixes
     debug/
       local-run.md               — startup commands per app type + language
@@ -117,7 +117,7 @@ ags-extend/
       github-actions.md          — canonical workflow template
       gitlab.md                  — canonical pipeline template
     observe/
-      cli-commands.md            — extend-helper-cli observability commands
+      cli-commands.md            — ags extend observability commands
       signal-guide.md            — how to interpret log output and app statuses
     proto/
       workflow.md                — per-language regen commands + toolchain
@@ -150,4 +150,4 @@ ags-extend/
 - `references/patches/` — structured prompts used by `wizard` to modify templates (e.g. NoSQL setup). Not diff files — written as prompts so they survive template churn.
 - `install-dep` detects runtimes but does not install them. If a runtime is missing it gives you the download link and skips that app.
 - `install-mcp` configures two MCP servers: `ags-api` (AGS API via Docker) and `ags-extend-sdk` (Extend SDK context via Docker). Supports Claude Code, Cursor, Windsurf, Kiro, and Codex.
-- `install-cli` downloads `extend-helper-cli` as a direct binary from GitHub releases. Supports macOS (amd64/arm64), Linux (amd64/arm64), and Windows (amd64, requires manual PATH setup).
+- `install-cli` does not install its own binary — it points to `/ags install-cli`, which installs the unified AGS CLI (`ags`) used for both `ags extend` commands and general AGS admin/observability.

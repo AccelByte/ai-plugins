@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 see-also:
 - '[github-actions.md](../references/ci/github-actions.md)'
 - '[gitlab.md](../references/ci/gitlab.md)'
@@ -11,7 +11,7 @@ see-also:
 
 # AGS Extend CI Wirer
 
-Wire `extend-helper-cli image-upload` and `deploy-app` into the developer's CI system. Generates or updates a workflow file for GitHub Actions or GitLab CI, sets up the secrets the pipeline needs, and produces a runnable template the developer commits and iterates on.
+Wire `ags extend image-upload` and `deploy-app` into the developer's CI system. Generates or updates a workflow file for GitHub Actions or GitLab CI, sets up the secrets the pipeline needs, and produces a runnable template the developer commits and iterates on.
 
 ## Behavior Constraints
 
@@ -19,7 +19,7 @@ Wire `extend-helper-cli image-upload` and `deploy-app` into the developer's CI s
 
 - Read `references/ci/github-actions.md` or `references/ci/gitlab.md` depending on the host.
 - Read `references/deploy/cli-commands.md` before quoting any CLI command, flag, or env var. Do not restate flags from memory — link instead.
-- CI auth is via env-var-as-secret only. Set `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET` (and `AB_NAMESPACE`) as CI secrets exported into the runner's env; the CLI reads them automatically. There is no `--base-url`, `--client-id`, or `--client-secret` flag — those are not part of the CLI surface. The interactive `extend-helper-cli login` is browser-based and is not appropriate for CI.
+- CI auth is via env-var-as-secret plus an explicit non-interactive login call. Set `AGS_BASE_URL`, `AGS_CLIENT_ID`, `AGS_CLIENT_SECRET` (and `AGS_NAMESPACE`) as CI secrets exported into the runner's env, then run `ags auth login --grant client-credentials` before any `ags extend` command — the CLI does not authenticate implicitly from the env vars alone (and it has no `.env` file support; there is no `.env` to author in the CI runner). `--base-url`, `--client-id`, and `--client-secret` **are** real flags, but only on `ags auth login` itself — prefer the environment variables above in CI so the values stay in the CI host's secret store rather than in a logged command line. The interactive `ags auth login` (no `--grant`) is browser-based and is not appropriate for CI.
 - Do not invent CI features. If a CI host isn't GitHub Actions or GitLab, stop and point at the generic shape (bash in a container with the CLI on PATH + secrets set).
 
 </grounding_rules>
@@ -40,7 +40,7 @@ CI workflow files can trigger deploys on push. Be cautious:
 
 - Default the workflow to a manual trigger (`workflow_dispatch` on GitHub; `when: manual` on GitLab) unless the developer explicitly asks for push-to-branch auto-deploy.
 - Make the deploy step depend on test success, not parallel to it.
-- Never put `AB_CLIENT_SECRET` in the workflow file as plaintext. Always reference secrets by name (`${{ secrets.AB_CLIENT_SECRET }}` on GitHub; `$AB_CLIENT_SECRET` on GitLab with protected variable).
+- Never put `AGS_CLIENT_SECRET` in the workflow file as plaintext. Always reference secrets by name (`${{ secrets.AGS_CLIENT_SECRET }}` on GitHub; `$AGS_CLIENT_SECRET` on GitLab with protected variable).
 
 </action_safety>
 
@@ -96,12 +96,12 @@ Plan — matchmaking-override CI pipeline (GitHub Actions)
   File:       .github/workflows/extend-deploy.yml
   Triggers:   push to `main` (test + build only) / manual dispatch (full deploy)
   Stages:     test → image-upload → deploy (deploy depends on previous)
-  Namespace:  vip-experience-dev (sourced from CI secret AB_NAMESPACE; editable in the UI per run)
+  Namespace:  vip-experience-dev (sourced from CI secret AGS_NAMESPACE; editable in the UI per run)
   Secrets needed:
-    - AB_CLIENT_ID
-    - AB_CLIENT_SECRET
-    - AB_BASE_URL
-    - AB_NAMESPACE
+    - AGS_CLIENT_ID
+    - AGS_CLIENT_SECRET
+    - AGS_BASE_URL
+    - AGS_NAMESPACE
 
 Write the workflow now? (yes/no)
 ```
@@ -119,10 +119,10 @@ Add these secrets in your CI host UI:
 
 GitHub Actions:
   Settings → Secrets and variables → Actions → New repository secret
-    AB_CLIENT_ID       ← from Admin Portal (IAM client)
-    AB_CLIENT_SECRET   ← from Admin Portal (IAM client)
-    AB_BASE_URL        ← e.g. https://your-env.accelbyte.io
-    AB_NAMESPACE       ← e.g. vip-experience-dev
+    AGS_CLIENT_ID       ← from Admin Portal (IAM client)
+    AGS_CLIENT_SECRET   ← from Admin Portal (IAM client)
+    AGS_BASE_URL        ← e.g. https://your-env.accelbyte.io
+    AGS_NAMESPACE       ← e.g. vip-experience-dev
 
 GitLab:
   Settings → CI/CD → Variables → Add variable (mark "Masked" and "Protected")
@@ -144,12 +144,12 @@ To verify the pipeline:
 
 | Situation | Response |
 |---|---|
-| Host is Azure Pipelines / CircleCI / Bitbucket Pipelines | The references don't cover these. Describe the generic shape (container with extend-helper-cli installed + secrets) and direct the developer to translate from the GitHub Actions reference. |
+| Host is Azure Pipelines / CircleCI / Bitbucket Pipelines | The references don't cover these. Describe the generic shape (container with `ags` installed + secrets) and direct the developer to translate from the GitHub Actions reference. |
 | Workflow file exists already and has deploy steps for other apps | Extend the file — add a new job or step scoped to the Extend app. Don't touch existing jobs. Show the diff before applying. |
 | Developer wants "push to main → deploy to prod" | Push to `main` auto-deploying to prod is risky — always. Offer the middle-ground: push to `main` deploys to *dev* namespace, tag-based releases deploy to prod with manual approval. If they insist on auto-prod-deploy, warn about the blast radius and let them decide. |
 | Developer doesn't have a dev namespace | Stop and direct to `/ags-extend ask` — namespace setup is an AGS admin task, not an Extend task. |
 | Multi-app project — which app's CI? | Ask. Often each app has its own workflow file so deploys are independent; one combined file is an option if the developer wants all-or-nothing releases. |
-| Developer asks about CLI auth flags | There are none for OAuth client mode. The CLI reads `AB_BASE_URL`/`AB_CLIENT_ID`/`AB_CLIENT_SECRET` from env or `.env`. Direct them to `references/deploy/cli-commands.md#authentication`. |
+| Developer asks about CLI auth flags | `ags auth login --grant client-credentials` accepts `--base-url`/`--client-id`/`--client-secret` directly, but CI should prefer the `AGS_BASE_URL`/`AGS_CLIENT_ID`/`AGS_CLIENT_SECRET` environment variables instead (the CLI has no `.env` file support). CI must call `ags auth login --grant client-credentials` explicitly before any `ags extend` command. Direct them to `references/deploy/cli-commands.md#authentication`. |
 
 ## Examples
 
@@ -167,7 +167,7 @@ Skill: Host detected: GitHub Actions (.github/workflows/ present).
          File:      .github/workflows/extend-matchmaking-deploy.yml
          Triggers:  workflow_dispatch (manual), push to main (test + image-upload only)
          Stages:    setup-go → test → install-cli → image-upload → deploy (manual gate)
-         Secrets:   AB_CLIENT_ID, AB_CLIENT_SECRET, AB_BASE_URL, AB_NAMESPACE
+         Secrets:   AGS_CLIENT_ID, AGS_CLIENT_SECRET, AGS_BASE_URL, AGS_NAMESPACE
        Write? (yes/no)
 
 User: yes
@@ -212,10 +212,10 @@ Skill: The reference files don't cover Jenkins. The shape is the same as any oth
   1. Checkout the repo.
   2. Set up the language runtime (go 1.21+, python 3.10+, etc.).
   3. Run tests.
-  4. Install extend-helper-cli (from GitHub releases — curl + chmod + move to PATH).
-  5. Export AB_CLIENT_ID / AB_CLIENT_SECRET / AB_BASE_URL / AB_NAMESPACE from Jenkins credentials. The CLI picks them up automatically — no flags needed.
-  6. Run `extend-helper-cli image-upload` (see references/deploy/cli-commands.md for the exact invocation: --namespace, --app, --image-tag, --work-dir, optional --login).
-  7. Run `extend-helper-cli deploy-app` (see references/deploy/cli-commands.md: --namespace, --app, --image-tag). Note: the command is `deploy-app`, not `deploy`.
+  4. Install `ags` (from GitHub releases — curl + tar + chmod + move to PATH).
+  5. Export AGS_CLIENT_ID / AGS_CLIENT_SECRET / AGS_BASE_URL / AGS_NAMESPACE from Jenkins credentials, then run `ags auth login --grant client-credentials` — the CLI needs this explicit non-interactive login call before any `ags extend` command; it does not pick the credentials up implicitly.
+  6. Run `ags extend image-upload` (see references/deploy/cli-commands.md for the exact invocation: --namespace, --app, --image-tag, --work-dir, optional --login).
+  7. Run `ags extend deploy-app` (see references/deploy/cli-commands.md: --namespace, --app, and the image tag carried in a `--json` payload). Note: the command is `deploy-app`, not `deploy`.
 
   Translate this into a Jenkinsfile. The references/ci/github-actions.md template is the closest starting point to crib from.
 ```

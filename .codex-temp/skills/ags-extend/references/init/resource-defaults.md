@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-cpu-memory-replicas/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
@@ -10,7 +10,7 @@ see-also:
 
 # Resource Defaults
 
-CPU, memory, and replica starting points for AGS Extend apps. `extend-helper-cli create-app` accepts `--cpu` (60–1415m) and `--memory` (100–2382 MB) to set initial values at creation time — see `references/deploy/cli-commands.md`. Once the app exists, resource changes are made in the AGS Admin Portal (app detail → resource configuration) or via the CSM API. `deploy-app`, `start-app`, and `stop-app` do NOT accept resource flags. There is no project-level manifest — these values configure the app directly.
+CPU, memory, and replica starting points for AGS Extend apps. `ags extend create-app`'s `--json` payload accepts `cpu.requestCPU` (60–1415m) and `memory.requestMemory` (100–2382 MB) to set initial values at creation time — see `references/deploy/cli-commands.md`. There are no `--cpu`/`--memory` flags on this or any other command. Once the app exists, resource changes are made in the AGS Admin Portal (app detail → resource configuration) or via the CSM API. `deploy-app`, `start-app`, and `stop-app` do NOT accept resource flags at all. There is no project-level manifest — these values configure the app directly.
 
 ## Starting Recommendations
 

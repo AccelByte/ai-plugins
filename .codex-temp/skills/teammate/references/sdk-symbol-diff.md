@@ -267,6 +267,26 @@ the same string in every project, and matching on it silently finds nothing. A
 version: there is no fixed current surface to compare against, so there is no
 diff to take. Say that, and stop; do not substitute the newest tag for it.
 
+**Current, when the SDK is embedded.** Some projects never name the SDK repo in
+their manifest at all: they depend on a wrapper package — a partner or studio
+distribution — referenced by a local `file:` path, and the wrapper carries the
+SDK inside it, usually as a git submodule. No manifest entry has the SDK's git
+URL, and that is not "no SDK". Find the SDK by what it is, not where it is: the
+nested `package.json` whose `name` is `com.accelbyte.unitysdk` (on Unreal, the
+nested `AccelByteUe4Sdk.uplugin`), at any depth under the wrapper. Then:
+
+- If that folder is a git submodule, its checked-out commit **is** a pin. Read it
+  with `git -C <sdk-folder> describe --tags --exact-match HEAD`. A tag there is
+  the current version; cite at that tag. No exact tag means the wrapper pinned a
+  commit between releases — cite at the commit sha, which is as stable as a tag,
+  and say it is not a release.
+- If it is a plain copy, the version is self-reported, exactly as on Unreal: read
+  `version` from the nested `package.json` (on Unreal, the `VersionName`), and say
+  it came from the copy.
+
+Name the wrapper in the output — which package embeds the SDK and where — so a
+reader can see why the manifest held no SDK entry.
+
 **Current, on Unreal, is not a ref at all.** AccelByte's
 [install instructions](https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/)
 have you download a release, extract it, and copy the folder into
@@ -289,7 +309,11 @@ What neither is, is *evidence*: a vendored copy is writable, and a project that
 patched one file still reads `28.9.0`. Say the current version is self-reported;
 where the three disagree, report the disagreement instead of picking one. A
 plugin folder that is a git checkout or a submodule is the one Unreal case with a
-real pin — use it, and say that is what you used.
+real pin — use it, and say that is what you used. The folder may also sit a
+level down, inside a wrapper plugin that embeds it as a submodule
+(`Plugins/<wrapper>/AccelByteUe4Sdk/`); locate it by its `.uplugin`, not by a
+fixed path, and read the submodule commit the same way (see *Current, when the
+SDK is embedded* above).
 
 Do not read `EngineVersion` out of the `.uplugin` as the supported engine range.
 The key is **absent** at every tag sampled before 28.6.0 — 24.0.0, 26.0.0, 27.0.0,

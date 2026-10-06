@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 see-also:
 - '[cli-commands.md](../references/deploy/cli-commands.md)'
 - '[common-errors.md](../references/deploy/common-errors.md)'
@@ -20,13 +20,13 @@ Build and deploy one or more Extend apps from a local project to AGS. Walks four
 - Read `references/deploy/cli-commands.md` before quoting any CLI command, flag, or env var. Do not restate flags from memory — link instead.
 - Read `references/deploy/common-errors.md` when a command fails. Look up the error signature and follow the documented fix. Do not improvise.
 - App identity comes from per-app discovery on disk: an Extend app is a directory containing both `Makefile` and `Dockerfile`. The app's name is the directory's basename. Multi-app projects are simply multiple such directories side by side.
-- `AB_NAMESPACE`, `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET` come from the user's environment or a `.env` file in the CLI's cwd, OR from `extend-helper-cli login` (browser flow). The CLI does NOT accept `--base-url` as a flag. Do not invent a project-wide manifest — there is none.
+- Two distinct sets of credentials are in play. The app's own identity (`AB_NAMESPACE`, `AB_BASE_URL`, `AB_CLIENT_ID`, `AB_CLIENT_SECRET`) lives in each app's own `.env` file — read here for display and placeholder checks only, never used to authenticate the CLI. The CLI's own session is separate: `ags auth login` (browser flow) or `ags auth login --grant client-credentials`, which resolves `--base-url`/`--client-id`/`--client-secret` flags, then the `AGS_BASE_URL`/`AGS_CLIENT_ID`/`AGS_CLIENT_SECRET` environment variables, then its own config, then an interactive prompt — the CLI has no `.env` file support. `image-upload` and `deploy-app` themselves do NOT accept `--base-url`/`--client-id`/`--client-secret` flags; auth is resolved once via `ags auth login` before running them. Do not invent a project-wide manifest — there is none.
 
 </grounding_rules>
 
 <tool_usage_rules>
 
-- Use `Bash` only for `extend-helper-cli` commands, app discovery (`test -f`, `ls */Makefile`), tool version checks, and `docker` checks.
+- Use `Bash` only for `ags` / `ags extend` commands, app discovery (`test -f`, `ls */Makefile`), tool version checks, and `docker` checks.
 - Use `Read` for `.env` files and reference files.
 - Use `Glob` to enumerate Extend app dirs (`*/Makefile` siblings) when invoked from a parent directory.
 - **Never** modify source files, `.env`, or any file in the repo. Deploy is a read-and-run subskill.
@@ -40,7 +40,7 @@ Build and deploy one or more Extend apps from a local project to AGS. Walks four
 Before running any deploy commands:
 
 1. The current directory has `Makefile` + `Dockerfile` (single-app run), or `*/Makefile` + `*/Dockerfile` siblings exist one level down (multi-app project).
-2. `command -v extend-helper-cli` returns a path. Run the `/ags-extend install-cli` freshness check and report the installed path/version, latest version, and status. Missing or broken/unparseable -> stop. Outdated or legacy/pre-version -> offer an upgrade to the latest official release. If the user declines, continue only when the documented deploy commands are present in `--help`. See `references/deploy/cli-commands.md#presence-and-freshness-check`.
+2. `command -v ags` returns a path. Run the `/ags-extend install-cli` freshness check and report the installed path/version, latest version, and status. Missing or broken/unparseable -> stop. Outdated or legacy/pre-version -> offer an upgrade to the latest official release. If the user declines, continue only when the documented deploy commands are present in `--help`. See `references/deploy/cli-commands.md#presence-and-freshness-check`.
 3. `docker --version` succeeds and `docker info` shows a running daemon. Missing → stop with install link.
 4. For each app being deployed: `Dockerfile` exists at `{app-path}/Dockerfile`.
 5. For each app being deployed: `.env` exists at `{app-path}/.env`, and `AB_CLIENT_ID` + `AB_CLIENT_SECRET` are not placeholder values.
@@ -57,7 +57,7 @@ Deploy is the most consequential Extend action. Safety rules:
 - **Credentials warnings.** If an app's `.env` has placeholder credentials, warn before deploy and require a second explicit yes to proceed with that app.
 - **Prod-looking targets.** If `AB_NAMESPACE` looks like prod (`prod`, `production`, `live`, `mainline`, or the `AB_BASE_URL` isn't a dev/demo subdomain), add an extra confirmation: "This looks like a production namespace. Proceed? (yes/no)"
 - **Failure isolation.** If an app fails image-upload or deploy, stop before moving to the next app. Ask: "Continue with remaining apps, or stop here?"
-- **No rollback.** `extend-helper-cli` doesn't ship an atomic rollback; a failed deploy may leave the app in a partial state. Surface that to the user rather than implying otherwise.
+- **No rollback.** `ags extend` doesn't ship an atomic rollback; a failed deploy may leave the app in a partial state. Surface that to the user rather than implying otherwise.
 
 </action_safety>
 
@@ -126,8 +126,8 @@ Warn on:
 Run in parallel:
 
 ```bash
-command -v extend-helper-cli || echo "extend-helper-cli not installed"
-extend-helper-cli --version
+command -v ags || echo "ags not installed"
+ags --version
 docker --version 2>&1
 docker info 2>/dev/null | grep "Server Version"
 ```
@@ -136,15 +136,15 @@ Report:
 
 ```
 Prerequisites:
-  ✓ extend-helper-cli 0.4.1
+  ✓ ags 0.5.1
   ✓ docker 25.0.3 (daemon running)
 ```
 
 If any is missing:
 
-- `extend-helper-cli` missing → "Run `/ags-extend install-cli`, then retry `/ags-extend deploy`." Stop.
-- `extend-helper-cli` outdated or legacy/pre-version → report the path, installed/latest versions, and status; offer `/ags-extend install-cli` to upgrade to the latest official release. If the user declines, check the documented deploy command in `--help` and continue when present.
-- `extend-helper-cli` broken/unparseable → stop and run `/ags-extend install-cli`; do not replace it without confirmation.
+- `ags` missing → "Run `/ags-extend install-cli`, then retry `/ags-extend deploy`." Stop.
+- `ags` outdated or legacy/pre-version → report the path, installed/latest versions, and status; offer `/ags-extend install-cli` to upgrade to the latest official release. If the user declines, check the documented deploy command in `--help` and continue when present.
+- `ags` broken/unparseable → stop and run `/ags-extend install-cli`; do not replace it without confirmation.
 - required deploy command absent → check freshness before declaring the capability unavailable. Offer an upgrade when outdated or legacy/pre-version. Retry discovery only after an approved, verified upgrade. Do not treat authentication or authorization failures as upgrade candidates.
 - `docker` missing → "Install Docker from https://docs.docker.com, then retry." Stop.
 - Docker daemon not running → "Start Docker Desktop (or `sudo systemctl start docker`), then retry." Stop.
@@ -190,7 +190,7 @@ For each selected app, in order:
 
 #### 4a. Buildpush
 
-Run from the app dir. See `references/deploy/cli-commands.md` for the exact `image-upload` invocation (namespace, app, image-tag, work-dir, optional `--login`). Do not pass `--base-url`; it isn't a flag. Auth is via env vars / `.env` in cwd, or `extend-helper-cli login` first.
+Run from the app dir. See `references/deploy/cli-commands.md` for the exact `image-upload` invocation (namespace, app, image-tag, work-dir, optional `--login`). Do not pass `--base-url`; it isn't a flag on `image-upload`. Auth is resolved via `ags auth login` first (its own `--base-url`/`--client-id`/`--client-secret` flags, or `AGS_BASE_URL`/`AGS_CLIENT_ID`/`AGS_CLIENT_SECRET` environment variables — the CLI has no `.env` file support).
 
 Stream output. On non-zero exit:
 
@@ -202,7 +202,7 @@ If image-upload succeeds, proceed to 4b.
 
 #### 4b. Deploy
 
-See `references/deploy/cli-commands.md` for the exact `deploy-app` invocation (namespace, app, image-tag). The command is `deploy-app`, not `deploy`. Do not pass `--base-url`.
+See `references/deploy/cli-commands.md` for the exact `deploy-app` invocation (namespace, app, image tag carried in the `--json` payload). The command is `deploy-app`, not `deploy`. Do not pass `--base-url`; it isn't a flag.
 
 Stream output. On non-zero exit, same handling as image-upload.
 
@@ -218,20 +218,20 @@ Print the final output block (see `output_contract`).
 |---|---|
 | No app dir found (no Makefile+Dockerfile here or as siblings) | Stop. Direct to `/ags-extend wizard` or `cd` into a project. |
 | `.env` has `TBD` / empty `AB_NAMESPACE` or `AB_BASE_URL` | Stop. Tell the user to fill those in — they're not values this subskill can guess. |
-| `extend-helper-cli` missing | Stop. Direct to `/ags-extend install-cli`. |
+| `ags` missing | Stop. Direct to `/ags-extend install-cli`. |
 | Docker missing or daemon down | Stop. Install/start then retry. |
 | Dockerfile missing for an app | Exclude from deploy. In Step 3 summary, mark it ✗ and exclude from default selection. |
 | `.env` missing for an app | Treat like missing credentials — ask whether to copy from `.env.template` first (offer the command). If user proceeds without filling it in, warn a second time. |
 | Placeholder credentials | Warn, require explicit yes. |
 | Prod-looking namespace | Extra confirmation prompt before proceeding. |
-| Image push fails with `unauthorized: authentication required` | Auth is missing or expired. Ask user for `AB_BASE_URL` if not already set, then have them run `extend-helper-cli login` (browser flow) OR re-export `AB_CLIENT_ID`/`AB_CLIENT_SECRET`. See `references/deploy/cli-commands.md#authentication`. Ask the user first before running anything. |
+| Image push fails with `unauthorized: authentication required` | The CLI's own session is missing or expired (this is the deployer's login, not the app's identity). Ask user for `AGS_BASE_URL` if not already set, then have them run `ags auth login` (browser flow) OR re-export `AGS_CLIENT_ID`/`AGS_CLIENT_SECRET`. See `references/deploy/cli-commands.md#authentication`. Ask the user first before running anything. |
 | Image push fails with `failed to solve: no such file or directory` | A referenced file is missing in the build context — usually a proto not regenerated. Suggest `make proto` in the app dir. |
 | Image push fails with `no space left on device` | Docker disk is full. Suggest `docker system prune` (show but don't auto-run). |
 | Image push fails with registry timeout | Network hiccup or AGS registry degraded. Suggest retrying the single app after a minute. |
 | Deploy fails with `app not found` | App isn't registered in the Admin Portal yet. Direct user to the Portal to register it, then retry deploy (not image-upload — the image is already pushed). |
 | Deploy fails with `namespace not found` / 403 | Wrong namespace or insufficient permissions. Double-check `.env`; verify the OAuth client's permissions. |
 | Deploy times out | AGS may still be starting the app. Run `/ags-extend observe` after 1–2 minutes to see if it reached Running. |
-| Deploy fails with `resource limit exceeded` | The app's resource configuration exceeds what the namespace allows. `extend-helper-cli create-app` accepts `--cpu`/`--memory` as initial values at creation time, but `deploy-app` does not — once the app exists, resource changes happen in the Admin Portal (app detail → resource configuration) or via the CSM API. See `references/deploy/cli-commands.md` for the per-subcommand flag breakdown and `references/init/resource-defaults.md` for hard limits. User must lower the per-app values in the Admin Portal, or raise the namespace allocation. |
+| Deploy fails with `resource limit exceeded` | The app's resource configuration exceeds what the namespace allows. `ags extend create-app`'s `--json` payload accepts `cpu`/`memory` fields as initial values at creation time, but `deploy-app` does not accept resource fields at all — once the app exists, resource changes happen in the Admin Portal (app detail → resource configuration) or via the CSM API. See `references/deploy/cli-commands.md` for the per-subcommand flag breakdown and `references/init/resource-defaults.md` for hard limits. User must lower the per-app values in the Admin Portal, or raise the namespace allocation. |
 | Mid-sequence failure (app 2 of 3 fails) | Ask: "Continue with app 3, or stop?" |
 | User Ctrl-C during image-upload | The in-flight image may still push — warn that a dangling image could exist at the registry. Offer `/ags-extend observe` to check. |
 
@@ -245,7 +245,7 @@ User: /ags-extend deploy
 Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod). Reading .env…
 
        Prerequisites:
-         ✓ extend-helper-cli 0.4.1
+         ✓ ags 0.5.1
          ✓ docker 25.0.3 (daemon running)
 
        Project: vip-matchmaking
@@ -340,16 +340,18 @@ Skill: Stopped. Fill in AB_CLIENT_ID and AB_CLIENT_SECRET in
 Skill: [image-upload output]
        ✗ unauthorized: authentication required
 
-       Known error: registry session expired. Fix (see references/deploy/cli-commands.md):
-         1. Confirm AB_BASE_URL is set (export it or put it in a .env in this dir).
+       Known error: registry session expired. This is the CLI's own login,
+       not the app's identity. Fix (see references/deploy/cli-commands.md):
+         1. Confirm AGS_BASE_URL is resolvable (--base-url flag, or the
+            AGS_BASE_URL environment variable — the CLI has no .env file support).
             Current value: https://my-studio.accelbyte.io
-         2. Run:  extend-helper-cli login   (no flags — opens the browser)
+         2. Run:  ags auth login   (no flags — opens the browser)
 
        Shall I run the login command now? (yes/no)
 
 User: yes
 
-Skill: [runs extend-helper-cli login; browser opens for user]
+Skill: [runs ags auth login; browser opens for user]
        [retries image-upload]
 ```
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-21
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte/ags-api-mcp-server
@@ -25,9 +25,9 @@ Read-only diagnosis for an Extend app that's misbehaving. Ingests the developer'
 - Read `references/debug/local-run.md` for local startup failure modes.
 - Read `references/overview.md` for architecture-level limits (replica ceiling, override latency, request size, retention).
 - Read `references/observe/grafana-guide.md` for any symptom about *log access itself* — "can't find the logs", "the logs link doesn't work", "Grafana is empty", "no logs showing", or "works locally but I can't see why it fails when deployed". Logs are ingested into Grafana **asynchronously**: an empty view is usually ingestion lag or a too-narrow time range, not broken logging. Surface that before sending the developer down a misconfiguration hunt.
-- Read `references/observe/cli-commands.md` and `references/deploy/cli-commands.md#stream-app-logs` when the developer wants live / recent app logs (or asks to "stream" / "tail" deployed logs). Point them to `/ags-extend observe` (`extend-helper-cli logs stream`) — Doctor does not run the CLI itself.
+- Read `references/observe/cli-commands.md` and `references/deploy/cli-commands.md#stream-app-logs` when the developer wants live / recent app logs (or asks to "stream" / "tail" deployed logs). `ags extend` has no log-streaming command — point them to `/ags-extend observe`, which pulls `get-app-info` and Grafana Cloud. Doctor does not run the CLI itself.
 - Read `../../accelbyte/references/mcp-auth-recovery.md` when MCP sign-in reports "invalid client ID", "client ID not found", or IAM's generic "Invalid Request" page. Treat the generic page as a clue that needs corroboration, not proof of a stale registration.
-- Do not invent log patterns, error codes, or causes not listed in those references. If the symptom doesn't map to anything documented, say so and point the developer at `/ags-extend observe` (`logs stream` and/or Grafana — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`) plus AccelByte support.
+- Do not invent log patterns, error codes, or causes not listed in those references. If the symptom doesn't map to anything documented, say so and point the developer at `/ags-extend observe` (`get-app-info` and/or Grafana — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`) plus AccelByte support.
 
 </grounding_rules>
 
@@ -74,7 +74,7 @@ If the symptoms don't map to any known reference entry:
 
 1. Say plainly: "I can't match this to a documented pattern."
 2. List the references consulted (so the developer knows what *was* checked).
-3. Suggest the raw-data next step: `/ags-extend observe` for app status and logs (`logs stream` and/or Grafana Cloud Explore — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`), `/ags-extend debug` for local repro, or AccelByte support if the symptoms suggest platform-side issues.
+3. Suggest the raw-data next step: `/ags-extend observe` for app status and logs (`get-app-info` and/or Grafana Cloud Explore — see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`), `/ags-extend debug` for local repro, or AccelByte support if the symptoms suggest platform-side issues.
 
 Do not fabricate a cause. An empty result is a valid diagnosis outcome.
 
@@ -92,7 +92,7 @@ Match the developer's description to a symptom category:
 | App status is `Failed` / `Stopped` | "won't start", "crashed", "keeps restarting" | `signal-guide.md#error-signals` + `common-errors.md` |
 | App is `Running` but wrong | "slow", "timeouts", "users complaining", "works intermittently" | `signal-guide.md#warning-signals` + `overview.md#infrastructure` (latency, replica ceiling) |
 | App fails to deploy | "deploy stuck", "deploy failed", "image push failed" | `common-errors.md` + `faq.md#deployment-and-updates` |
-| Can't see / access the logs | "can't find the logs", "logs link doesn't work", "Grafana is empty", "no logs showing", "how do I read / stream / tail the deployed logs" | `cli-commands.md` (`logs stream`) then `grafana-guide.md` (ingestion lag → time range → filter → no-traffic → misconfig) |
+| Can't see / access the logs | "can't find the logs", "logs link doesn't work", "Grafana is empty", "no logs showing", "how do I read / stream / tail the deployed logs" | `cli-commands.md` (no log-streaming command exists) then `grafana-guide.md` (ingestion lag → time range → filter → no-traffic → misconfig) |
 | Local works, prod doesn't | "works on my machine", "fine in dev, broken in prod" | `faq.md#local-vs-production-gotchas` + `grafana-guide.md` (to actually reach the deployed logs for comparison) |
 | Events not arriving | "event handler not triggering", "handler not called" | `faq.md#events-fire-locally-but-not-in-production` + `signal-guide.md` |
 | Override not called | "override registered but nothing happens" | `faq.md#override-works-in-dev-but-isnt-being-called-in-production` |
@@ -163,7 +163,7 @@ App in `Degraded` state for ~10 minutes. Developer mentions memory-related log l
 
 1. **OOMKilled — exceeded memory limit** (high)
    Evidence: `Degraded` + memory mentions matches signal-guide.md#error-signals "OOMKilled" entry.
-   Check: `/ags-extend observe` and search Grafana Cloud logs for `OOMKilled`. Also `extend-helper-cli get-app-info` (see `references/observe/cli-commands.md`) for app status.
+   Check: `/ags-extend observe` and search Grafana Cloud logs for `OOMKilled`. Also `ags extend get-app-info` (see `references/observe/cli-commands.md`) for app status.
    Fix path: raise the memory limit in the Admin Portal (app detail → resource configuration), then redeploy via `/ags-extend deploy`. (Hard limits in `references/init/resource-defaults.md`.)
 
 2. **Memory leak in handler** (medium)

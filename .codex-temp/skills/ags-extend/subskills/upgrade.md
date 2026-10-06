@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 see-also:
@@ -178,7 +178,7 @@ Upgrade NOT complete. Fix the 3 sites (or roll back with `git checkout -- go.mod
 | Tests fail after bump in a way that looks like a behavior change | Point at the test failure with file:line. Don't modify production code. If the change is a default behavior shift, suggest checking the SDK changelog. |
 | User wants to pin an older version | Fine. Pin, rebuild, note that they're skipping the bump for later. |
 | Existing apps in a multi-app project use different SDK versions | Ask which app(s) to bump. Bumping all is an option; bumping one at a time is often safer. |
-| `extend-helper-cli` itself needs a bump | Out of scope for this subskill — point at `/ags-extend install-cli` and its reference. |
+| The `ags` CLI itself needs a bump | Out of scope for this subskill — run `ags update` (or `ags update --install`) directly, or point at `/ags-extend install-cli` for a guided freshness check and install. |
 
 ## Examples
 

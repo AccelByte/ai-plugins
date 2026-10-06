@@ -1,6 +1,6 @@
 # accelbyte-ai-plugins
 
-![version](https://img.shields.io/badge/version-0.8.1-blue)
+![version](https://img.shields.io/badge/version-0.9.0-blue)
 
 Public AI coding agents, skills, and MCP servers for AccelByte.
 
@@ -9,6 +9,16 @@ Public AI coding agents, skills, and MCP servers for AccelByte.
 Once installed, skills activate automatically when your AI assistant recognizes a relevant AccelByte question — no special commands needed. You can also invoke any skill directly using its slash command.
 
 For connecting your assistant to a live AccelByte environment, each skill can configure MCP servers on a per-project basis — your assistant will walk you through it when you're ready.
+
+## Usage telemetry
+
+When the `ags`, `ags-extend` or `teammate` skill activates, it sends one anonymous event to AccelByte's PostHog at `e.accelbyte.io`. The event is named `skill_activated`. Its properties are `skill` and `plugin_version`, plus two PostHog flags that turn off person profiles and GeoIP lookup. The request's User-Agent is `AccelByte-AI-Plugins/<plugin version> (skill=<skill name>)`.
+
+The request carries no prompts, code, file names, repository or project details. We send no user, device, or installation identifier. Every installation sends the same `distinct_id`, and PostHog builds no profile or location from it. PostHog receives your IP address with the request, as any server does, and discards it instead of storing it with the event. The call is best-effort. It times out after 2 seconds, is never retried, and a failure never affects the skill.
+
+Other assistants may require approval for shell commands or restrict network access. Telemetry may not be sent under those policies. The skill must skip telemetry if it would require additional permissions and must not retry it outside the sandbox.
+
+To turn it off, set `ACCELBYTE_AI_PLUGIN_TELEMETRY=0` (`false` and `off` also work) in the environment your assistant runs in. Setting `DO_NOT_TRACK` to any non-empty value, which also turns off the AGS CLI's telemetry, turns it off too. The script that sends it is `skills/accelbyte/telemetry/telemetry.sh`. The Kiro skills send nothing, because Kiro would ask you to approve the call every time.
 
 
 ## Skills
@@ -287,4 +297,4 @@ Fetch and follow instructions from https://raw.githubusercontent.com/AccelByte/a
 
 ---
 
-Built with AccelByte External Marketplace compiler `v0.8.0`.
+Built with AccelByte External Marketplace compiler `v0.9.0`.

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-cpu-memory-replicas/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/event-handler/
@@ -16,7 +16,7 @@ see-also:
 
 ## Tune, don't guess
 
-Resource settings (CPU, memory, replica min/max) are per-app configuration in the AGS Admin Portal (app detail → resource configuration). `extend-helper-cli create-app` accepts `--cpu` and `--memory` as initial values at creation time; once the app exists, resource changes must be made in the Admin Portal or via the CSM API (the CLI has no "update resources" subcommand) — see `references/deploy/cli-commands.md`. To apply new resource settings, edit them in the Admin Portal or CSM API, then redeploy with `extend-helper-cli deploy-app` to pick up the new configuration.
+Resource settings (CPU, memory, replica min/max) are per-app configuration in the AGS Admin Portal (app detail → resource configuration). `ags extend create-app`'s `--json` payload accepts `cpu.requestCPU` and `memory.requestMemory` as initial values at creation time — there are no `--cpu`/`--memory` flags on this or any other command; once the app exists, resource changes must be made in the Admin Portal or via the CSM API (the CLI has no "update resources" subcommand) — see `references/deploy/cli-commands.md`. To apply new resource settings, edit them in the Admin Portal or CSM API, then redeploy with `ags extend deploy-app` to pick up the new configuration.
 
 Reference values for a Service Extension with DB access (use `references/init/resource-defaults.md` for the full per-pattern table):
 

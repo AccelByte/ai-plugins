@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 see-also:
 - '[cli-commands.md](../deploy/cli-commands.md)'
 - '[slo.md](slo.md)'
@@ -11,11 +11,11 @@ see-also:
 
 # Deploys and Rollouts
 
-How to ship Extend app changes safely. The mechanics (`extend-helper-cli image-upload` + `deploy-app`) are covered in `references/deploy/cli-commands.md`; this reference covers the *operational* side: staging, gating, rollback, and what to do when a deploy goes wrong.
+How to ship Extend app changes safely. The mechanics (`ags extend image-upload` + `deploy-app`) are covered in `references/deploy/cli-commands.md`; this reference covers the *operational* side: staging, gating, rollback, and what to do when a deploy goes wrong.
 
 ## The deploy primitive
 
-`extend-helper-cli deploy-app` rolls new replicas into AGS for the target app. AGS manages the deploy lifecycle after deploy-app is called; the exact rollout mechanism is not publicly documented — treat as a black-box platform operation. The caller doesn't orchestrate it; the CLI call kicks it off.
+`ags extend deploy-app` rolls new replicas into AGS for the target app. AGS manages the deploy lifecycle after deploy-app is called; the exact rollout mechanism is not publicly documented — treat as a black-box platform operation. The caller doesn't orchestrate it; the CLI call kicks it off.
 
 Practically this means:
 
@@ -25,15 +25,19 @@ Practically this means:
 
 This is tighter than Kubernetes; the tradeoff is that AGS handles the infra, you handle the code.
 
+## Waiting for a rollout to finish
+
+`deploy-app` (like `create-app`/`start-app`/`stop-app`/`delete-app`) accepts `--wait` plus `--wait-interval`/`--wait-limit` to block until the rollout finishes, instead of polling `get-app-info` yourself — see `references/deploy/cli-commands.md#deploy`. That section also lists the exit codes a CI script can branch on — a wait that ran out of time is a different code from one that ended in a failed state.
+
 ## Staging vs. production — use separate namespaces
 
 The fundamental safety mechanism: **do not deploy straight to the prod namespace.** Use a staging namespace that mirrors prod.
 
-Target namespace is a deploy-time input — pass `--namespace` to `extend-helper-cli` (or set `AB_NAMESPACE` in the app's `.env`):
+Target namespace is a deploy-time input — pass `--namespace` to `ags extend` (or set `AB_NAMESPACE` in the app's `.env`):
 
 ```bash
-extend-helper-cli deploy-app --namespace staging --app matchmaking-override
-extend-helper-cli deploy-app --namespace production --app matchmaking-override
+ags extend deploy-app --namespace staging --app matchmaking-override --json '{"imageTag":"{tag}"}'
+ags extend deploy-app --namespace production --app matchmaking-override --json '{"imageTag":"{tag}"}'
 ```
 
 Staging should:
@@ -84,8 +88,8 @@ Before running `deploy`:
 
 - Tests green (unit + integration — see `references/test/integration.md`).
 - SDK version pinned — no `@latest` surprises.
-- Deploy flags reviewed (resources, replicas, env vars in `.env` and any `--env` overrides).
-- Rollback plan known — which git ref is the current prod? Query the running image tag with `extend-helper-cli get-app-info --namespace {namespace} --app {app-name} --path /deploymentImageTag` (see `references/deploy/cli-commands.md`).
+- Deploy input reviewed — `deploy-app` only takes an image tag (in its `--json` payload); it has no resource, replica, or env-var flags. Resources/replicas are whatever the app currently has (Admin Portal / CSM API), and env vars/secrets are set separately via `update-var`/`update-secret` or the Admin Portal — verify those are current before deploying.
+- Rollback plan known — which git ref is the current prod? Query the running image tag with `ags extend get-app-info --namespace {namespace} --app {app-name} --format json | jq -r .deploymentImageTag` (see `references/deploy/cli-commands.md`).
 
 After running `deploy`:
 
@@ -107,13 +111,13 @@ git log --oneline -20
 git checkout <last-good-sha>
 
 # 2. Build and push (see references/deploy/cli-commands.md for exact flags)
-extend-helper-cli image-upload --namespace <ns> --app <app-name> --image-tag <prior-tag>
+ags extend image-upload --namespace <ns> --app <app-name> --image-tag <prior-tag>
 
 # 3. Deploy the prior tag
-extend-helper-cli deploy-app --namespace <ns> --app <app-name> --image-tag <prior-tag>
+ags extend deploy-app --namespace <ns> --app <app-name> --json '{"imageTag":"<prior-tag>"}'
 ```
 
-If you tag prod deploys with an image tag (recommended), you can skip `image-upload` for a rollback — just redeploy the previous tag. But the CLI's `deploy` flow may require the current image-upload image; verify by running `extend-helper-cli get-app-info --namespace {ns} --app {app} --path /deploymentImageTag` after deploy to confirm which version is live.
+If you tag prod deploys with an image tag (recommended), you can skip `image-upload` for a rollback — just redeploy the previous tag. But the CLI's `deploy` flow may require the current image-upload image; verify by running `ags extend get-app-info --namespace {ns} --app {app} --format json | jq -r .deploymentImageTag` after deploy to confirm which version is live.
 
 **How fast is a rollback?** Typical AGS rollout is minutes, not seconds. If your SLOs require second-scale recovery, pre-plan: stage two apps, or use feature flags so rollback is flipping a flag, not redeploying.
 
@@ -159,5 +163,5 @@ Some changes — especially SDK major bumps or proto contract changes — requir
 - [ ] Rollback plan known.
 - [ ] On-call aware (or self is on-call).
 - [ ] Monitoring open; baseline noted.
-- [ ] `extend-helper-cli deploy-app` — watch first 2 min.
+- [ ] `ags extend deploy-app` — watch first 2 min.
 - [ ] Verify error/latency/throughput at T+5, T+15, T+60 min.

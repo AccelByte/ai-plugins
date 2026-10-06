@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-23
 status: design-proposal
 sources:
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
 - '[templates.md](templates.md)'
@@ -11,7 +11,7 @@ see-also:
 
 # extend-project.yaml Schema (DESIGN PROPOSAL — not yet implemented)
 
-> **Status (2026-05-07):** No AccelByte tool currently reads or writes `extend-project.yaml`. `extend-helper-cli` operates on per-app inputs (Dockerfile + flags + env vars). Cloned templates (`extend-event-handler-go`, `extend-service-extension-go`, etc.) ship without any project-level manifest.
+> **Status (2026-09-22):** No AccelByte tool currently reads or writes `extend-project.yaml`. `ags extend` operates on per-app inputs (Dockerfile + flags + env vars) — see `references/deploy/cli-commands.md`. Cloned templates (`extend-event-handler-go`, `extend-service-extension-go`, etc.) ship without any project-level manifest.
 >
 > This file documents a forward-looking schema for *eventual* tooling consolidation. **Do not generate `extend-project.yaml` from any subskill today.** Subskills that mention reading or writing it have stale guidance — fall back to per-app discovery (locate `Makefile` + `Dockerfile` in the working dir or one level up).
 >

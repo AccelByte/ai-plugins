@@ -6,7 +6,7 @@ description: Knowledge-base entrypoint for AccelByte Gaming Services. Use when t
   and doesn't include.
 allowed-tools: Read Glob Bash
 model: sonnet
-last-verified: 2026-06-24
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -156,7 +156,7 @@ Do not fabricate a plausible-sounding answer.
 
 Redirect rather than answering when:
 
-- **Extend specifics** — Override / Event Handler / Service Extension / App UI / `extend-helper-cli` / Extend SDKs (Go/Python/C#/Java) → `/ags-extend`.
+- **Extend specifics** — Override / Event Handler / Service Extension / App UI / `ags extend` / Extend SDKs (Go/Python/C#/Java) → `/ags-extend`.
 - **Deep matchmaking** — rule design / MMR / ticket lifecycle / region routing → `/ags matchmaking`.
 - **AMS operations** — fleet / warmed pools / watchdog / regional rollout → `/ags ams`.
 - **ADT** — build distribution / crash reporting / playtest → `/adt`.

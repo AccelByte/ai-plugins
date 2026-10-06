@@ -174,8 +174,9 @@ Upgrade check: <current> → <target>
 
 A run is complete when:
 - Both versions are named in the output **with where each came from** — on Unity
-  the manifest's ref, on Unreal the plugin folder and which of its version
-  strings was read — and the target confirmed against the SDK's tag list.
+  the manifest's ref (or, for an embedded SDK, the wrapper package and the
+  submodule commit or nested `version` read), on Unreal the plugin folder and
+  which of its version strings was read — and the target confirmed against the SDK's tag list.
 - Every call site in the map is in exactly one bucket: breaks, warns, notice,
   signature changed, pre-existing, or unresolved. A call site in none of them was
   dropped silently.
@@ -196,8 +197,9 @@ omission.
 
 <empty_result_recovery>
 
-- **No SDK entry in the manifest, and no AccelByte plugin folder.** Say where you
-  looked — both places — and stop. There is no version to move from.
+- **No SDK entry in the manifest, no SDK embedded in a local package, and no
+  AccelByte plugin folder at any depth under `Plugins/`.** Say where you looked —
+  every place — and stop. There is no version to move from.
 - **The pinned ref is a branch, not a version** (Unity). There is no fixed
   current surface, so there is no diff to take. Say that, name the ref, and stop
   — do not substitute the newest tag for the branch.
@@ -241,6 +243,17 @@ The ref is the fragment after `#`. Classify it before going on:
 - a tag that does not appear in the tag list → stop and say so, because
   something else has to be true that you have not established.
 
+**No entry carries the SDK's git URL?** Check whether the SDK is embedded before
+concluding there is none: a `file:` dependency (or a package folder under
+`Packages/`) may be a wrapper that carries the SDK inside it, usually as a git
+submodule. Look under each local package for a nested `package.json` whose
+`name` is `com.accelbyte.unitysdk`. If that folder is a submodule, its commit is
+the pin — `git -C <sdk-folder> describe --tags --exact-match HEAD` names the tag,
+and a commit with no exact tag is still a pin to cite by sha; if it is a plain
+copy, read the nested `version` and say it is self-reported.
+[sdk-symbol-diff.md](../references/sdk-symbol-diff.md) has the full rule. Name
+the wrapper package in the header.
+
 **Unreal — there is no pin, so read the copy.** The install route is to download
 a release, extract it, and copy the folder into `Plugins/`, so the `.uproject`
 entry names the module and carries no version at all:
@@ -252,6 +265,10 @@ entry names the module and carries no version at all:
 | `AccelByteUe4Sdk.uplugin` | `VersionName` |
 | `version.json` | `version` |
 | the folder name | the `X.X.X` in `accelbyte-unreal-sdk-plugin-X.X.X` |
+
+The folder may sit a level down, inside a wrapper plugin that embeds the SDK as
+a submodule (`Plugins/<wrapper>/AccelByteUe4Sdk/`) — find it by its `.uplugin`,
+not by a fixed path.
 
 If that folder is a git checkout or a submodule, its ref is a real pin and
 outranks all three — use it, and say that is what you used. Otherwise take the

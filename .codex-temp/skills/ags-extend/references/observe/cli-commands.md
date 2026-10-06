@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-07-29
+last-verified: 2026-09-22
 sources:
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-app-lifecycle/
 see-also:
@@ -17,7 +17,7 @@ see-also:
 `get-app-info` returns app metadata including current status:
 
 ```bash
-extend-helper-cli get-app-info \
+ags extend get-app-info \
   --namespace <my-game-namespace> \
   --app <my-extend-app>
 ```
@@ -27,30 +27,15 @@ Response includes `appStatus` (e.g. `undeployed`, `running`, `stopped`, `deploym
 To query a single field (e.g. status only):
 
 ```bash
-extend-helper-cli get-app-info \
+ags extend get-app-info \
   --namespace <my-game-namespace> \
   --app <my-extend-app> \
-  --path /appStatus
+  --format json | jq -r .appStatus
 ```
 
 ## CLI: Stream App Logs
 
-```bash
-# Recent window (prints and exits)
-extend-helper-cli logs stream \
-  --namespace <my-game-namespace> \
-  --app <my-extend-app>
-
-# Keep streaming new lines until Ctrl-C
-extend-helper-cli logs stream \
-  --namespace <my-game-namespace> \
-  --app <my-extend-app> \
-  --follow
-```
-
-Optional flags (`--tail-lines` / `--tail`, `--previous`, `--pods`, `--since-seconds`, `--verbosity`) are documented in `references/deploy/cli-commands.md#stream-app-logs`. Use this command when the user asks to tail, follow, or stream live logs from a deployed app.
-
-If `logs` is missing from `extend-helper-cli --help`, the installed CLI is too old — offer `/ags-extend install-cli` before declaring streaming unsupported.
+**Not available in `ags extend` today.** The AGS CLI has no equivalent of the retired `extend-helper-cli logs stream --previous`/`--follow` (not yet built). Do not tell a reader to install `extend-helper-cli` to get this — instead use Grafana Cloud (below) for historical search, LogQL, metrics, and dashboards. See `references/deploy/cli-commands.md#stream-app-logs` for the full treatment. If the reader already has `extend-helper-cli` installed from before this migration, `extend-helper-cli logs stream --previous` still works against their existing install and is not disallowed — but this skill does not instruct a fresh install of it for this purpose.
 
 ## App Lifecycle States
 
@@ -90,4 +75,4 @@ For longer retention, forward to an external sink.
 
 ## Authentication
 
-The CLI supports two authentication modes — interactive `extend-helper-cli login` (browser flow) and OAuth client credentials via env vars / `.env`. See the canonical treatment in `references/deploy/cli-commands.md#authentication`. Do not duplicate it here.
+The CLI supports two authentication modes — interactive `ags auth login` (browser flow) and OAuth client credentials via `ags auth login --grant client-credentials` plus env vars / `.env`. See the canonical treatment in `references/deploy/cli-commands.md#authentication`. Do not duplicate it here.

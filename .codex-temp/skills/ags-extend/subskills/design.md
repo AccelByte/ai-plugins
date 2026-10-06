@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -54,7 +54,7 @@ Apps:
 | <app> | 250 | 256 | 1 | Override starts small; tune after observation |
 | <app> | 500 | 512 | 1 | Service Extension with DB access |
 
-(Values grounded in references/init/resource-defaults.md. `extend-helper-cli create-app` accepts `--cpu` and `--memory` as initial values; once the app exists, changes go through the AGS Admin Portal (app detail → resource configuration) or CSM API. There is no checked-in resources file.)
+(Values grounded in references/init/resource-defaults.md. `ags extend create-app`'s `--json` payload accepts `cpu.requestCPU` and `memory.requestMemory` as initial values (not `--cpu`/`--memory` flags); once the app exists, changes go through the AGS Admin Portal (app detail → resource configuration) or CSM API. There is no checked-in resources file.)
 
 ## Apps outline
 
@@ -240,7 +240,7 @@ Project: pvp-arena (2 app dirs detected)
   2. arena-events (go) — IMPLEMENTATION_PLAN.md notes target sizing CPU 300m, Memory 256 MB, replicas 1
 
 Observations:
-- arena-override sizing is high. Override default is 250m/256 MB. Did you observe CPU pressure? If not, consider starting at 500m/512 MB and scaling from there — see references/init/resource-defaults.md. Set initial values with `extend-helper-cli create-app --cpu`/`--memory`, or adjust via the Admin Portal (app detail → resource configuration).
+- arena-override sizing is high. Override default is 250m/256 MB. Did you observe CPU pressure? If not, consider starting at 500m/512 MB and scaling from there — see references/init/resource-defaults.md. Set initial values via `ags extend create-app`'s `--json` payload (`cpu.requestCPU`/`memory.requestMemory`), or adjust via the Admin Portal (app detail → resource configuration).
 - arena-events sizing is under the default (300m vs 500m, 256 MB vs 512 MB). This can work if the handler is very light, but if volume grows you'll see slowness before you see replicas scale. Confirm event volume is genuinely low.
 - Shape is sound — one Override + one Event Handler is a standard VIP/ranked-arena composition.
 

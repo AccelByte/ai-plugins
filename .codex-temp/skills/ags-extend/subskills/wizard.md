@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-06-24
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte
@@ -213,7 +213,7 @@ Next steps:
     (most commonly: copy the right .proto from github.com/AccelByte/accelbyte-api-proto
      into pkg/proto/, then run /ags-extend proto to regenerate)
   • /ags-extend install-dep — install project dependencies
-  • /ags-extend install-cli — install extend-helper-cli (before deploying)
+  • /ags-extend install-cli — install the AGS CLI (before deploying)
   • /ags-extend install-mcp — wire MCP servers into your AI IDE (optional)
   • /ags-extend debug — run and test it locally
 ```

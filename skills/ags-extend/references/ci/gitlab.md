@@ -1,11 +1,12 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-09-23
 note: Canonical GitLab CI pipeline for Extend build + deploy. In CI, the CLI authenticates
-  via AB_CLIENT_ID, AB_CLIENT_SECRET, and AB_BASE_URL environment variables (non-interactive).
-  The interactive `login` subcommand exists but is not used in CI. Commands verified
-  against extend-helper-cli binary --help output (see references/cli/help-output.md).
+  via `ags auth login --grant client-credentials`, reading AGS_CLIENT_ID, AGS_CLIENT_SECRET,
+  and AGS_BASE_URL environment variables (non-interactive). Commands verified against
+  the `ags` binary --help output (see references/deploy/cli-commands.md, the authoritative
+  syntax reference).
 sources:
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
 - '[github-actions.md](github-actions.md)'
@@ -21,10 +22,10 @@ Consumed by `subskills/ci.md`. Parallel to `github-actions.md`; GitLab's pipelin
 
 Project Settings → CI/CD → Variables. Mark each as **Masked** and **Protected**:
 
-- `AB_CLIENT_ID`
-- `AB_CLIENT_SECRET`
-- `AB_BASE_URL`
-- `AB_NAMESPACE`
+- `AGS_CLIENT_ID`
+- `AGS_CLIENT_SECRET`
+- `AGS_BASE_URL`
+- `AGS_NAMESPACE`
 
 Protected variables are only exposed to jobs running on protected branches / tags. Combine with branch protection so only `main` (and tag releases) can run the deploy job.
 
@@ -68,18 +69,24 @@ image-upload:
   before_script:
     - cd $APP_DIR
     - |
-      # Install extend-helper-cli. Pin the version in prod; this uses latest for simplicity.
-      apt-get update && apt-get install -y curl
-      curl -L -o /usr/local/bin/extend-helper-cli \
-        "https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-linux_amd64"
-      chmod +x /usr/local/bin/extend-helper-cli
-      command -v extend-helper-cli && extend-helper-cli --help > /dev/null && echo "CLI ready"
+      # Install ags. Pin the version in prod; this uses latest for simplicity.
+      # 0.5.0+ publishes accelbyte-ags-cli-<target>.tar.xz, extracting into a
+      # directory named after the archive (not the archive root) — resolve the
+      # asset name from release metadata rather than hardcoding it.
+      apt-get update && apt-get install -y curl jq xz-utils
+      asset=$(curl -fsSL https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest \
+        | jq -r '.assets[].name | select(test("^accelbyte-ags-cli-x86_64-unknown-linux-gnu\\.tar\\.xz$"))')
+      curl -fsSL "https://github.com/AccelByte/accelbyte-ags-cli/releases/latest/download/${asset}" -o /tmp/ags.tar.xz
+      tar -xJf /tmp/ags.tar.xz -C /tmp
+      mv "/tmp/${asset%.tar.xz}/ags" /usr/local/bin/ags
+      chmod +x /usr/local/bin/ags
+      command -v ags && ags --version
   script:
     - |
-      # The CLI authenticates via AB_CLIENT_ID, AB_CLIENT_SECRET, AB_BASE_URL env vars.
-      # Use --login flag to automatically run dockerlogin before image upload.
-      extend-helper-cli image-upload \
-        --namespace "$AB_NAMESPACE" \
+      # The CLI needs an explicit login call in CI; it does not authenticate implicitly from env vars alone.
+      ags auth login --grant client-credentials
+      ags extend image-upload \
+        --namespace "$AGS_NAMESPACE" \
         --app "$APP_NAME" \
         --image-tag "$CI_COMMIT_SHORT_SHA" \
         --login
@@ -99,17 +106,23 @@ deploy:
   image: alpine:3.19
   needs: [image-upload]
   before_script:
-    - apk add --no-cache curl
+    - apk add --no-cache curl tar xz jq
     - |
-      curl -L -o /usr/local/bin/extend-helper-cli \
-        "https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-linux_amd64"
-      chmod +x /usr/local/bin/extend-helper-cli
+      asset=$(curl -fsSL https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest \
+        | jq -r '.assets[].name | select(test("^accelbyte-ags-cli-x86_64-unknown-linux-gnu\\.tar\\.xz$"))')
+      curl -fsSL "https://github.com/AccelByte/accelbyte-ags-cli/releases/latest/download/${asset}" -o /tmp/ags.tar.xz
+      tar -xJf /tmp/ags.tar.xz -C /tmp
+      mv "/tmp/${asset%.tar.xz}/ags" /usr/local/bin/ags
+      chmod +x /usr/local/bin/ags
   script:
     - |
-      extend-helper-cli deploy-app \
-        --namespace "$AB_NAMESPACE" \
+      # Minimum version: ags 0.5.1. Exit codes under --wait: references/deploy/cli-commands.md#deploy.
+      ags auth login --grant client-credentials
+      ags extend deploy-app \
+        --namespace "$AGS_NAMESPACE" \
         --app "$APP_NAME" \
-        --image-tag "$CI_COMMIT_SHORT_SHA"
+        --json "{\"imageTag\":\"$CI_COMMIT_SHORT_SHA\"}" \
+        --wait
   when: manual           # requires a human click in the GitLab UI
   environment:
     name: production
@@ -122,7 +135,7 @@ deploy:
 ## What's in here and why
 
 - **Three stages**, each depending on the last via `needs:`. Test runs on every MR and main push; image-upload runs on main only; deploy is `when: manual` so it only runs when someone explicitly clicks it.
-- **`services: docker:dind`** in image-upload — `extend-helper-cli image-upload` invokes `docker build` / `docker push` under the hood, which needs a docker daemon in the GitLab runner.
+- **`services: docker:dind`** in image-upload — `ags extend image-upload` invokes `docker build` / `docker push` under the hood, which needs a docker daemon in the GitLab runner.
 - **Protected variables + protected branches.** The secrets are only exposed on `main`, so a MR pipeline can't exfiltrate them.
 - **`environment: production`** attaches the deploy to GitLab's environment page, so you can see deployment history and link to the Admin Portal.
 - **`when: manual`.** No auto-deploy on push. Prod deploys always require a human.
@@ -195,16 +208,16 @@ The pipeline above assumes GitLab.com's shared runners. If you're on self-hosted
 
 ## Hardening
 
-- Pin `extend-helper-cli` to a version tag instead of `latest`.
+- Pin `ags` to a version tag instead of `latest`.
 - Add an `allow_failure: false` check on `test` so a red test blocks everything downstream.
 - Use GitLab's environment-scoped variables to separate dev / staging / prod credentials on the same pipeline. See: Settings → CI/CD → Variables → environment scope.
-- Rotate `AB_CLIENT_SECRET` quarterly.
+- Rotate `AGS_CLIENT_SECRET` quarterly.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
 | `docker: command not found` in image-upload | `docker:dind` service not configured, or runner doesn't allow privileged mode. |
-| `401 unauthorized` | Variables not exposed to this pipeline — check "protected" setting on both the variables and the branch. |
+| `401 unauthorized` | Variables not exposed to this pipeline — check "protected" setting on both the variables and the branch, or the `ags auth login --grant client-credentials` step didn't run before the `ags extend` call. |
 | Deploy button grayed out | Branch isn't protected, or the user lacks the role GitLab requires for manual deploys (usually Maintainer+). |
-| CLI fails with "invalid url" or auth error | `AB_BASE_URL` is missing or has trailing slash. Check the variable's value. Verify `AB_CLIENT_ID` / `AB_CLIENT_SECRET` are set. |
+| CLI fails with "invalid url" or auth error | `AGS_BASE_URL` is missing or has trailing slash. Check the variable's value. Verify `AGS_CLIENT_ID` / `AGS_CLIENT_SECRET` are set. |

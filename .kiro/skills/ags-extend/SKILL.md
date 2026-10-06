@@ -11,8 +11,6 @@ Before running this skill, apply `accelbyte` when it is available.
 
 Use the tool selection and fallback policy from `accelbyte` after routing to a subskill; do not redefine it here.
 
-<!-- Authoring boundary: AGS CLI is intentionally not recommended as a fallback in this skill because it does not cover the full Extend Helper CLI lifecycle. Keep user-facing fallback guidance within the Extend-owned tool boundary until that parity exists. -->
-
 Never answer Extend questions, scaffold templates, run CLI commands, or apply patches from this file. All of that belongs inside a subskill.
 
 ## Subskills
@@ -23,7 +21,7 @@ Never answer Extend questions, scaffold templates, run CLI commands, or apply pa
 | 2  | `subskills/design.md` | design | Multi-app project shaping: which patterns + how they fit together (read-only) | — |
 | 3  | `subskills/wizard.md` | scaffold | Interview → clone template → apply integration patches | design (optional) |
 | 4  | `subskills/install-dep.md` | scaffold | Detect runtimes; install per-app project deps | wizard (typically) |
-| 5  | `subskills/install-cli.md` | scaffold | Install `extend-helper-cli` (required before deploy) | — |
+| 5  | `subskills/install-cli.md` | scaffold | Install the AGS CLI via `/ags install-cli` (required before deploy) | — |
 | 6  | `subskills/install-mcp.md` | scaffold | Wire Extend MCP servers into the user's AI IDE (optional) | — |
 | 7  | `subskills/init.md` | scaffold | Orchestrates wizard + install-dep + install-cli + optional install-mcp | — |
 | 8  | `subskills/proto.md` | scaffold/build | Regenerate proto-derived code after contract or SDK changes | wizard |
@@ -71,7 +69,7 @@ First match wins. Cues are case-insensitive substring matches unless noted.
 | `init`, "set up everything", "from scratch", "bootstrap", "start a new project" | `subskills/init.md` |
 | `wizard`, "new project" (without "set up everything"), "scaffold", "generate", "build me a" | `subskills/wizard.md` |
 | `install-dep`, "install dependencies", "go mod tidy", "pip install", "restore packages" | `subskills/install-dep.md` |
-| `install-cli`, "extend-helper-cli", "install cli" | `subskills/install-cli.md` |
+| `install-cli`, "install ags cli", "install cli" | `subskills/install-cli.md` |
 | `install-mcp`, "mcp setup", "mcp server", "hook up ides", IDE name + "mcp" | `subskills/install-mcp.md` |
 | `proto`, "regen proto", "regenerate proto", "buf generate", "make proto", "proto contract changed" | `subskills/proto.md` |
 | `debug`, "run locally", "test locally", "local server", "localhost" | `subskills/debug.md` |
@@ -127,15 +125,15 @@ If the user's follow-up inside a running subskill clearly belongs to a different
 
 > That's an `ask` question. Stop here and run `/ags-extend ask` to go deeper, or tell me to continue `deploy`.
 
-## Hard rule: cite-or-defer for `extend-helper-cli`
+## Hard rule: cite-or-defer for `ags extend`
 
-`extend-helper-cli` command names, flags, and environment variables hallucinate easily. To prevent this, the skill enforces one rule that supersedes every subskill's local guidance:
+`ags extend` command names, flags, and environment variables hallucinate easily. To prevent this, the skill enforces one rule that supersedes every subskill's local guidance:
 
 **`references/deploy/cli-commands.md` is the single authoritative source for CLI syntax.** Every subskill that mentions a CLI command, flag, or env var must defer to that file — by linking to it ("see `references/deploy/cli-commands.md`") or by reading it before quoting any CLI invocation. Restating CLI flags from memory anywhere else in this skill is a defect, even if the restatement happens to be correct.
 
-Subskills that touch the CLI (deploy, debug, observe, ci, install-cli, doctor, upgrade) must include this in their `<grounding_rules>`:
+Subskills that touch the CLI (deploy, observe, ci, doctor) must include this in their `<grounding_rules>`:
 
-> Before writing any `extend-helper-cli <subcommand>` invocation in a response or example, Read `references/deploy/cli-commands.md`. Do not restate flags from memory. If `cli-commands.md` doesn't document the flag you want to use, the flag does not exist — use a documented alternative, surface the gap to the user, or stop and ask.
+> Before writing any `ags extend <subcommand>` invocation in a response or example, Read `references/deploy/cli-commands.md`. Do not restate flags from memory. If `cli-commands.md` doesn't document the flag you want to use, the flag does not exist — use a documented alternative, surface the gap to the user, or stop and ask.
 
 The "What the CLI does NOT have" section of `cli-commands.md` explicitly catalogues invented flags so they can be recognized as red flags during authoring or runtime.
 
@@ -156,6 +154,6 @@ There is no project-wide manifest file. Each Extend app is a standalone director
 ## What this file does NOT do
 
 - **Does not explain Extend concepts.** That's `ask`.
-- **Does not run any CLI commands.** Those live in `deploy`, `debug`, `observe`, `install-cli`.
+- **Does not run any AGS CLI commands.** Those live in `deploy`, `debug`, `observe`, `install-cli`.
 - **Does not read references.** Subskills own their own reading.
 - **Does not carry state across invocations.** Each `/ags-extend` call is fresh; the only state is what's on disk (the app's `Makefile`, `Dockerfile`, `.env`, `IMPLEMENTATION_PLAN.md`, etc.), and the relevant subskill reads it.

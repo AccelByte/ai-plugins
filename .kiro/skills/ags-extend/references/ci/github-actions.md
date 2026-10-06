@@ -1,11 +1,12 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-23
 note: Canonical GitHub Actions workflow for Extend build + deploy. In CI, the CLI
-  authenticates via AB_CLIENT_ID, AB_CLIENT_SECRET, and AB_BASE_URL environment variables
-  (non-interactive). The interactive `login` subcommand exists but is not used in
-  CI. Commands verified against extend-helper-cli binary --help output (see references/cli/help-output.md).
+  authenticates via `ags auth login --grant client-credentials`, reading AGS_CLIENT_ID,
+  AGS_CLIENT_SECRET, and AGS_BASE_URL environment variables (non-interactive). Commands
+  verified against the `ags` binary --help output (see references/deploy/cli-commands.md,
+  the authoritative syntax reference).
 sources:
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
 - '[gitlab.md](gitlab.md)'
@@ -21,10 +22,10 @@ Consumed by `subskills/ci.md`. Two shapes: full pipeline (test → build → dep
 
 The workflow expects these in Settings → Secrets and variables → Actions:
 
-- `AB_CLIENT_ID` — IAM client ID from the Admin Portal
-- `AB_CLIENT_SECRET` — IAM client secret
-- `AB_BASE_URL` — AGS base URL, e.g. `https://your-env.accelbyte.io`
-- `AB_NAMESPACE` — target namespace
+- `AGS_CLIENT_ID` — IAM client ID from the Admin Portal
+- `AGS_CLIENT_SECRET` — IAM client secret
+- `AGS_BASE_URL` — AGS base URL, e.g. `https://your-env.accelbyte.io`
+- `AGS_NAMESPACE` — target namespace
 
 Mask the secret values in the GitHub UI (automatic for anything added via the secrets page).
 
@@ -72,26 +73,29 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-      - name: Install extend-helper-cli
+      - name: Install ags
         run: |
-          # Download the latest release binary.
-          # Replace the URL with the pinned version from your install-cli reference.
-          curl -L -o /tmp/extend-helper-cli \
-            "https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-linux_amd64"
-          chmod +x /tmp/extend-helper-cli
-          sudo mv /tmp/extend-helper-cli /usr/local/bin/extend-helper-cli
-          command -v extend-helper-cli && extend-helper-cli --help > /dev/null && echo "CLI ready"
+          # 0.5.0+ publishes accelbyte-ags-cli-<target>.tar.xz, extracting into a
+          # directory named after the archive (not the archive root). Resolve the
+          # asset name from release metadata rather than hardcoding it — `jq` is
+          # preinstalled on GitHub-hosted runners.
+          asset=$(curl -fsSL https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest \
+            | jq -r '.assets[].name | select(test("^accelbyte-ags-cli-x86_64-unknown-linux-gnu\\.tar\\.xz$"))')
+          curl -fsSL "https://github.com/AccelByte/accelbyte-ags-cli/releases/latest/download/${asset}" -o /tmp/ags.tar.xz
+          tar -xJf /tmp/ags.tar.xz -C /tmp
+          chmod +x "/tmp/${asset%.tar.xz}/ags"
+          sudo mv "/tmp/${asset%.tar.xz}/ags" /usr/local/bin/ags
+          command -v ags && ags --version
       - name: Build and push
         env:
-          AB_BASE_URL: ${{ secrets.AB_BASE_URL }}
-          AB_NAMESPACE: ${{ inputs.namespace || secrets.AB_NAMESPACE }}
-          AB_CLIENT_ID: ${{ secrets.AB_CLIENT_ID }}
-          AB_CLIENT_SECRET: ${{ secrets.AB_CLIENT_SECRET }}
+          AGS_BASE_URL: ${{ secrets.AGS_BASE_URL }}
+          AGS_NAMESPACE: ${{ inputs.namespace || secrets.AGS_NAMESPACE }}
+          AGS_CLIENT_ID: ${{ secrets.AGS_CLIENT_ID }}
+          AGS_CLIENT_SECRET: ${{ secrets.AGS_CLIENT_SECRET }}
         run: |
-          # The CLI authenticates via AB_CLIENT_ID, AB_CLIENT_SECRET, AB_BASE_URL env vars.
-          # Use --login flag to automatically run dockerlogin before image upload.
-          extend-helper-cli image-upload \
-            --namespace "$AB_NAMESPACE" \
+          ags auth login --grant client-credentials
+          ags extend image-upload \
+            --namespace "$AGS_NAMESPACE" \
             --app matchmaking-override \
             --image-tag "${{ github.sha }}" \
             --login
@@ -103,23 +107,29 @@ jobs:
     environment: production   # uses GitHub's environment-protection rules
     steps:
       - uses: actions/checkout@v4
-      - name: Install extend-helper-cli
+      - name: Install ags
         run: |
-          curl -L -o /tmp/extend-helper-cli \
-            "https://github.com/AccelByte/extend-helper-cli/releases/latest/download/extend-helper-cli-linux_amd64"
-          chmod +x /tmp/extend-helper-cli
-          sudo mv /tmp/extend-helper-cli /usr/local/bin/extend-helper-cli
+          asset=$(curl -fsSL https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest \
+            | jq -r '.assets[].name | select(test("^accelbyte-ags-cli-x86_64-unknown-linux-gnu\\.tar\\.xz$"))')
+          curl -fsSL "https://github.com/AccelByte/accelbyte-ags-cli/releases/latest/download/${asset}" -o /tmp/ags.tar.xz
+          tar -xJf /tmp/ags.tar.xz -C /tmp
+          chmod +x "/tmp/${asset%.tar.xz}/ags"
+          sudo mv "/tmp/${asset%.tar.xz}/ags" /usr/local/bin/ags
+          command -v ags && ags --version
       - name: Deploy
         env:
-          AB_BASE_URL: ${{ secrets.AB_BASE_URL }}
-          AB_NAMESPACE: ${{ inputs.namespace || secrets.AB_NAMESPACE }}
-          AB_CLIENT_ID: ${{ secrets.AB_CLIENT_ID }}
-          AB_CLIENT_SECRET: ${{ secrets.AB_CLIENT_SECRET }}
+          AGS_BASE_URL: ${{ secrets.AGS_BASE_URL }}
+          AGS_NAMESPACE: ${{ inputs.namespace || secrets.AGS_NAMESPACE }}
+          AGS_CLIENT_ID: ${{ secrets.AGS_CLIENT_ID }}
+          AGS_CLIENT_SECRET: ${{ secrets.AGS_CLIENT_SECRET }}
         run: |
-          extend-helper-cli deploy-app \
-            --namespace "$AB_NAMESPACE" \
+          ags auth login --grant client-credentials
+          # Minimum version: ags 0.5.1. Exit codes under --wait: references/deploy/cli-commands.md#deploy.
+          ags extend deploy-app \
+            --namespace "$AGS_NAMESPACE" \
             --app matchmaking-override \
-            --image-tag "${{ github.sha }}"
+            --json '{"imageTag":"${{ github.sha }}"}' \
+            --wait
 ```
 
 ## What's in here and why
@@ -128,7 +138,7 @@ jobs:
 - **`push` trigger for main.** Runs test + image-upload on every main merge, but the deploy job is gated on `workflow_dispatch` — preventing auto-deploy-on-push to production. The developer must click a button.
 - **`needs:` dependency chain.** test → image-upload → deploy. Each depends on the previous succeeding.
 - **`environment: production`.** Enables GitHub's environment protection rules (required reviewers, deployment branches). Configure the `production` environment under Settings → Environments.
-- **Credentials via env vars.** The CLI reads `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `AB_BASE_URL` from the environment for non-interactive (CI) use. `AB_NAMESPACE` can also be set as an env var (as in the official quickstart) but is passed as `--namespace` flag here for explicitness. No separate login step is needed. The interactive `login` subcommand exists for local/terminal use but is not used in CI pipelines.
+- **Credentials via env vars.** The CLI reads `AGS_CLIENT_ID`, `AGS_CLIENT_SECRET`, and `AGS_BASE_URL` from the environment for non-interactive (CI) use. `AGS_NAMESPACE` can also be set as an env var (as in the official quickstart) but is passed as `--namespace` flag here for explicitness. The CLI needs an explicit `ags auth login --grant client-credentials` call in CI — unlike `extend-helper-cli`, which authenticated implicitly from the env vars alone.
 
 ## Per-language setup adjustments
 
@@ -191,12 +201,12 @@ If the repo already has `.github/workflows/ci.yml` with `lint` + `test` jobs, ad
       - uses: actions/checkout@v4
       - name: Install and deploy
         env:
-          AB_BASE_URL: ${{ secrets.AB_BASE_URL }}
-          AB_NAMESPACE: ${{ inputs.namespace || secrets.AB_NAMESPACE }}
-          AB_CLIENT_ID: ${{ secrets.AB_CLIENT_ID }}
-          AB_CLIENT_SECRET: ${{ secrets.AB_CLIENT_SECRET }}
+          AGS_BASE_URL: ${{ secrets.AGS_BASE_URL }}
+          AGS_NAMESPACE: ${{ inputs.namespace || secrets.AGS_NAMESPACE }}
+          AGS_CLIENT_ID: ${{ secrets.AGS_CLIENT_ID }}
+          AGS_CLIENT_SECRET: ${{ secrets.AGS_CLIENT_SECRET }}
         run: |
-          # install CLI + image-upload + deploy-app as above
+          # install ags + ags auth login + image-upload + deploy-app as above
 ```
 
 ## Hardening
@@ -205,14 +215,14 @@ Once the pipeline is green:
 
 - Add branch protection so `main` requires the test job to pass before merge.
 - Add required reviewers to the `production` environment so deploy requires a second click from another team member.
-- Pin `extend-helper-cli` to a specific version in the install step (don't use `latest` in prod). Replace the URL with a versioned tag.
-- Rotate `AB_CLIENT_SECRET` periodically. In the Admin Portal, generate a new client secret, update your CI secrets, then delete the old one to complete the rotation.
+- Pin `ags` to a specific version in the install step (don't use `latest` in prod). Replace the URL with a versioned tag from `https://github.com/AccelByte/accelbyte-ags-cli/releases`.
+- Rotate `AGS_CLIENT_SECRET` periodically. In the Admin Portal, generate a new client secret, update your CI secrets, then delete the old one to complete the rotation.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `extend-helper-cli: command not found` | The install step failed or PATH isn't set. Confirm the binary exists at `/usr/local/bin/extend-helper-cli` in the job. |
-| `401 unauthorized` at `image-upload` | `AB_CLIENT_ID`/`AB_CLIENT_SECRET` don't match or the client lacks permissions. Recreate the IAM client in the Portal. |
-| `deploy-app` exits immediately (use `--wait` to block). App remains non-Running for 10+ minutes | Usually the image is too large or the health check is failing. Check app status with `extend-helper-cli get-app-info --app matchmaking-override --namespace ...`. Check logs via Grafana Cloud. |
+| `ags: command not found` | The install step failed or PATH isn't set. Confirm the binary exists at `/usr/local/bin/ags` in the job. |
+| `401 unauthorized` at `image-upload` | `AGS_CLIENT_ID`/`AGS_CLIENT_SECRET` don't match, the client lacks permissions, or the `ags auth login --grant client-credentials` step didn't run first. Recreate the IAM client in the Portal. |
+| `deploy-app` exits immediately (use `--wait` to block). App remains non-Running for 10+ minutes | Usually the image is too large or the health check is failing. Check app status with `ags extend get-app-info --app matchmaking-override --namespace ...`. Check logs via Grafana Cloud. |
 | Deploy succeeds but app shows `Degraded` | Health check fails once the app starts. Check logs via Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud). |

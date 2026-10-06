@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
@@ -72,11 +72,11 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 ## Project layout
 
-**`extend-project.yaml`** *(design proposal — not implemented)* — a hypothetical top-level manifest that would list every Extend app in a project and its config. No such file is consumed by `extend-helper-cli` or any AccelByte tooling today; project structure is per-app (one directory per app, each with its own Dockerfile and `.env`). See `references/init/manifest-schema.md` for the forward-looking design.
+**`extend-project.yaml`** *(design proposal — not implemented)* — a hypothetical top-level manifest that would list every Extend app in a project and its config. No such file is consumed by `ags extend` or any AccelByte tooling today; project structure is per-app (one directory per app, each with its own Dockerfile and `.env`). See `references/init/manifest-schema.md` for the forward-looking design.
 
 **`.env` / `.env.template`** — per-app environment file. `.env.template` is committed with placeholder values; `.env` is gitignored and holds real secrets (`AB_CLIENT_ID`, `AB_CLIENT_SECRET`, `AB_BASE_URL`, `AB_NAMESPACE`). Real secrets in production are injected through the Admin Portal, not the image.
 
-**Permissions** — the OAuth permissions an app's IAM client needs to call the AGS APIs the app uses. Configured per-app on the OAuth client in the Admin Portal, or passed at deploy time via `extend-helper-cli` flags.
+**Permissions** — the OAuth permissions an app's IAM client needs to call the AGS APIs the app uses. Configured per-app on the OAuth client in the Admin Portal — `ags extend` has no `--permissions` flag on any command.
 
 **Template** — a starter repo per pattern × language (e.g. `extend-override-go`). See `references/init/templates.md` for the full list.
 
@@ -86,20 +86,19 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 ## CLI and deployment
 
-**`extend-helper-cli`** — the official CLI for building, pushing, and deploying Extend apps. Binary release from GitHub (no package manager). Required before `deploy-app`. Install via `/ags-extend install-cli`. Authenticates via `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `AB_BASE_URL` environment variables — there is no `login` subcommand.
+**`ags extend`** — the `ags` CLI's subcommand group for building, pushing, and deploying Extend apps. Binary release from GitHub (no package manager). Required before `deploy-app`. Install via `/ags-extend install-cli`. Authenticates via `ags auth login` (interactive) or `ags auth login --grant client-credentials` with `AGS_CLIENT_ID`, `AGS_CLIENT_SECRET`, and `AGS_BASE_URL` environment variables — see `references/deploy/cli-commands.md`. Formerly shipped as a standalone binary named `extend-helper-cli`; that name is retired, superseded by `ags extend`, though a reader migrating from an older guide may still search for it.
 
-**`image-upload`** — `extend-helper-cli` subcommand that builds the Docker image for an app and pushes it to AccelByte's image registry.
+**`image-upload`** — `ags extend` subcommand that builds the Docker image for an app and pushes it to AccelByte's image registry.
 
+**`create-app`** — `ags extend` subcommand that creates a new Extend app in AGS.
 
-**`create-app`** — `extend-helper-cli` subcommand that creates a new Extend app in AGS.
+**`get-app-info`** — `ags extend` subcommand that retrieves app metadata (status, repo URL, scenario).
 
-**`get-app-info`** — `extend-helper-cli` subcommand that retrieves app metadata (status, repo URL, scenario).
+**`deploy-app`** — `ags extend` subcommand that tells AGS to roll the pushed image to running replicas.
 
-**`deploy-app`** — `extend-helper-cli` subcommand that tells AGS to roll the pushed image to running replicas.
+**`start-app` / `stop-app`** — `ags extend` subcommands to start or stop a deployed app without redeploying.
 
-**`start-app` / `stop-app`** — `extend-helper-cli` subcommands to start or stop a deployed app without redeploying.
-
-**`tunnel`** — `extend-helper-cli` subcommand that provides local-port connectivity to a named SQL or NoSQL database resource. It does not discover resources or manage database clusters.
+**`tunnel`** — `ags extend` subcommand that provides local-port connectivity to a named SQL or NoSQL database resource. It does not discover resources or manage database clusters.
 
 **Image registry** — AccelByte-hosted registry that `image-upload` targets. You don't manage it; the CLI does.
 
@@ -113,7 +112,7 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 ## Runtime states and observability
 
-**App status** — high-level lifecycle label shown by `extend-helper-cli get-app-info --path /appStatus` (see `references/observe/cli-commands.md`) and in the Admin Portal:
+**App status** — high-level lifecycle label the `appStatus` field of `ags extend get-app-info` (see `references/observe/cli-commands.md`) and in the Admin Portal:
 
 - `Provisioning in progress` → `Undeployed` — app created, no image deployed yet.
 - `Starting` → `Running` — replicas are up and health checks pass.
@@ -153,7 +152,7 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 **Client credentials grant** — OAuth2 flow where the app exchanges client ID + secret for a short-lived access token. Token refresh is handled by the SDK.
 
-**`AB_CLIENT_ID` / `AB_CLIENT_SECRET`** — the IAM client credentials. Local `.env` + production injected via Admin Portal.
+**`AB_CLIENT_ID` / `AB_CLIENT_SECRET`** — the app's own IAM client credentials. Local `.env` + production injected via Admin Portal.
 
 **`AB_BASE_URL`** — the AGS environment's API root (e.g. `https://your-env.accelbyte.io`).
 
@@ -197,9 +196,9 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 **Task Scheduler add-on** (alpha) — AccelByte add-on that gives Service Extensions cron-based scheduled background jobs. Implements `OnJobTriggered` (bidirectional streaming). Schedules configured via Admin Portal → App Details → Task Scheduler tab. See `references/patches/ts-go.md`.
 
-**NoSQL Database add-on** (closed alpha) — AccelByte-managed Amazon DocumentDB (MongoDB-compatible) for Extend apps. Env vars: `DOCDB_HOST`, `DOCDB_DATABASE_NAME`, `DOCDB_USERNAME`, `DOCDB_PASSWORD`, `DOCDB_CA_CERT_FILE_PATH`. TLS required in production; `SetRetryWrites(false)` mandatory. Local dev uses plain MongoDB via docker-compose. Access via `extend-helper-cli tunnel`. See `references/patches/nosql-go.md`.
+**NoSQL Database add-on** (closed alpha) — AccelByte-managed Amazon DocumentDB (MongoDB-compatible) for Extend apps. Env vars: `DOCDB_HOST`, `DOCDB_DATABASE_NAME`, `DOCDB_USERNAME`, `DOCDB_PASSWORD`, `DOCDB_CA_CERT_FILE_PATH`. TLS required in production; `SetRetryWrites(false)` mandatory. Local dev uses plain MongoDB via docker-compose. Access via `ags extend tunnel`. See `references/patches/nosql-go.md`.
 
-**SQL Database add-on** (preview) — AccelByte-managed Amazon Aurora PostgreSQL-compatible database for Extend apps. Env vars: `SQLDB_HOST`, `SQLDB_DATABASE_NAME`, `SQLDB_USERNAME`, `SQLDB_PASSWORD`, `SQLDB_CA_CERT_FILE_PATH`. TLS required in production. Local dev uses plain PostgreSQL via docker-compose. Access via `extend-helper-cli tunnel`. See `references/patches/sql-go.md`.
+**SQL Database add-on** (preview) — AccelByte-managed Amazon Aurora PostgreSQL-compatible database for Extend apps. Env vars: `SQLDB_HOST`, `SQLDB_DATABASE_NAME`, `SQLDB_USERNAME`, `SQLDB_PASSWORD`, `SQLDB_CA_CERT_FILE_PATH`. TLS required in production. Local dev uses plain PostgreSQL via docker-compose. Access via `ags extend tunnel`. See `references/patches/sql-go.md`.
 
 ---
 

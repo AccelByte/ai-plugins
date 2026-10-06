@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-22
 see-also:
 - '[rollout.md](../production/rollout.md)'
 - '[cli-commands.md](../deploy/cli-commands.md)'
@@ -57,7 +57,7 @@ Where to set the value depends on which stage you're flipping:
 
 **Deployed app (running in AGS)** — local `.env` is irrelevant; it's not bundled into the image and isn't read by the deployed process. Use one of these (see `references/deploy/cli-commands.md`):
 
-- `extend-helper-cli update-var --namespace {ns} --app {app} --key USE_NEW_MATCHMAKER --value true` (or `update-secret` for sensitive values), then restart the app to pick up the change.
+- `ags extend update-var --namespace {ns} --app {app} --key USE_NEW_MATCHMAKER --value true` (or `update-secret` for sensitive values), then restart the app to pick up the change.
 - Admin Portal → app detail → environment variables / secrets, edit there, then restart.
 - Direct CSM API call.
 

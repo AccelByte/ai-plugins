@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-08-25
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -157,9 +157,9 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 ## Tooling
 
-**AGS CLI.** The `ags` binary for namespace, IAM, profile, auth, diagnostics, and generated AGS API commands. Distributed as prebuilt archives from `https://github.com/AccelByte/accelbyte-ags-cli/releases/latest`; install the asset that matches the user's OS/architecture and put `ags` / `ags.exe` on the user's `PATH`. Not the same tool as `extend-helper-cli`, which is Extend-specific.
+**AGS CLI.** The `ags` binary for namespace, IAM, profile, auth, diagnostics, generated AGS API commands, and — via `ags extend` — the full Extend app lifecycle (build, deploy, logs, config). Distributed as prebuilt archives from `https://github.com/AccelByte/accelbyte-ags-cli/releases/latest`; install the asset that matches the user's OS/architecture and put `ags` / `ags.exe` on the user's `PATH`.
 
-**`extend-helper-cli`.** The Extend-specific CLI — builds, pushes, and deploys Extend apps; also fetches logs and health for Extend apps. Extend-only; AGS uses its own CLI for namespace work. See `/ags-extend install-cli`.
+**`ags extend`.** The Extend-specific command group within the AGS CLI — builds, pushes, and deploys Extend apps; manages config variables and secrets; opens a database tunnel. There is no separate Extend-only binary anymore — see `/ags-extend install-cli`, which now points at `/ags install-cli`.
 
 **MCP server.** Model Context Protocol server. AccelByte ships **two** MCP servers that connect AI IDEs to AGS context:
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-09
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/
@@ -14,7 +14,7 @@ see-also:
 
 Pointer reference. Extend is **part of AGS architecturally** — the extensibility layer inside the platform — but its lifecycle is deep enough to live in its own peer skill, `/ags-extend`. This file describes when an AGS conversation should hand off to that skill.
 
-**Routing rule.** Anything Extend-specific (Override / Event Handler / Service Extension / App UI / `extend-helper-cli` / Extend SDKs in Go/Python/C#/Java / Extend Apps Directory) belongs in `/ags-extend`. `/ags` only covers conceptual "what is Extend?" / "should I use Extend?" questions.
+**Routing rule.** Anything Extend-specific (Override / Event Handler / Service Extension / App UI / `ags extend` / Extend SDKs in Go/Python/C#/Java / Extend Apps Directory) belongs in `/ags-extend`. `/ags` only covers conceptual "what is Extend?" / "should I use Extend?" questions.
 
 ---
 
@@ -44,7 +44,7 @@ The user mentions any of these (case-insensitive):
 - "react when X happens" only after the relevant native AGS module has been
   considered and cannot express the workflow
 - "we need an API AGS doesn't have"
-- `extend-helper-cli`, "deploy a custom service to AGS", "build a custom service"
+- `ags extend`, "deploy a custom service to AGS", "build a custom service"
 - "Extend Apps Directory"
 - gRPC service in the AGS context
 - Override / EAC / Vivox / Discord / Tournament integration apps

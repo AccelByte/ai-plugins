@@ -1,60 +1,63 @@
 ---
-last-verified: 2026-07-29
+last-verified: 2026-09-25
 authoritative: true
-note: This file is the SINGLE SOURCE OF TRUTH for extend-helper-cli command syntax
-  inside this skill. Every other file in this bundle that mentions a CLI command,
-  flag, or env var must defer to this file (cite-or-defer rule). Do not restate CLI
-  flags from memory anywhere else — link here. The unedited binary `--help` output
-  lives at `references/cli/help-output.md` (regen with `references/cli/scripts/capture-cli-help.sh`);
-  this file is the skill-friendly restatement of that artifact.
+note: This file is the SINGLE SOURCE OF TRUTH for `ags extend` command syntax inside
+  this skill. Every other file in this bundle that mentions a CLI command, flag, or
+  env var must defer to this file (cite-or-defer rule). Do not restate CLI flags from
+  memory anywhere else — link here. The unedited binary `--help` output lives at `references/cli/help-output.md`
+  (regen with `references/cli/scripts/capture-cli-help.sh`); this file is the skill-friendly
+  restatement of that artifact. Targets `ags` 0.5.1.
 sources:
-- https://github.com/AccelByte/extend-helper-cli
-- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-helper-cli/
+- https://github.com/AccelByte/accelbyte-ags-cli
+- https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.1/CHANGELOG.md
+- https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
 - '[help-output.md](../cli/help-output.md)'
 - '[common-errors.md](common-errors.md)'
 - '[rollout.md](../production/rollout.md)'
 ---
 
-# extend-helper-cli — Commands (authoritative reference)
+# ags extend — Commands (authoritative reference)
 
-This file is the only place inside this skill that quotes CLI command names, flag names, and environment variables. If you are about to write `extend-helper-cli <something>` somewhere else, stop — link here instead. The `<grounding_rules>` of every CLI-touching subskill enforces this.
+This file is the only place inside this skill that quotes CLI command names, flag names, and environment variables. If you are about to write `ags extend <something>` somewhere else, stop — link here instead. The `<grounding_rules>` of every CLI-touching subskill enforces this.
+
+**Checking whether a "Minimum version: `ags` 0.5.1" note applies to an installed binary:** run `ags --version` (see [Presence and freshness check](#presence-and-freshness-check)) and compare the leading semver against 0.5.1. If the version can't be read, probe the feature directly: run the lifecycle command (`create-app`, `deploy-app`, `start-app`, `stop-app`, or `delete-app`) with `--wait` added. If it errors with an unrecognized-flag message, the installed release predates this feature; if `--wait` is accepted, the release has it.
 
 The CLI is distributed as binary releases. The verbatim command help is bundled at `references/cli/help-output.md`; re-capture it with `references/cli/scripts/capture-cli-help.sh` whenever a new release ships.
 
 ## Authentication
 
-The CLI supports two authentication modes.
+`ags extend` shares authentication with the rest of the AGS CLI.
 
 ### Mode 1: interactive login (preferred when the user is at a terminal)
 
 ```bash
-extend-helper-cli login
+ags auth login
 ```
 
-Opens the AccelByte Admin Portal in a browser using OAuth 2.0 + PKCE. The user signs in with their normal Admin Portal credentials. The CLI stores the resulting session locally so subsequent commands are authenticated without `AB_CLIENT_ID` / `AB_CLIENT_SECRET`.
+Opens a browser using OAuth 2.0 + PKCE against a pre-registered **public** IAM client — unlike the retired `extend-helper-cli login`, which auto-registered its own client, this client must already exist with the redirect URI configured (see `/ags install-cli`, Step 7). The CLI stores the resulting session locally so subsequent commands are authenticated without `AGS_CLIENT_ID` / `AGS_CLIENT_SECRET`.
 
-`AB_BASE_URL` must be set first (env var or `.env`) so the CLI knows which environment to authenticate against. Ask the user for it; do not hardcode.
+`AGS_BASE_URL` must be set first (via the `--base-url` flag on `ags auth login`, or the `AGS_BASE_URL` environment variable — the CLI has no `.env` file support) so the CLI knows which environment to authenticate against. Ask the user for it; do not hardcode.
 
-`login` accepts one optional flag:
-
-- `--base-url {url}` — overrides `AB_BASE_URL` for this single invocation.
-
-`extend-helper-cli logout` revokes the local session. `extend-helper-cli status` reports the current login state.
+`ags auth status` reports the current login state. `ags auth logout` revokes the local session.
 
 ### Mode 2: OAuth client credentials (preferred for CI/CD and unattended scripts)
 
-Set three environment variables — either exported, or in a `.env` file in the directory where the CLI is run:
-
-```
-AB_BASE_URL='https://your-env.accelbyte.io'
-AB_CLIENT_ID='xxxxxxxxxx'
-AB_CLIENT_SECRET='xxxxxxxxxx'
+```bash
+ags auth login --grant client-credentials
 ```
 
-The CLI itself reads `.env` from the cwd. **This is independent of the Extend app's own `.env`** (which holds runtime secrets for `make run` / local `/ags-extend debug` and is *not* read by the CLI when deploying).
+`ags auth login` accepts `--base-url`, `--client-id`, and `--client-secret` (or `--client-secret-stdin`) directly as flags. In CI, prefer setting them as environment variables instead — either exported, or via the CI host's own secret store (the CLI itself has no `.env` file support; it never reads a `.env` file):
 
-The OAuth client must have these Extend permissions. For AGS Private Cloud:
+```
+AGS_BASE_URL='https://your-env.accelbyte.io'
+AGS_CLIENT_ID='xxxxxxxxxx'
+AGS_CLIENT_SECRET='xxxxxxxxxx'
+```
+
+Resolution order: `--base-url` → `AGS_BASE_URL` → the CLI's own config → an interactive prompt (same pattern for `--client-id`/`AGS_CLIENT_ID`; `--client-secret`/`AGS_CLIENT_SECRET` falls back to the OS keychain instead of config before prompting).
+
+This requires a **confidential** IAM client, distinct from the public client used for interactive login. The client must have these Extend permissions. For AGS Private Cloud:
 
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:APP [CREATE, READ, UPDATE, DELETE]`
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:DEPLOYMENT [CREATE]`
@@ -63,88 +66,103 @@ The OAuth client must have these Extend permissions. For AGS Private Cloud:
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:VARIABLE [CREATE, READ, UPDATE]`
 - `ADMIN:NAMESPACE:{namespace}:EXTEND:TUNNEL [READ]`
 
-For AGS Public Cloud, the equivalent grouped permissions are: App Management (CRUD), Deployment Management (Create), Extend app image repository access (Read), Configuration Secret Management (Read, Create, Update), Configuration Variable Management (Read, Create, Update), TCP Tunneling (Read).
-
-### `--base-url` exists only on `login`
-
-`AB_BASE_URL` is set via env or `.env` for every other command. Only `login` accepts `--base-url` as a one-shot override (handy for switching between environments without re-exporting). Anywhere else in the docs that shows `--base-url` on `image-upload` / `deploy-app` / `update-var` / etc. is wrong.
+(Unchanged from `extend-helper-cli` — these IAM permission resources are unchanged by the app lifecycle commands' move to the CSM v5 contract. See [CSM API version](#csm-api-version) below for which commands moved.) For AGS Public Cloud, the equivalent grouped permissions are: App Management (CRUD), Deployment Management (Create), Extend app image repository access (Read), Configuration Secret Management (Read, Create, Update), Configuration Variable Management (Read, Create, Update), TCP Tunneling (Read).
 
 ## Presence and freshness check
 
-Official releases starting with v0.0.13 expose equivalent top-level version flags:
+`ags --version` and `ags -V` are top-level version flags:
 
 ```bash
-extend-helper-cli --version
-extend-helper-cli -v
+ags --version
+ags -V
 ```
 
-Official releases starting with v0.0.13 print one machine-readable line in the form `extend-helper-cli <semver>` and exit 0 without requiring authentication, configuration, network access, or Docker. Use `command -v` to find the executable and `--version` to determine its installed version. Verify that every downloaded candidate reports the selected release tag before installing it.
+Output on 0.5.1: `ags 0.5.1 (workflow protocol 1.0.0)` — the semver first, then the workflow-protocol version in parentheses. Parse the leading semver for freshness comparisons; the parenthetical is a separate, independently-versioned protocol number, not part of the CLI's own release version.
 
-Legacy binaries released before version support fail `--version`. Distinguish a legacy/pre-version install from a broken binary by falling back to:
+**`-v` is not the version flag** — `-v` (lowercase) is short for `--verbose` (shows resolution trace and request/response details); the version short flag is `-V` (capital). Do not carry over the old `extend-helper-cli`-era assumption that bare `-v` prints the version.
+
+`--version`/`-V` exit 0 without requiring authentication, configuration, network access, or Docker. Use `command -v` (the POSIX shell builtin, unrelated to the CLI's own `-v`/`--verbose` flag) to find the executable, and `--version`/`-V` to determine its installed version. Verify that every downloaded candidate reports the selected release tag before installing it.
+
+A legacy `extend-helper-cli` binary (or any binary predating version support) fails `--version` in this exact form. Distinguish a legacy/pre-version install from a broken binary by falling back to:
 
 ```bash
-command -v extend-helper-cli   # exits 0 if on PATH, 1 if not
-extend-helper-cli --help       # successful fallback means legacy/pre-version
+command -v ags   # exits 0 if on PATH, 1 if not
+ags --help       # successful fallback means legacy/pre-version
 ```
 
-Fetch the latest release metadata from `https://api.github.com/repos/AccelByte/extend-helper-cli/releases/latest`, remove a leading `v` from `tag_name`, and compare it semantically with the installed version. `extend-helper-cli status` remains the *login* status command; it does not report the CLI version.
+Fetch the latest release metadata from `https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest`, remove a leading `v` from `tag_name`, and compare it semantically with the installed version. `ags auth status` remains the *login* status command; it does not report the CLI version.
 
 ## Verbosity (global)
 
-Most subcommands accept:
+**Most subcommands do NOT accept the old `--verbosity {0..6}` flag on this release.** `create-app`, `deploy-app`, `start-app`, `stop-app`, `delete-app`, `tunnel`, `clone-template`, `update-var`, and `update-secret` show no such flag at all in their `--help` output — do not add it to an example for any of them.
 
-- `--verbosity {0..6}` (or `-v`) — `0` panic, `1` fatal, `2` error, `3` warn, `4` info (default), `5` debug, `6` trace.
+Only `docker-login` and `app-ui upload` show a `--verbosity {level}` flag, and on both it is **accepted for backward compatibility, ignored** — it does nothing on this release.
 
-At the top level, bare `-v` means version. After a subcommand, `-v {0..6}` means verbosity. **Exception:** `tunnel` does not accept `--verbosity`.
+There *is* a real global verbosity control, but it isn't `--verbosity`: `-v` / `--verbose` (top-level `ags` flag, shown in `ags --help`) turns on resolution-trace and request/response detail logging for any command. **`-v` does not mean version** — that's `-V` (capital) or `--version`; see Presence and freshness check above.
 
 ## Create an Extend App
 
 ```bash
-extend-helper-cli create-app \
+ags extend create-app \
   --namespace {namespace} \
   --app {app-name} \
-  --scenario {event-handler|function-override|service-extension} \
-  --confirm
+  --json '{"scenario":"{event-handler|function-override|service-extension}"}'
 ```
+
+`--wait`/`--wait-interval`/`--wait-limit` on this command need `ags` 0.5.1 or later (see below).
 
 Scenario values are exactly as listed: `event-handler`, `function-override`, `service-extension` (note: `function-override`, not `override`).
 
-Optional flags:
+Optional `--json` fields (see `references/cli/help-output.md` for the full `CreateAppV5Request` schema) — these replace the separate `--description`/`--cpu`/`--memory` flags the retired `extend-helper-cli` had:
 
-- `--description {text}` — human-readable description shown in the Admin Portal.
-- `--cpu {millicores}` — initial CPU allocation. Range 60–1415, default 1000. (1 CPU = 1000m.)
-- `--memory {MB}` — initial memory allocation. Range 100–2382, default 350.
-- `--wait` plus `--wait-interval {seconds:10}` and `--wait-limit {seconds:600}` to block until the app is ready for image upload.
-- `--confirm` skips the interactive y/n prompt.
+- `"description"` — human-readable description shown in the Admin Portal.
+- `"cpu": {"requestCPU": {millicores}}` — initial CPU allocation. Range 60–1415, default 1000. (1 CPU = 1000m.)
+- `"memory": {"requestMemory": {MB}}` — initial memory allocation. Range 100–2382, default 350.
+
+`--api-version {v2|v5}` selects the CSM API contract; default is `v5`. See [CSM API version](#csm-api-version) for every command that carries it.
+
+`--wait` plus `--wait-interval {seconds:10}` and `--wait-limit {seconds:600}` block until the app is ready for image upload. Minimum version: `ags` 0.5.1.
+
+**There is no `--confirm` flag on this release's `create-app`** — unlike the retired `extend-helper-cli`, which prompted for interactive y/n confirmation unless `--confirm` was passed, `ags extend create-app` has no confirmation step to skip. Verify against `ags extend create-app --help` before telling a reader to pass `--confirm` — passing an unknown flag errors.
 
 The server returns the app's full resource configuration in the response (`CPU.cpuLimit`, `CPU.requestCPU`, `memory.memoryLimit`, `memory.requestMemory`, `replica.minReplica`, `replica.maxReplica`, `replica.replicaLimit`).
 
-**`--cpu` and `--memory` are inputs only on `create-app`** — they're not accepted by `deploy-app`, `start-app`, or `stop-app`. To change CPU or memory on an *existing* app, use the AGS Admin Portal (app detail → resource configuration) or call CSM API directly. The CLI does not have an "update resources" subcommand today.
+### CSM API version
+
+The commands that forward to CSM — `create-app`, `get-app-info`, `list-images`, `deploy-app`, `start-app`, `stop-app`, and `delete-app` — all default to the CSM **v5** contract and accept `--api-version {v2|v5}` (default `v5`) to pin one. `deploy-app`'s `--json` body is `CreateDeploymentV5Request`, whose only field is still the required `"imageTag"`.
+
+`update-secret` and `update-var` carry no CSM version at all and take no `--api-version` flag. `docker-login`, `image-upload`, `tunnel`, and `clone-template` take none either.
+
+**`--cpu` and `--memory` are inputs only on `create-app`** — via its `--json` payload, not as flags on any command. They're not accepted in any form by `deploy-app`, `start-app`, or `stop-app`. To change CPU or memory on an *existing* app, use the AGS Admin Portal (app detail → resource configuration) or call CSM API directly. The CLI does not have an "update resources" subcommand today.
 
 ## Replicas
 
-The CLI does not accept `--min-replicas` or `--max-replicas` on any subcommand. Replica configuration (min, max, hard ceiling) is read-only via `get-app-info` (`replica.minReplica` / `replica.maxReplica` / `replica.replicaLimit`) and editable only in the Admin Portal or via CSM API.
+The CLI does not accept `--min-replicas` or `--max-replicas` as flags on any subcommand. But replica config is **not** purely read-only via the CLI: `create-app`'s `--json` payload accepts a `"replica": {"minReplica": {n}, "maxReplica": {n}}` field at creation time (see Create an Extend App above) — so a reader can set initial replica bounds through the CLI, just not with a `--min-replicas`/`--max-replicas` flag.
+
+For an *existing* app, replica configuration (min, max, hard ceiling) is read-only via `get-app-info` (`replica.minReplica` / `replica.maxReplica` / `replica.replicaLimit`) and editable only in the Admin Portal or via CSM API — `deploy-app`/`start-app`/`stop-app`/`delete-app` have no replica-related field or flag at all.
 
 ## Docker Login
 
 ```bash
-extend-helper-cli dockerlogin \
+ags extend docker-login \
   --namespace {namespace} \
-  --app {app-name} \
-  --login
+  --app {app-name}
 ```
+
+Runs `docker login` with the fetched credentials by default.
 
 Optional:
 
-- `--login` (or `-l`) — immediately runs `docker login` with the returned credentials.
-- `--print` (or `-p`) — print the password and exit (useful for piping).
+- `--print` (or `-p`) — print the credentials to stdout instead of running `docker login` (useful for piping).
+- `--print-format {json|token}` — output format for `--print`. Default `json`.
+- `--login` (or `-l`) — accepted for backward compatibility with the retired `extend-helper-cli --login` flag, but **ignored** on this release: `docker-login` already logs in by default unless `--print` is passed. Verify against `ags extend docker-login --help` before quoting different behavior.
 
 Credentials are scoped to one namespace + app. Re-run for different apps.
 
 ## Build and Push (image-upload)
 
 ```bash
-extend-helper-cli image-upload \
+ags extend image-upload \
   --namespace {namespace} \
   --app {app-name} \
   --image-tag {tag} \
@@ -153,7 +171,7 @@ extend-helper-cli image-upload \
 
 Optional flags:
 
-- `--login` (or `-l`) — auto-runs `dockerlogin` first.
+- `--login` (or `-l`) — auto-runs `docker-login` first.
 - `--work-dir {path}` (or `-w`) — defaults to the calling shell's cwd.
 - `--dockerfile {filename}` (or `-f`) — defaults to `Dockerfile`.
 - `--platform {os/arch}` (or `-p`) — defaults to `linux/amd64`. Pass multiple `--platform` for multi-arch builds.
@@ -167,90 +185,85 @@ Run from the app directory (Makefile + Dockerfile present), or pass `--work-dir`
 ## Deploy
 
 ```bash
-extend-helper-cli deploy-app \
+ags extend deploy-app \
   --namespace {namespace} \
   --app {app-name} \
-  --image-tag {tag}
+  --json '{"imageTag":"{tag}"}'
 ```
 
-Optional: `--wait` plus `--wait-interval {seconds:10}` and `--wait-limit {seconds:600}` to block until deploy finishes.
+Optional: `--wait` plus `--wait-interval {seconds:10}` and `--wait-limit {seconds:600}` to block until deploy finishes. Minimum version: `ags` 0.5.1.
 
-`deploy-app` does not accept `--cpu`, `--memory`, `--min-replicas`, or `--max-replicas`. The deploy uses whatever resource configuration the app currently has (set via `create-app` flags initially, or via the Admin Portal afterward).
+Exit codes under `--wait`, per the [0.5.1 CHANGELOG](https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.1/CHANGELOG.md):
+
+- `6` — the wait reached `--wait-limit`. The deploy may still finish; re-check with `get-app-info` before acting.
+- `3` — the app reached a failed state (`deployment-failed`, `deployment-timeout`, or `deployment-down` when the app came up and then crashed), printed as `deployment failed: <state>`. Do not retry blindly. `3` is also the code for any other API error, a permission denial included, so a `3` on its own does not prove the rollout failed — read the message.
+
+A CI script can tell "wait longer" (`6`) from "stop" (`3`) without parsing the message.
+
+The "Exit codes" list in `ags --help` stops at `5` and does not mention `6` (see [help-output.md](../cli/help-output.md)). That is a gap in the help text, not a different behaviour: 0.5.1 does exit `6` on a `--wait` timeout.
+
+`deploy-app` does not accept `--cpu`, `--memory`, `--min-replicas`, or `--max-replicas`. The deploy uses whatever resource configuration the app currently has (set via `create-app`'s `--json` payload initially, or via the Admin Portal afterward).
 
 ## Get App Info
 
 ```bash
-extend-helper-cli get-app-info \
+ags extend get-app-info \
   --namespace {namespace} \
   --app {app-name}
 ```
 
 Returns JSON with `appStatus`, `appRepoUrl`, `scenario`, `deploymentImageTag`, `CPU.*`, `memory.*`, `replica.*`, etc.
 
-Use `--path /appStatus` to extract a single field (JSON pointer; default `/`).
+To extract a single field, pipe `--format json` through `jq`. For `get-app-info` that output is the app's JSON itself, with no envelope, so the field sits at the top level:
 
-This is the canonical "what's running?" command — there is no `extend-helper-cli list` and no `extend-helper-cli status {app}`. To enumerate multiple apps, you need the Admin Portal (or your repo layout — one Makefile+Dockerfile dir per app).
+```bash
+ags extend get-app-info \
+  --namespace {namespace} \
+  --app {app-name} \
+  --format json | jq -r .appStatus
+```
+
+Without `jq`, read `appStatus` from the full JSON. There is no `--path` or other field-selection flag: `--path /appStatus` fails with `Unexpected argument '--path' found`.
+
+This is the canonical "what's running?" command — there is no `ags extend list` and no `ags extend status {app}`. To enumerate multiple apps, you need the Admin Portal (or your repo layout — one Makefile+Dockerfile dir per app).
 
 ## Stream App Logs
 
-```bash
-extend-helper-cli logs stream \
-  --namespace {namespace} \
-  --app {app-name}
-```
+**Not available in `ags extend` today.** The AGS CLI has no equivalent of `extend-helper-cli logs stream --previous` (not yet built). Do not tell a reader to install `extend-helper-cli` to get this — instead:
 
-Shows recent log lines from a deployed Extend app. Without `--follow`, prints the recent window and exits. With `--follow` / `-f`, keeps printing new lines until interrupted (Ctrl-C).
-
-Required flags:
-
-- `--namespace {namespace}` (or `-n`) — game namespace.
-- `--app {app-name}` (or `-a`) — Extend app name.
-
-Optional flags:
-
-- `--follow` / `-f` — keep streaming new lines (default `false`).
-- `--tail-lines {n}` / `--tail {n}` — recent lines to display **per replica** (default `100`).
-- `--previous` — show logs from the previous container instance, if it exists (default `false`).
-- `--pods {n}` — how many running replicas to include (default `1`).
-- `--since-seconds {n}` — only show logs newer than N seconds (default `0` = no since filter).
-- `--verbosity {0..6}` / `-v` — same verbosity scale as other subcommands (default `info`).
-
-`--output json` is **not** supported for `logs stream` — log lines always print to stdout; passing the flag warns on stderr and the command still streams text lines.
-
-`logs` is a parent command; the only subcommand today is `stream`. There is no `extend-helper-cli logs` action without a subcommand.
-
-Use this for live / recent pod stdout. Grafana Cloud remains available for historical search, LogQL, metrics, and dashboards (see `references/observe/cli-commands.md`).
-
-If `extend-helper-cli logs --help` fails on an installed binary, the CLI is older than the `logs` command — offer `/ags-extend install-cli` before declaring log streaming unsupported.
+- Use Grafana Cloud for historical search, LogQL, metrics, and dashboards (see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`).
+- If the reader already has `extend-helper-cli` installed from before this migration, `extend-helper-cli logs stream --previous` still works against their existing install and is not disallowed — but this skill does not instruct a fresh install of it for this purpose.
 
 ## Start / Stop
 
 ```bash
-extend-helper-cli start-app --namespace {namespace} --app {app-name}
-extend-helper-cli stop-app  --namespace {namespace} --app {app-name}
+ags extend start-app --namespace {namespace} --app {app-name}
+ags extend stop-app  --namespace {namespace} --app {app-name}
 ```
 
-Both support `--wait` / `--wait-interval` / `--wait-limit`. Useful pair when changing resource configuration in the Admin Portal — the change applies on the next start.
+Both support `--wait` / `--wait-interval` / `--wait-limit`. Minimum version: `ags` 0.5.1. Useful pair when changing resource configuration in the Admin Portal — the change applies on the next start.
 
 ## Environment Variables and Secrets (deployed-app config)
 
 These commands set runtime config on a *deployed* app. The deployed app's process sees the variables and secrets configured here.
 
 ```bash
-extend-helper-cli update-var \
+ags extend update-var \
   --namespace {namespace} --app {app-name} \
   --key KEY --value VALUE
 
-extend-helper-cli update-secret \
+ags extend update-secret \
   --namespace {namespace} --app {app-name} \
   --key KEY --value VALUE
 ```
 
+Prefer `--value-stdin` (reads the value from stdin) over `--value` to avoid exposing the value in shell history — this matters most for `update-secret`.
+
 Optional flags (both commands):
 
 - `--force` — create the variable/secret if it doesn't exist yet (otherwise the command errors when it's missing).
-- `--description {text}` — human-readable description shown in the Admin Portal.
-- `--sensitive {true|false}` — `update-secret` defaults to `true`, `update-var` defaults to `false`. Sensitive values are masked in the Admin Portal.
+- `--description {text}` — human-readable description shown in the Admin Portal. Preserved from the existing record on update if not supplied.
+- `--sensitive {true|false}` — `update-secret` defaults to `true`, `update-var` defaults to `false` on create; preserved from the existing record on update if not supplied. Sensitive values are masked in the Admin Portal.
 
 The Admin Portal exposes the same surface (app detail → environment variables / secrets), and CSM API can be called directly. Pick by workflow:
 
@@ -270,13 +283,15 @@ The trap to avoid: editing the deployed app's value by editing local `.env` and 
 ## Database Tunnel
 
 ```bash
-extend-helper-cli tunnel \
+ags extend tunnel \
   --namespace {namespace} \
   --resource-name {resource-name} \
   --local-port {local-port}
 ```
 
-Short flags: `-n` / `-r` / `-p`.
+Short flags: `-n` for `--namespace` only — `--resource-name` and `--local-port` have no short forms on this release. Verify against `ags extend tunnel --help` before quoting `-r`/`-p` short flags; the retired `extend-helper-cli` had them, but the current grounding artifact does not.
+
+Optional: `--pod-name {pod}` — target a specific pod instead of letting the CLI pick one.
 
 `--resource-name` supports both SQL and NoSQL database resource names. Find the resource name in the matching SQL or NoSQL Database area in the Admin Portal, then connect your database client to `localhost:{local-port}`.
 
@@ -285,43 +300,63 @@ The tunnel provides connectivity to the named database resource only. It does no
 ## Delete an Extend App
 
 ```bash
-extend-helper-cli delete-app \
+ags extend delete-app \
   --namespace {namespace} \
   --app {app-name} \
-  --confirm
+  --forced true
 ```
 
-Optional: `--force` (proceed even if the app is currently running), `--wait` / `--wait-interval` / `--wait-limit`.
+Minimum version for `--wait`: `ags` 0.5.1.
+
+**This release's `delete-app` has no `--confirm` flag and no `--force` flag** — it has a single `--forced {true|false}` flag (default `false`) that proceeds with deletion regardless of the app's current status when set to `true`. This differs from the retired `extend-helper-cli`, which had `--confirm` (skip the y/n prompt) and `--force` (delete despite running status) as two separate flags. Verify against `ags extend delete-app --help` before quoting either retired flag name.
+
+Optional: `--wait` / `--wait-interval` / `--wait-limit`.
+
+## Security Assessment (pen-testing engagements)
+
+`ags extend security-assessment` requests a pen-testing engagement for an Extend app, tracks it, and downloads its report. It has four subcommands:
+
+```bash
+ags extend security-assessment list-endpoints --namespace {namespace} --app-name {app-name}
+ags extend security-assessment request        --namespace {namespace} --app {app-name} --all-endpoints
+ags extend security-assessment list           --namespace {namespace}
+ags extend security-assessment result         --namespace {namespace} --app {app-name}
+```
+
+- **`list-endpoints`** — discovers a Service Extension app's testable endpoints and the permission each one requires (from the app's OpenAPI spec's `x-required-permission`, falling back to gRPC server reflection). Takes `--app-name`, **not** `--app` — the only `security-assessment` subcommand that does. An app that doesn't exist returns `404`; an app that isn't running, or has no reachable OpenAPI spec, still returns `200` with discovery skipped. Canonical command: `ags csm security-assessment get-app-endpoints`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:APP`.
+- **`request`** — submits the engagement. Choose endpoints non-interactively with `--all-endpoints` or `--operation-ids {id1,id2,...}`; without either it walks an interactive checklist. `--permission {operationId}={RESOURCE} [ACTION]` (repeatable) supplies a permission where none was discovered. It warns before submitting if any selected endpoint can modify or delete data; the global `--yes` skips that confirmation and `--dry-run` previews without requesting. `--wait` blocks until the engagement is `COMPLETED` or `FAILED`, polling every 10s up to `--wait-limit {seconds}` (default 1800); Ctrl-C stops only the local wait, not the engagement.
+- **`list`** — lists the namespace's engagements, live from the assessment service, so status always reflects its current state. Canonical command: `ags csm security-assessment list`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:SECURITYASSESSMENT`.
+- **`result`** — downloads a completed engagement's report. `--report-format {pdf|md}` (default `pdf`), `--report-output {path}` (or `-o`; default `{app}-{engagementId}-report.{ext}`), and `--engagement-id {id}` to skip the interactive picker.
+
+The `--help` output names no required permission for `request` or `result`, so don't state one.
 
 ## Login / Logout / Status
 
 Already covered under Authentication above:
 
 ```bash
-extend-helper-cli login    # OAuth 2.0 + PKCE browser flow against AB_BASE_URL
-extend-helper-cli logout   # revoke local session
-extend-helper-cli status   # current login state (NOT a CLI version check)
+ags auth login                              # interactive OAuth 2.0 + PKCE browser flow
+ags auth login --grant client-credentials    # CI / unattended
+ags auth status                              # current login state
 ```
-
-`login` accepts `--base-url {url}` to override `AB_BASE_URL` for that single invocation.
 
 ## Clone Template
 
 ```bash
-extend-helper-cli clone-template \
-  --repo-url {url} \
+ags extend clone-template \
+  --template {name} \
   --destination {dir}
 ```
 
-Useful flags:
+Without `--template`, the command prompts interactively through scenario, template, and language selection; pass `--template` for CI/scripted use.
 
-- `--repo-url {url}` (or `-r`) — HTTPS or SSH repo URL.
-- `--scenario {name}` and `--template {name}` — pick from a starters catalog instead of a raw URL.
-- `--language {C#|Go|Java|Python}` — filter starters by language.
-- `--starters {path}` — path to a starters YAML file.
-- `--branch {ref}` (or `-b`), `--depth {n}` — clone control. Depth defaults to `1` (shallow); pass `0` for a full clone.
-- `--auth-method {none|token|basic|ssh}` — defaults to `none`. Pair with `--token`, `--username`/`--password`, or `--ssh-path`/`--ssh-pass` as needed.
-- `--confirm`, `--dry-run`.
+Useful flags (per `references/cli/help-output.md` — this release's `clone-template` has a smaller flag surface than the retired `extend-helper-cli`'s):
+
+- `--template {name}` — select a template by name (non-interactive).
+- `--destination {dir}` (or `-d`) — destination directory.
+- `--depth {n}` — shallow clone depth. Default `1` (shallow); pass `0` for a full clone.
+
+**Removed, not present on this release:** `--repo-url`/`-r` (raw-URL clone — cloning from a raw URL was removed; starters catalog only), `--scenario`, `--language`, `--starters`, `--branch`/`-b`, `--auth-method`, `--token`, `--username`/`--password`, `--ssh-path`/`--ssh-pass`, `--confirm`, `--dry-run`. If a reader needs any of these, verify against `ags extend clone-template --help` first — this file's grounding artifact (`references/cli/help-output.md`) shows none of them on the current release, and that artifact was captured against the real binary, not hand-authored.
 
 `subskills/wizard.md` currently uses raw `git clone` because it pairs the clone with the integration patches; `clone-template` is documented here for completeness and may take over from the wizard later.
 
@@ -329,23 +364,30 @@ Useful flags:
 
 These are the most common invented commands and flags. If you're tempted to write any of them, you're hallucinating — defer to this section.
 
-- `extend-helper-cli list` — no list command. Use `get-app-info` per app, or the Admin Portal to enumerate.
-- `extend-helper-cli logs` with no subcommand — parent only; use `logs stream`. Invented siblings like `logs get` / `logs tail` do not exist.
-- `extend-helper-cli deploy` (without the `-app` suffix) — the command is `deploy-app`.
-- `--base-url {url}` on any command except `login` — `AB_BASE_URL` is set via env or `.env`; only `login` accepts an inline override.
-- `--cpu` / `--memory` on `deploy-app`, `start-app`, `stop-app`, or `update-var` — they exist only on `create-app` (initial allocation). Post-create resource changes go through Admin Portal or CSM API.
-- `--min-replicas` / `--max-replicas` on any command — replica config is read-only via `get-app-info`; editable only in Admin Portal / CSM API.
+- `ags extend list` — no list command. Use `get-app-info` per app, or the Admin Portal to enumerate. (`list-images` is a real subcommand, but it lists container images for one app, not apps themselves.)
+- `ags extend logs` with no subcommand, or any `logs` subcommand at all — log streaming is not available in `ags extend` today (see "Stream App Logs" above). Invented siblings like `logs get` / `logs tail` do not exist either.
+- `ags extend deploy` (without the `-app` suffix) — the command is `deploy-app`.
+- `--base-url {url}` on any `ags extend` command — the environment is chosen once at login time via `ags auth login`, not a per-command flag on `image-upload`/`deploy-app`/etc. (`--base-url` **is** a real flag, but only on `ags auth login` itself — see Authentication above — where it resolves before the `AGS_BASE_URL` environment variable.)
+- `--cpu` / `--memory` as flags on any command — they don't exist as flags at all on this release. `create-app`'s `--json` payload carries `cpu.requestCPU` / `memory.requestMemory` (see Create an Extend App above); post-create resource changes go through the Admin Portal or CSM API.
+- `--min-replicas` / `--max-replicas` on any command — no such flags exist. `create-app`'s `--json` payload can set initial bounds via `replica.minReplica`/`replica.maxReplica` (see Replicas above); for an *existing* app, replica config is read-only via `get-app-info` and editable only in Admin Portal / CSM API.
 - `--permissions` on any command — OAuth client permissions are configured on the IAM client itself in the Admin Portal.
-- `--client-id` / `--client-secret` flags — credentials are env-only (`AB_CLIENT_ID` / `AB_CLIENT_SECRET`) or the `login` browser flow.
-- `extend-helper-cli status {app-name}` — `status` reports *login* state, not per-app status. For app status: `get-app-info --path /appStatus`.
+- `--client-id` / `--client-secret` on any `ags extend` command (`image-upload`, `deploy-app`, `create-app`, etc.) — these subcommands take no such flags; the session is resolved once via `ags auth login`. (`--client-id` and `--client-secret` **are** real flags, but only on `ags auth login --grant client-credentials` itself — see Authentication above — where they resolve before the `AGS_CLIENT_ID` / `AGS_CLIENT_SECRET` environment variables.)
+- `ags extend status {app-name}` — there is no per-app `status` under `ags extend`; login/session status is `ags auth status`. For app status: `get-app-info --format json | jq -r .appStatus`.
+- `--path {json-pointer}` on `get-app-info` (or any command) — carried over from `extend-helper-cli`; `ags` has no field-selection flag. Pipe `--format json` through `jq` instead (see Get App Info above).
+- `ags extend create-app --scenario {value}` / `ags extend deploy-app --image-tag {tag}` — these flags were retired; both commands take `--json` payloads now (see Create/Deploy above).
+- `--confirm` on `create-app` or `delete-app` — no such flag exists on this release; `delete-app` uses `--forced true` instead (see Delete an Extend App above), and `create-app` has no confirmation step to skip.
+- `-v` meaning "print version" — `-v` is short for `--verbose` (trace/debug logging); the version flag is `-V` (capital) or `--version` (see Presence and freshness check above).
+- `--output json` meaning "format output as JSON" — `--output <path>` writes the response body to a file; the JSON-automation flag is `--format json` (see Machine-readable output below).
 
-If you need a flag that isn't documented here, run `extend-helper-cli {subcommand} --help` against the binary and re-verify, then update this file before quoting the new flag elsewhere.
+If you need a flag that isn't documented here, run `ags extend {subcommand} --help` against the binary and re-verify, then update this file before quoting the new flag elsewhere.
 
-## Machine-readable output (`--output json`)
+## Machine-readable output (`--format json`)
 
-These commands accept `--output json` and emit a single JSON envelope on stdout (logs go to stderr): `create-app`, `deploy-app`, `start-app`, `stop-app`, `delete-app`, `get-app-info`, `update-var`, `update-secret`, `clone-template`, `login`, `logout`, `status`.
+**The flag is `--format json`, not `--output json`.** `--output <path>` is a different, real, global `ags` flag that writes the response body to a file at `<path>` (`-` for stdout) — passing `--output json` would try to write the response to a file literally named `json`, not select JSON formatting. Do not confuse the two; verify against `ags --help` if unsure.
 
-Envelope shape:
+These commands accept `--format json` and emit a single JSON envelope on stdout (logs go to stderr): `create-app`, `deploy-app`, `start-app`, `stop-app`, `delete-app`, `update-var`, `update-secret`, `clone-template` (all under `ags extend`), plus `ags auth login`, `ags auth logout`, `ags auth status`.
+
+Envelope shape — assumed unchanged from `extend-helper-cli`'s envelope shape pending verification against a real `ags extend` release; re-verify when the targeted release ships:
 
 ```json
 {
@@ -357,13 +399,13 @@ Envelope shape:
 }
 ```
 
+`get-app-info` is the exception, and its shape is measured rather than assumed: `get-app-info --format json` prints the app's JSON itself, pretty-printed, with no envelope — `appStatus`, `deploymentImageTag` and the other fields sit at the top level.
+
 On failure, `result` contains the error message and the process exits with code 1. `serverResponse` is omitted for commands with no server calls (`status`, `clone-template`).
 
-`--output json` is **not** supported on `dockerlogin`, `image-upload`, `tunnel`, or `logs stream` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally.
+`--format json` is **not** supported on `docker-login`, `image-upload`, or `tunnel` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally. Log streaming itself is unavailable in `ags extend` at all (see "Stream App Logs" above), so there is no `logs stream --format json` case to consider here.
 
-When `--output json` is set and the command would normally show an interactive confirmation prompt (`create-app` / `delete-app` without `--confirm`), the prompt is skipped automatically.
-
-Use `--output json` in any non-interactive context (CI/CD pipelines, scripted automation).
+Use `--format json` in any non-interactive context (CI/CD pipelines, scripted automation).
 
 ## Full Deploy Sequence (Single App)
 
@@ -371,16 +413,20 @@ Use `--output json` in any non-interactive context (CI/CD pipelines, scripted au
 cd {app-path}
 
 # Auth: either (a) interactive once per session
-extend-helper-cli login                 # opens browser
+ags auth login                           # opens browser
 
-# OR (b) export env vars / put them in .env in this directory
-# AB_BASE_URL, AB_CLIENT_ID, AB_CLIENT_SECRET
+# OR (b) export env vars (the CLI has no .env file support)
+# AGS_BASE_URL, AGS_CLIENT_ID, AGS_CLIENT_SECRET
+ags auth login --grant client-credentials
 
-extend-helper-cli image-upload \
+ags extend image-upload \
   --namespace {namespace} --app {app-name} --image-tag v1.0.0 --login
 
-extend-helper-cli deploy-app \
-  --namespace {namespace} --app {app-name} --image-tag v1.0.0 --wait
+ags extend deploy-app \
+  --namespace {namespace} --app {app-name} \
+  --json '{"imageTag":"v1.0.0"}' --wait
 ```
+
+Minimum version for `--wait`: `ags` 0.5.1.
 
 Auth must be set first — see Authentication above for the two modes.

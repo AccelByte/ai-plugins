@@ -65,7 +65,13 @@ hand-maintained list ([grounding-sources.md](../grounding-sources.md)):
   (`…accelbyte-unity-sdk.git#17.16.1`) and cite
   `…/accelbyte-unity-sdk/blob/<pinned-ref>/Runtime/Api/<File>.cs`; if the repo
   floats the dependency on a branch instead of a tag, say so and drop the
-  confidence, because there is no stable ref to cite. Two things make the Unity
+  confidence, because there is no stable ref to cite. If no manifest entry names
+  the SDK's git URL, the SDK may be embedded in a wrapper package (a `file:`
+  dependency carrying it as a git submodule) — that is not a missing pin. Read
+  the embedded folder's commit and cite at its tag, or at the commit sha when no
+  tag matches; only a plain copy with a self-reported `version` lowers
+  confidence ([sdk-symbol-diff.md](../sdk-symbol-diff.md) § *Current, when the
+  SDK is embedded*). Two things make the Unity
   channel decisive. First, the engine **compiler** can confirm it mechanically: a
   C# `CS0612` / `CS0618` warning in `Logs/Editor.log` naming the exact member is
   the project's own toolchain agreeing, so quote it. Second, it catches what the

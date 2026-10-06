@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 see-also:
@@ -52,7 +52,7 @@ If you're designing for >60 replicas' worth of load, rethink:
 
 ## Autoscaling
 
-AGS scales Extend replicas between a min and max configured per-app in the AGS Admin Portal (Extend → [app] → Settings → Auto Scaling Policy). The `extend-helper-cli` does not accept `--min-replicas` or `--max-replicas` on any subcommand — see `references/deploy/cli-commands.md` for the full replica-related notes. Adjust `Min Replicas` and `Max Replicas` in the Portal (or via the CSM API) and redeploy to pick up the new bounds.
+AGS scales Extend replicas between a min and max configured per-app in the AGS Admin Portal (Extend → [app] → Settings → Auto Scaling Policy). `ags extend` does not accept `--min-replicas` or `--max-replicas` as flags on any subcommand — `create-app`'s `--json` payload can set initial `replica.minReplica`/`replica.maxReplica` bounds at creation time, but for an existing app the bounds are read-only via the CLI (`get-app-info`) and editable only in the Admin Portal or via the CSM API — see `references/deploy/cli-commands.md` for the full replica-related notes. Adjust `Min Replicas` and `Max Replicas` in the Portal (or via the CSM API) and redeploy to pick up the new bounds.
 
 Setting `min == max` disables autoscale (fixed size). The autoscale trigger is CPU utilization, configurable per-app (30–90%, default 50%) via Admin Portal → [app] → Settings → Auto Scaling Policy.
 

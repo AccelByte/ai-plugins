@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-05-07
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 see-also:
 - '[github-actions.md](../ci/github-actions.md)'
 - '[gitlab.md](../ci/gitlab.md)'
@@ -18,8 +18,8 @@ Security concerns specific to Extend. General application security (input valida
 
 An Extend app typically holds:
 
-- **IAM client credentials** (`AB_CLIENT_ID`, `AB_CLIENT_SECRET`) — the app's identity to AGS.
-- **`extend-helper-cli` login creds** — deployer identity. Held in CI secrets, not in the repo.
+- **IAM client credentials** (`AB_CLIENT_ID`, `AB_CLIENT_SECRET`) — the app's own identity to AGS, read from the app's `.env` at runtime.
+- **`ags` login creds** — deployer identity (`AGS_CLIENT_ID`/`AGS_CLIENT_SECRET` for `ags auth login --grant client-credentials`, or the browser session from `ags auth login`). Held in CI secrets, not in the repo. Distinct from the app's own credentials above — this is who's *deploying* the app, not who the app *is*.
 - **Any external API keys** your handler calls (game services, analytics, etc.) — your problem, not AGS's, but live alongside AGS creds.
 
 Each has a different blast radius. Treat them accordingly.
@@ -31,13 +31,13 @@ Three places secrets flow through, each with different rules:
 **Local dev:**
 
 - Use a `.env` file at the app root.
-- `.gitignore` must include `.env` (the scaffolded templates do; verify after `extend-helper-cli create-app`).
+- `.gitignore` must include `.env` (the scaffolded templates do; verify after `ags extend create-app`).
 - Never commit `.env.example` with real values — the placeholder values should be obvious placeholders (`your-client-id-here`, not a format that looks real).
 
 **CI (GitHub Actions, GitLab, etc.):**
 
 - Use the CI's secret store: GitHub Actions `secrets.*`, GitLab CI/CD Variables (protected + masked).
-- Never echo secrets in CI logs. Do not `echo $AB_CLIENT_SECRET` even for debugging. Use `::add-mask::` in Actions if a variable must be passed through.
+- Never echo secrets in CI logs. Do not `echo $AGS_CLIENT_SECRET` even for debugging. Use `::add-mask::` in Actions if a variable must be passed through.
 - Limit which branches can access the secret. GitHub: restrict to `main` via environment protection rules. GitLab: mark "Protected" so only protected branches read it.
 
 **Runtime (AGS-hosted):**

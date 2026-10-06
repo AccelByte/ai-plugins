@@ -1,8 +1,8 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
-- https://github.com/AccelByte/extend-helper-cli
+- https://github.com/AccelByte/accelbyte-ags-cli
 see-also:
 - '[contract.md](contract.md)'
 - '[github-actions.md](../ci/github-actions.md)'

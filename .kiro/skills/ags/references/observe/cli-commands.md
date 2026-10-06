@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-20
+last-verified: 2026-09-23
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server
 see-also:
@@ -14,7 +14,7 @@ see-also:
 
 Operational commands via the **AGS CLI** (`ags`) for namespace, IAM, auth, profile, diagnostics, and generated AGS API queries.
 
-> **Note on CLI families.** AGS uses `ags` for namespace / IAM / operational API work. Extend uses a different CLI (`extend-helper-cli`) - those commands are owned by `/ags-extend`, not `/ags`. This file covers the AGS CLI only.
+> **Note on CLI families.** `ags` covers both namespace / IAM / operational API work and, via `ags extend`, the full Extend app lifecycle. This file covers namespace-level AGS CLI usage only — for Extend-specific commands (`ags extend create-app`, `deploy-app`, etc.), see `/ags-extend`.
 
 > **Verify before relying.** The AGS CLI generates service commands from bundled OpenAPI specs. Use `ags describe` as the primary, structured discovery mechanism for exact command shapes before running them. Use `--help` only as a fallback for non-generated commands or when `describe` is unavailable for that command family.
 
@@ -111,7 +111,7 @@ After selecting a path, stop on authentication or authorization failures, missin
 
 ## When Extend's CLI is the right answer instead
 
-If the user is asking about deploying / observing / debugging an Extend app - that's `extend-helper-cli`, not the AGS CLI. Route to `/ags-extend install-cli` or `/ags-extend observe`.
+If the user is asking about deploying / observing / debugging an Extend app - that's `ags extend`, part of the same AGS CLI — but the workflow is owned by `/ags-extend`, not `/ags`. Route to `/ags-extend deploy` or `/ags-extend observe`.
 
 ## Where to look
 

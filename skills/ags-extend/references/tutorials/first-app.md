@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-04-21
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 - https://github.com/AccelByte/extend-service-extension-go
@@ -21,7 +21,7 @@ A narrated end-to-end walkthrough. Builds a Service Extension in Go (the lowest-
 - Docker (for later — not needed for the local-run portion).
 - Git.
 
-**Not required yet:** `extend-helper-cli`, Admin Portal access, deployment. Those come after local success.
+**Not required yet:** the `ags` CLI, Admin Portal access, deployment. Those come after local success.
 
 ---
 

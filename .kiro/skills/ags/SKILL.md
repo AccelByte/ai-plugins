@@ -158,7 +158,7 @@ A 5xx identifies a failure class, not a root cause. Gather the evidence checklis
 
 Apply these checks in order. Stop at the first match.
 
-1. **Is the message about Extend implementation or deployment specifically?** (Override, Event Handler, Service Extension, gRPC interceptor, App UI, `extend-helper-cli`, deploying a custom backend service, the Extend Apps Directory, custom match functions, custom Matchmaking gRPC handlers, **the Extend SDKs — Go, Python, C#, or Java**.) → Point at `/ags-extend`. Do not route here. "Should I add Extend?" decisions route to `subskills/handoff.md` below.
+1. **Is the message about Extend implementation or deployment specifically?** (Override, Event Handler, Service Extension, gRPC interceptor, App UI, `ags extend`, deploying a custom backend service, the Extend Apps Directory, custom match functions, custom Matchmaking gRPC handlers, **the Extend SDKs — Go, Python, C#, or Java**.) → Point at `/ags-extend`. Do not route here. "Should I add Extend?" decisions route to `subskills/handoff.md` below.
 2. **Is the message about ADT operations specifically?** (Build distribution, Smart Builds, crash reporting, crash video replay, playtest scheduling, ADT Hub, ADT CLI, ADT SDKs, BlackBox.) → Point at `/adt`. ADT is a separate AccelByte product with its own skill. "Should I add ADT?" decisions route to `subskills/handoff.md` below.
 3. **Is the message off-topic?** (Generic backend / cloud advice with no AccelByte tie, unrelated programming help, non-AccelByte products like Pragma / PlayFab when asked about *their* internals.) → Use the off-topic response below. Do not route.
 4. **Is the message empty or only `/ags`?** → Ask the disambiguation question (below). Do not route yet.
@@ -258,7 +258,7 @@ Use when the message isn't about AGS or the AccelByte family:
 
 Use when the message is clearly about Extend:
 
-> That's an Extend-specific question — Override, Event Handler, Service Extension, App UI, deploying custom backend services, or the `extend-helper-cli`. Run `/ags-extend` to invoke the Extend skill. It owns that lifecycle end-to-end. (`/ags` knows Extend exists and where it fits, but doesn't own its workflow.)
+> That's an Extend-specific question — Override, Event Handler, Service Extension, App UI, deploying custom backend services, or `ags extend` commands. Run `/ags-extend` to invoke the Extend skill. It owns that lifecycle end-to-end. (`/ags` knows Extend exists and where it fits, but doesn't own its workflow.) If you already have a namespace, app name, or signed-in `ags` session from this conversation, mention them when you run `/ags-extend` so it doesn't have to ask again.
 
 ### ADT redirect
 
@@ -281,7 +281,7 @@ If the user's follow-up inside a running subskill clearly belongs to a different
 ## What this file does NOT do
 
 - **Does not explain AGS modules.** That's `ask`.
-- **Does not run any CLI commands or write project files.** Those live in `wizard`, `connect-portal`, `install-sdk`, `install-cli`, `integrate`, `debug`, `run-workflow`.
+- **Does not run any AGS CLI commands or write project files.** Those live in `wizard`, `connect-portal`, `install-sdk`, `install-cli`, `integrate`, `debug`, `run-workflow`.
 - **Does not read references directly.** Subskills, workflows, capability routers, and maps own their own reading.
 - **Does not own the Extend lifecycle.** That's `/ags-extend`.
 - **Does not review an integration that already exists.** A repo scan, an SDK-upgrade break check, a fleet/app sizing check, an end-to-end check of one named AMS fleet or Extend app, or explaining one dead server or deployment, is `/teammate`. `subskills/doctor.md` diagnoses a symptom you already have; `/teammate` goes looking for the ones you don't.

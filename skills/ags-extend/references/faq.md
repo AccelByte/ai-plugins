@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-08-24
+last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -36,7 +36,7 @@ Practical differences:
 | AGS event subscriptions | Delivered automatically via Kafka Connect | Poll AGS APIs, or run a webhook listener |
 | Infrastructure | AccelByte manages it | You manage it (k8s, networking, scaling, uptime) |
 | Latency to AGS APIs | Low — same network | Higher — crosses the public internet |
-| Deployment | Docker + `extend-helper-cli` | Your own CI/CD + cloud infra |
+| Deployment | Docker + `ags extend` | Your own CI/CD + cloud infra |
 | Compute billing | Part of your AGS enterprise contract | Your cloud provider |
 | Observability | Grafana provided by AccelByte | Whatever you wire up |
 | Isolation from AGS | Shared namespace infrastructure | Fully isolated |
@@ -83,7 +83,7 @@ HTTP request bodies over 4.5 MB are rejected at the ingress. For large uploads (
 
 ### Log retention (30 days)
 
-Grafana Cloud log retention is 30 days. For live/recent logs, `extend-helper-cli logs stream` is also available — see `references/deploy/cli-commands.md#stream-app-logs`. For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
+Grafana Cloud log retention is 30 days. Live log streaming is not available in `ags extend` today (see `references/deploy/cli-commands.md#stream-app-logs`) — use Grafana Cloud (see `references/observe/grafana-guide.md`) for near-real-time viewing instead. For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
 
 ### Metrics retention (13 months)
 
@@ -147,7 +147,7 @@ Per-app, typically. If one app's credentials are compromised, you want to rotate
 
 ### How do I roll back a deployment?
 
-`extend-helper-cli` doesn't ship a one-command rollback. To revert: redeploy a previous working image, which means either (a) keeping an older tag image-uploaded and deploying that tag again, or (b) checking out the previous commit and re-running `image-upload` + `deploy`. The observable "deploy" step in AGS is what matters — old images are retained up to the per-app image limit.
+`ags extend` doesn't ship a one-command rollback. To revert: redeploy a previous working image, which means either (a) keeping an older tag image-uploaded and deploying that tag again, or (b) checking out the previous commit and re-running `image-upload` + `deploy-app`. The observable "deploy" step in AGS is what matters — old images are retained up to the per-app image limit.
 
 ### Does a new deploy mean zero downtime?
 
@@ -155,7 +155,7 @@ AGS rolls new replicas before stopping old ones. For Service Extension with REST
 
 ### My deploy is stuck in `Deploying` for 10 minutes
 
-Usually one of: image is large and registry pull is slow, resource request exceeds what's available on the namespace VM, or health check is failing so AGS won't promote replicas. Run `extend-helper-cli get-app-info --namespace <ns> --app <app-name>` and look at the app status. Check logs via Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud). If the app is still stuck after 15 minutes, something is genuinely wrong — escalate to AccelByte support with the namespace and app name.
+Usually one of: image is large and registry pull is slow, resource request exceeds what's available on the namespace VM, or health check is failing so AGS won't promote replicas. Run `ags extend get-app-info --namespace <ns> --app <app-name>` and look at the app status. Check logs via Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud). If the app is still stuck after 15 minutes, something is genuinely wrong — escalate to AccelByte support with the namespace and app name.
 
 ---
 
@@ -174,9 +174,9 @@ Install with `/ags-extend install-mcp` if your IDE supports MCP.
 
 Yes. The template repos ship with `.devcontainer/` configs. Extend apps are "just Go/Python/Java/C#" until deploy, so anything your language's tooling supports works.
 
-### Can I pair `extend-helper-cli` with CI/CD?
+### Can I pair `ags extend` with CI/CD?
 
-Yes. `image-upload` and `deploy-app` are scriptable. Set `AB_CLIENT_ID`, `AB_CLIENT_SECRET`, and `AB_BASE_URL` as CI environment variables (secrets); invoke the CLI in a pipeline step the same way you would locally. The CLI authenticates via these environment variables automatically — there is no separate login step. See `references/ci/github-actions.md` and `references/ci/gitlab.md` for ready-made pipeline templates.
+Yes. `image-upload` and `deploy-app` are scriptable. Set `AGS_BASE_URL`, `AGS_CLIENT_ID`, and `AGS_CLIENT_SECRET` as CI environment variables (secrets), run `ags auth login --grant client-credentials` once per job to authenticate, then invoke the CLI in later pipeline steps the same way you would locally. See `references/ci/github-actions.md` and `references/ci/gitlab.md` for ready-made pipeline templates.
 
 ---
 

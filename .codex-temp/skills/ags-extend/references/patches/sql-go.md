@@ -4,7 +4,7 @@ language: go
 app-types:
 - service-extension
 docs: https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-sql-database/
-last-verified: 2026-04-21
+last-verified: 2026-09-22
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-sql-database/
 - https://github.com/AccelByte/extend-service-extension-with-sql-go
@@ -249,7 +249,7 @@ Replace `guild_service` with the customer's database name.
 
 - **TLS is required** for Aurora connections. Set `SQLDB_CA_CERT_FILE_PATH` to the CA certificate provided by AccelByte. The connection string appends `?sslmode=require&sslrootcert=<path>` when the cert path is set.
 - **Connection pooling** — `pgxpool` manages the pool internally. Default pool sizes are usually fine; tune via `pgxpool.ParseConfig` options if needed.
-- **Local tunnel** — use `extend-helper-cli tunnel --resource-name <name> --namespace <ns> --local-port <port>` to connect to the managed Aurora instance from your local machine for debugging.
+- **Local tunnel** — use `ags extend tunnel --resource-name <name> --namespace <ns> --local-port <port>` (see `references/deploy/cli-commands.md`) to connect to the managed Aurora instance from your local machine for debugging.
 - **Provisioning** — request SQL database access via Admin Portal → Development Utilities → Extend Database Integration.
 - **Schema migrations** — the sample repo uses `initializeSchema` in the storage constructor with `CREATE TABLE IF NOT EXISTS`. For production, consider a dedicated migration tool (e.g. `golang-migrate`) for versioned schema changes.
 
