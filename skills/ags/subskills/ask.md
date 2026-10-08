@@ -197,7 +197,8 @@ routes invites; the relationship data itself is in Social.
 ```
 User: I want my players to talk to each other.
 
-Are you asking about text chat (party / global chat — that's Lobby) or
+Are you asking about text chat (personal / party / session chat — that's the
+Chat service, `references/modules/chat.md`) or
 voice chat (not native to AGS — usually integrated via Vivox as an
 Extend Service Extension)?
 

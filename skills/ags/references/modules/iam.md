@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -48,5 +48,5 @@ When sold standalone, IAM is **AccelByte Access** — see `references/ecosystem/
 ## Where this module ends
 
 - **Custom auth logic** that goes beyond IAM's defaults (e.g. custom role assignment based on game state) is an Extend conversation. Route to `/ags-extend ask`.
-- **Lobby chat / friends / parties** are not IAM — they live in the Lobby module. See `references/modules/lobby.md`.
+- **Chat / friends / parties** are not IAM — chat lives in the Chat service (`references/modules/chat.md`), parties and presence in Lobby (`references/modules/lobby.md`).
 - **Player-purchased entitlements** are tracked in the Store / Entitlements module, not IAM. See `references/modules/store-entitlements.md`.

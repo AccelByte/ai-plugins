@@ -1,9 +1,11 @@
 ---
-last-verified: 2026-07-01
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/peer-to-peer/
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/peer-to-peer/configure-turn-server-autoscale/
 - https://docs.accelbyte.io/gaming-services/modules/multiplayer/peer-to-peer/configure-P2P-matchmaking-oss/
+- https://docs.accelbyte.io/gaming-services/modules/multiplayer/peer-to-peer/configure-P2P/
+- https://docs.accelbyte.io/gaming-services/modules/multiplayer/session/lobby/lobby-websocket/
 - https://docs.accelbyte.io/gaming-services/knowledge-base/glossary/
 see-also:
 - '[session.md](session.md)'
@@ -33,7 +35,7 @@ In AGS P2P, TURN is not a separate gameplay server model like AMS. TURN exists t
 
 ## How AGS Fits
 
-AGS can provide the P2P backend pieces around NAT traversal and TURN fallback, but the game still needs a client-side networking implementation. Session and Matchmaking decide who should be connected. Lobby, Session, or a custom backend path may carry signaling or coordination depending on the integration. STUN/TURN/ICE establish the network path between the peers.
+AGS can provide the P2P backend pieces around NAT traversal and TURN fallback, but the game still needs a client-side networking implementation. Session and Matchmaking decide who should be connected. **Lobby carries the signaling**: the AGS P2P docs place the signaling server inside AGS Lobby, and peers exchange offers, answers, and ICE candidates as `signalingP2PNotif` messages on the Lobby WebSocket, addressed by the recipient's user ID. AccelByte's Unreal and Unity P2P libraries do this for you; a browser or custom-engine client sends the message itself (see `../sdks/web/webrtc-p2p.md` for its shape). Session storage and attributes are not a signaling channel. STUN/TURN/ICE establish the network path between the peers.
 
 For AGS Session, P2P is represented as a game session with server type `P2P`. Do not assume AMS allocation for P2P sessions. AMS is for dedicated-server outcomes.
 
@@ -60,7 +62,7 @@ Before implementing an AGS P2P flow, capture:
 - How players are grouped: party, Session, Matchmaking, custom invite, or another flow.
 - Which session template uses server type `P2P`.
 - Which peer is host, or whether peers are symmetric.
-- How signaling data is exchanged between peers.
+- How signaling data reaches the other peer — Lobby `signalingP2PNotif`, done by the AGS P2P library or by your own client code.
 - How the client obtains ICE server configuration or TURN credentials.
 - What happens when direct ICE fails and TURN relay is selected.
 - What evidence proves the connection path worked: direct candidate, relay candidate, data channel open, in-game state sync, or engine-specific travel success.
@@ -71,6 +73,7 @@ Before implementing an AGS P2P flow, capture:
 - **Assuming TURN is a dedicated server** - TURN relays packets for peer connectivity; it does not run the gameplay simulation.
 - **Assuming Unreal/Unity guidance applies to web games** - browser games use WebRTC APIs, not AccelByte Network Utilities or Unity P2P packages.
 - **Skipping signaling** - WebRTC peers still need a way to exchange offers, answers, and ICE candidates unless the platform integration abstracts that away.
+- **Building a separate signaling path** - Lobby already provides one. Routing SDP through session storage or attributes is not signaling: nothing delivers the write to the other peer.
 - **Treating STUN as enough** - STUN can fail in restrictive networks. TURN fallback is the reason the relay path exists.
 
 ## Where to look in the docs

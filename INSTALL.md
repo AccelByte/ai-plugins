@@ -237,7 +237,7 @@ Requires `uvx` (https://docs.astral.sh/uv/) and a matching Unity editor installa
 Add the embedded UI tools package to your Unity project's `Packages/manifest.json`:
 
 ```json
-"com.accelbyte.ui-tools": "https://github.com/AccelByte/accelbyte-unity-mcp.git?path=data/com.accelbyte.ui-tools#main"
+"com.accelbyte.ui-tools": "https://github.com/AccelByte/accelbyte-unity-mcp.git?path=data/com.accelbyte.ui-tools#v0.2.0"
 ```
 
 Unity Package Manager resolves and downloads the package automatically on next editor open.

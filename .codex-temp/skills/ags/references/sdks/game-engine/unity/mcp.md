@@ -1,7 +1,7 @@
 ---
 description: Set up the AccelByte Unity MCP for Unity-specific AGS UI prefab generation
   and future Unity SDK integration tooling.
-last-verified: 2026-06-24
+last-verified: 2026-10-06
 sources:
 - https://github.com/AccelByte/accelbyte-unity-sdk
 see-also:
@@ -58,7 +58,7 @@ Add to the project's `.mcp.json` (create it if absent):
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/AccelByte/accelbyte-unity-mcp@main",
+        "git+https://github.com/AccelByte/accelbyte-unity-mcp@v0.2.0",
         "accelbyte-unity-mcp"
       ]
     }
@@ -77,7 +77,7 @@ and the `unity_ui_bridge_health` tool is available before continuing.
 Codex does not read `.mcp.json`. Use a project-local clone instead:
 
 ```powershell
-git clone https://github.com/AccelByte/accelbyte-unity-mcp.git .codex/mcp/accelbyte-unity-mcp
+git clone --branch v0.2.0 https://github.com/AccelByte/accelbyte-unity-mcp.git .codex/mcp/accelbyte-unity-mcp
 python -m pip install -r .codex/mcp/accelbyte-unity-mcp/requirements.txt
 ```
 
@@ -94,7 +94,7 @@ args = [".codex/mcp/accelbyte-unity-mcp/server.py"]
 Add the UI tools package to `Packages/manifest.json` under `dependencies`:
 
 ```json
-"com.accelbyte.ui-tools": "https://github.com/AccelByte/accelbyte-unity-mcp.git?path=data/com.accelbyte.ui-tools#main"
+"com.accelbyte.ui-tools": "https://github.com/AccelByte/accelbyte-unity-mcp.git?path=data/com.accelbyte.ui-tools#v0.2.0"
 ```
 
 Unity Package Manager resolves and downloads the package automatically on the next

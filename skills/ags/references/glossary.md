@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-23
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -73,7 +73,7 @@ Terms that come up repeatedly across AccelByte Gaming Services. One line where p
 
 **Party.** A group of players intending to play together. Parties are shorter-lived than friend lists; they're created, joined, and disbanded around play sessions.
 
-**Lobby.** The realtime channel that handles party state, presence, chat, and invitations. WebSocket-based.
+**Lobby.** The realtime channel that handles party state, presence, invitations, and P2P signaling. WebSocket-based. Text chat is the separate Chat service, with its own WebSocket.
 
 **Presence.** A player's current online status. Updated by the Lobby when the player connects/disconnects/AFKs.
 

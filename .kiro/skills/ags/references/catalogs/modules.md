@@ -1,11 +1,12 @@
 ---
-last-verified: 2026-08-25
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/
 see-also:
 - '[iam.md](../modules/iam.md)'
 - '[legal.md](../modules/legal.md)'
 - '[lobby.md](../modules/lobby.md)'
+- '[chat.md](../modules/chat.md)'
 - '[matchmaking.md](../modules/matchmaking.md)'
 - '[session.md](../modules/session.md)'
 - '[statistics.md](../modules/statistics.md)'
@@ -28,7 +29,8 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 |---|---|---|
 | **IAM** | Player accounts, OAuth 2.0, platform identity binding, ban management | `references/modules/iam.md` |
 | **Legal & Privacy** | GDPR/CCPA account deletion and data-access requests. **Not supported on Public Cloud at all.** | `references/modules/legal.md` |
-| **Lobby** | WebSocket-based party, presence, chat, invites (SDK service name; public docs now surfaces this as 'Chat' + 'Parties & Presence') | `references/modules/lobby.md` |
+| **Lobby** | WebSocket-based party, presence, invites, and P2P signaling (SDK service name; public docs now surfaces this as 'Parties & Presence') | `references/modules/lobby.md` |
+| **Chat** | Personal, party, and session text chat over topics; rate and spam limits; profanity filter; system inbox notifications. Its own service and WebSocket, separate from Lobby | `references/modules/chat.md` |
 | **Matchmaking** | Rule-based matchmaking; deep work in `/ags matchmaking` | `references/modules/matchmaking.md` |
 | **Session Management** | Game session lifecycle, server allocation, reconnection | `references/modules/session.md` |
 | **Statistics** | Persistent player stats for progression, MMR, leaderboard inputs, and achievement criteria | `references/modules/statistics.md` |

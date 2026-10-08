@@ -1,10 +1,12 @@
 ---
-last-verified: 2026-09-15
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/online/rewards/
 - https://docs.accelbyte.io/gaming-services/modules/online/rewards/integrating-reward-with-the-supported-events/
 - https://docs.accelbyte.io/gaming-services/knowledge-base/api-events/social-statistic/
 - https://docs.accelbyte.io/gaming-services/modules/online/statistics/
+- https://docs.accelbyte.io/gaming-services/modules/online/store-catalog/code-redemption/
+- https://docs.accelbyte.io/gaming-services/modules/online/store-catalog/code-redemption/setup-code-redemptions/
 see-also:
 - '[statistics.md](statistics.md)'
 - '[achievements.md](achievements.md)'
@@ -241,8 +243,20 @@ them is which event actually fires for the player in question:
    `statItemCycleUpdated`, for a *daily* first login rather than a one-time
    one.
 
-Treat Code Redemption and Extend as alternatives when their tradeoffs fit. Do
-not invent a direct login-event trigger: the account events above are the
+Present Code Redemption and Extend as alternatives, with the tradeoff that
+decides between them, rather than as the only paths:
+
+- **Code Redemption** — an item code redemption campaign grants items or other
+  entitlements when a player redeems one of its codes. **Redemption Limit per
+  Account** and **Redemption Limit per Code** can hold a grant to once, and the
+  campaign has a start and end time. The grant follows a code the player
+  enters, not a login, so it fits a code you hand out (a welcome email, a
+  launch promotion) rather than an automatic first-login grant. Add only active
+  items: a campaign holding an inactive item has codes players cannot redeem.
+- **Extend** — custom server-side logic, for a grant whose rule none of the
+  supported events above can express.
+
+Do not invent a direct login-event trigger: the account events above are the
 closest supported thing, and the list of supported events is the list.
 
 ## Verification

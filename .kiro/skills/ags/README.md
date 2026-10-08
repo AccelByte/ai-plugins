@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-10-07
 sources:
 - https://docs.accelbyte.io/
 - https://docs.accelbyte.io/gaming-services/getting-started/
@@ -146,7 +146,8 @@ ags/
     faq.md                       — shared: common questions (pricing shape, EOS coexistence, on-prem, …)
     modules/
       iam.md                     — Identity & Access Management
-      lobby.md                   — Party, presence, chat, invites (covers what public docs calls 'Chat' + 'Parties & Presence')
+      lobby.md                   — Party, presence, invites, P2P signaling (what public docs calls 'Parties & Presence')
+      chat.md                    — Personal, party, and session text chat; chat configuration and moderation
       matchmaking.md             — Rule-based matchmaking
       session.md                 — Session lifecycle, server assignment
       statistics.md              — Persistent player stats, cycles, and leaderboard inputs
@@ -221,7 +222,7 @@ ags/
 - This skill is the **default entry point** for AccelByte questions, including deep Matchmaking and AMS work. Use `/ags matchmaking ...` and `/ags ams ...` for those lifecycles. Legacy Matchmaking and AMS compatibility shims remain for one release.
 - Architecture clarification: Extend, AMS, and Matchmaking are *part of* AGS; Matchmaking and AMS now live under this canonical `/ags` entry point. Extend still has its own lifecycle skill, ADT is the only true sibling product, and Access is the standalone packaging of AGS IAM (a strict subset).
 - Subskills are kept small. When a topic has multiple sub-areas (modules, SDKs, deployment, ecosystem), the subskill points into the right `references/` subdirectory rather than inlining everything.
-- `references/modules/` covers the most common integration modules (IAM, Lobby, Matchmaking, Session, Statistics, Leaderboards, Achievements, Store/Entitlements, Rewards, Analytics, Social) plus the generic TURN/STUN/P2P connectivity model. AGS has many additional modules (Cloud Save, Inventory, Season Pass, Challenges, UGC, Chat, Guilds & Clans, Multiplayer Notifications, Legal & Privacy, and more) that are not covered by dedicated reference files here — point users to `https://docs.accelbyte.io/gaming-services/modules/` for the full list.
+- `references/modules/` covers the most common integration modules (IAM, Lobby, Chat, Matchmaking, Session, Statistics, Leaderboards, Achievements, Store/Entitlements, Rewards, Analytics, Social) plus the generic TURN/STUN/P2P connectivity model. AGS has many additional modules (Cloud Save, Inventory, Season Pass, Challenges, UGC, Guilds & Clans, Multiplayer Notifications, Legal & Privacy, and more) that are not covered by dedicated reference files here — point users to `https://docs.accelbyte.io/gaming-services/modules/` for the full list.
 - `references/ecosystem/` is intentionally light — those files tell you *when* to bring in another capability router, workflow, skill, or product, not *how* to use it. The actual usage docs live in the owning capability, skill, or AccelByte's docs.
 - `connect-portal` does not create production namespaces autonomously. It produces the IAM client and `.env` configuration; namespace creation and tier upgrades stay in the Admin Portal flow with an authorized human in the loop.
 - Pricing references (PCCU bands, tier descriptions) are illustrative and grounded in AccelByte's published pricing. They go stale; subskills always point users at `https://accelbyte.io/pricing` for the current numbers rather than quoting them as authoritative.
