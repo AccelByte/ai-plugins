@@ -8,7 +8,7 @@
 ENDPOINT='https://e.accelbyte.io/i/v0/e/'
 # A PostHog project key: write-only and public by design, not a secret.
 POSTHOG_TOKEN='phc_oq9frbCzjCTdARMbHXnxwtAdAMsR5pMTzRQhwSpnMpS8'
-VERSION='0.9.3'
+VERSION='0.9.4'
 
 [ -n "${DO_NOT_TRACK-}" ] && exit 0
 case "$(printf '%s' "${ACCELBYTE_AI_PLUGIN_TELEMETRY-}" | tr '[:upper:]' '[:lower:]')" in

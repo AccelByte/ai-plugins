@@ -1,7 +1,11 @@
 ---
-last-verified: 2026-05-09
+last-verified: 2026-10-09
 sources:
 - https://docs.accelbyte.io/
+- https://docs.accelbyte.io/gaming-services/modules/online/wallets-payments/how-to/create-store/
+- https://docs.accelbyte.io/gaming-services/modules/online/wallets-payments/how-to/create-items/
+- https://docs.accelbyte.io/gaming-services/modules/online/wallets-payments/how-to/publish-store/
+- https://raw.githubusercontent.com/AccelByte/accelbyte-go-sdk/main/spec/platform.json
 see-also:
 - '[iam.md](iam.md)'
 - '[achievements.md](achievements.md)'
@@ -23,6 +27,38 @@ Item catalog, purchase flows, wallet, DLC management. The economy layer of AGS. 
 - **Entitlements** — what the player owns. Granted by purchase, by promotion, by achievement unlock, etc. Checked at use-time (e.g. before equipping a cosmetic).
 - **DLC reconciliation** — platform DLC (Steam DLC, PSN DLC, Xbox DLC) is reconciled with the AGS entitlement model so players don't lose ownership across platforms.
 - **Promotions / coupons** — time-limited or condition-gated grants of items, currency, or discounts.
+
+## Creating items
+
+Items are created in a **draft** store — a published store's items cannot be modified — with `POST /platform/admin/namespaces/{namespace}/items?storeId={storeId}`. Required body fields: `name`, `itemType`, `entitlementType`, `categoryPath`, `status` (`ACTIVE` / `INACTIVE`), `localizations` and `regionData`.
+
+Two requirements trip item creation, and both come from the **store**, not the item:
+
+- **`regionData` must have an entry for the store's default region** — every item, including free items and items with `purchasable: false`. Missing it fails with **30022** `Default region [{region}] is required`. A free item is priced, not unpriced: an entry with `price: 0`. Each entry needs `price`, `currencyCode`, `currencyNamespace` and `currencyType` (`REAL` / `VIRTUAL`). Never omit `regionData` or send it empty to mean "free".
+- **`localizations` must include the store's default language**, with a `title`. Missing it fails with **30021** `Default language [{language}] required`.
+
+The store's `defaultRegion` and `defaultLanguage` are set when the store is created, and fall back to `US` and `en` only when it was created without them. Read the store (`GET /platform/admin/namespaces/{namespace}/stores/{storeId}`) rather than assuming US/en.
+
+A free item granted by the game rather than sold, in a store whose defaults are US / en:
+
+```json
+{
+  "name": "season_pass_free",
+  "itemType": "INGAMEITEM",
+  "entitlementType": "DURABLE",
+  "categoryPath": "/rewards",
+  "status": "ACTIVE",
+  "purchasable": false,
+  "localizations": { "en": { "title": "Free Season Pass" } },
+  "regionData": {
+    "US": [ { "price": 0, "currencyCode": "USD", "currencyNamespace": "<namespace>", "currencyType": "REAL" } ]
+  }
+}
+```
+
+`itemType` and `categoryPath` above are illustrative; use the item's real type and an existing category. Type-specific fields apply too: `useCount` for consumables, `targetCurrencyCode` for `COINS`, `appId`/`appType` for `APP`, `targetNamespace` when selling a game's item from the publisher namespace. `purchasable` controls whether the item can be bought and `listable` whether players see it; neither relaxes the default-region requirement.
+
+Changes go live only when the draft is published: `PUT /platform/admin/namespaces/{namespace}/stores/{storeId}/catalogChanges/publishAll` (or `publishSelected`).
 
 ## How Store / Entitlements relates to the other modules
 

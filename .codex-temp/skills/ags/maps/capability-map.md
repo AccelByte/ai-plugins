@@ -18,6 +18,7 @@ Use this map after the top-level `/ags` router selects AGS as the owning product
 | Leaderboards | `../references/modules/leaderboards.md` |
 | Achievements | `../references/modules/achievements.md` |
 | Store, entitlements, wallet, catalog | `../references/modules/store-entitlements.md` |
+| Clans, guilds, player groups | `../references/modules/group.md` |
 | Analytics events and observability | `../references/modules/analytics.md`, `../references/observe/event-catalog.md`, `../subskills/observe.md` |
 | Extend Override, Event Handler, or Service Extension | `/ags-extend` |
 | ADT crash, performance, build distribution, or telemetry tooling | `/adt` |

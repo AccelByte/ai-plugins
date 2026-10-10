@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-10-07
+last-verified: 2026-10-09
 sources:
 - https://docs.accelbyte.io/
 see-also:
@@ -16,6 +16,7 @@ see-also:
 - '[rewards.md](../modules/rewards.md)'
 - '[analytics.md](../modules/analytics.md)'
 - '[social.md](../modules/social.md)'
+- '[group.md](../modules/group.md)'
 - '[marketing-to-service.md](marketing-to-service.md)'
 ---
 
@@ -28,7 +29,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | Module | One-line | Full reference |
 |---|---|---|
 | **IAM** | Player accounts, OAuth 2.0, platform identity binding, ban management | `references/modules/iam.md` |
-| **Legal & Privacy** | GDPR/CCPA account deletion and data-access requests. **Not supported on Public Cloud at all.** | `references/modules/legal.md` |
+| **Legal & Privacy** | Two services: **Legal Agreements** (ToS / Privacy Policy documents, versions, player acceptance) and GDPR/CCPA account deletion and data-access requests. **The GDPR part is not supported on Public Cloud at all**; Legal Agreements is, in game namespaces | `references/modules/legal.md` |
 | **Lobby** | WebSocket-based party, presence, invites, and P2P signaling (SDK service name; public docs now surfaces this as 'Parties & Presence') | `references/modules/lobby.md` |
 | **Chat** | Personal, party, and session text chat over topics; rate and spam limits; profanity filter; system inbox notifications. Its own service and WebSocket, separate from Lobby | `references/modules/chat.md` |
 | **Matchmaking** | Rule-based matchmaking; deep work in `/ags matchmaking` | `references/modules/matchmaking.md` |
@@ -38,6 +39,7 @@ One-line description per module, plus a pointer to the full reference. Use as a 
 | **Achievements** | Configurable achievements & progression systems | `references/modules/achievements.md` |
 | **Store / Entitlements** | Catalog, purchase flows, wallet, DLC reconciliation | `references/modules/store-entitlements.md` |
 | **Rewards** | Event-driven grants from Statistic, Achievement, and User Account events; JSON path condition syntax; measured `rewardCode` naming constraints | `references/modules/rewards.md` |
+| **Group (Guilds & Clans)** | Clans and guilds: group configuration, OPEN / PUBLIC / PRIVATE groups, invitations, join requests, member roles. Native — not Extend | `references/modules/group.md` |
 | **Analytics** | Event ingestion, telemetry pipeline | `references/modules/analytics.md` |
 | **Social** | Friends, blocking, notifications (internal grouping; public docs surfaces 'Friends' under Online, 'Multiplayer Notifications' separately) | `references/modules/social.md` |
 
@@ -63,7 +65,7 @@ The customer-facing AGS docs use marketing names (Foundations / Online / Multipl
 
 ## Deployment-restricted modules
 
-- **Legal & Privacy (GDPR/CCPA)** — not supported on AGS Public Cloud, full stop, independent of any data-residency reasoning. Private Cloud / BYOC only. See `references/modules/legal.md` for the operation-type breakdown and `references/deployment/public-cloud.md` / `private-cloud.md` for the deployment-model story.
+- **Legal & Privacy (GDPR/CCPA data requests)** — not supported on AGS Public Cloud, full stop, independent of any data-residency reasoning. Private Cloud / BYOC only. See `references/modules/legal.md` for the operation-type breakdown and `references/deployment/public-cloud.md` / `private-cloud.md` for the deployment-model story.
 
 ## Potentially Deprecated
 
