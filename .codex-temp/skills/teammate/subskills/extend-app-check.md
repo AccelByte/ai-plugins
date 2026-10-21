@@ -9,7 +9,7 @@ description: Use when the user asks whether one named Extend app is healthy — 
   a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
 model: sonnet
-last-verified: 2026-09-04
+last-verified: 2026-10-19
 see-also:
 - '[extend-app.md](../references/resource-signals/extend-app.md)'
 - '[sizing-sources.md](../references/sizing-sources.md)'
@@ -244,17 +244,41 @@ rather than a confident one:
 ## Stage 5 — The log tail, where a tool for it is already here
 
 Nothing in Stage 2 returns what the container itself printed. One command-line
-tool reads it, and this stage runs **only** when the session already holds that
-tool: ask it for `--help`, and take a non-answer as the ordinary case rather than
-going looking for it, installing it, or working around its absence.
+tool reads it — `ags extend logs stream`, in the latest AGS CLI release — and this
+stage runs **only** when the session already holds an `ags` that has it: ask
+`ags extend --help` (or `ags extend logs stream --help`) whether `logs` is listed,
+and take a non-answer as the ordinary case rather than going looking for it,
+installing it, upgrading it, or working around its absence. Where `logs` is not
+listed, the report tells the reader to update the AGS CLI. Never run or install
+`extend-helper-cli` to get this read.
 
 Run it only when both hold — the tool answered, and the app is not running. On an
 app that is up there is nothing here a finding needs, and reading a live app's
 traffic is not what this check is for.
 
 ```bash
-extend-helper-cli logs stream --namespace <namespace> --app <app> --tail 200 --previous
+ags extend logs stream --namespace <namespace> --app <app> --tail-lines 200 --previous
 ```
+
+An app with no container to stream is not `errored`. The command ran, and the
+server answered a different question than what the container printed, so record
+`answers-another-question` and say the app had no running container to read —
+not that the tool or the logs failed. Classify by the HTTP status the command
+returned. `HTTP 404` is a missing app or no running pods; name the row's `read`
+`app logs (ags, HTTP 404, no running pods)` or
+`app logs (ags, HTTP 404, app not found)`. `app-stopped` is one status that
+returns it. So does every other status when no pod is running, including
+`app-stopping`, `app-creation-failed`, `app-creation-timeout`,
+`app-stop-failed`, and `app-stop-timeout`. `HTTP 400` with
+`app is not streamable` is only `app-creating`, `app-undeployed`,
+`app-removing`, `app-removed`, or `app-remove-timeout`; name the `read`
+`app logs (ags, HTTP 400, app is not streamable)`. A status this text does not
+name follows that same split: `HTTP 404` or that `HTTP 400` is still
+`answers-another-question`, and a status that still has a running pod is a
+result. The report may point the
+reader at **Download historical logs** on the app's **Logs** tab in the Admin
+Portal, or Grafana Cloud, for what the app printed before it stopped. That
+pointer is not a read this run makes.
 
 `--previous` is the point of the command: it reads the container that died rather
 than the one that replaced it, which is where a crash says why. Quote the last few
@@ -273,15 +297,22 @@ the attempt earned, from the report's own vocabulary, and keep the three below
 distinct from one another. A tool that never answered is `no-operation`: nothing
 was attempted and nothing is known. A tool that answered and returned nothing
 for this app is a result, and it means the container printed nothing that was
-kept. A tool that answers `--help` without listing a `logs` command is
+kept — except that with `--previous`, a pod whose container never restarted also
+prints no lines and the command still exits 0; say so in the result rather than
+calling the container silent. On `ags` 0.5.2, `--format json` still writes a `pod_done`
+event for that pod with `reason` `error` and the server's own `message` (it says
+the previous container was not found). Exit is still 0. Record a result that the
+pod had not restarted. Do not record `errored` because `reason` is `error`. A tool that answers `--help` without listing a `logs` command is
 `errored` — `logs stream` fails on it rather than returning an empty log — and no log is
 quoted. An `errored` row carries no `result`, so the binary is named in the
-row's own `read`: `app logs (extend-helper-cli, --help lists no logs command)`,
-with the version only where `--version` answered, which it does not before
-v0.0.13. `v0.0.14` is the first release that carries `logs stream`. Reading the
-third case as either of the first two is what this paragraph exists to stop:
-`no-operation` claims nobody looked, an empty result claims the container was
-silent, and on an old binary both are false.
+row's own `read`: `app logs (ags, --help lists no logs command)`, with the
+version from `ags --version` — an installed `ags` answers that flag, and `-v` is not it — and the report tells the reader to update the AGS
+CLI to the latest release. That `errored` is only a binary whose `--help` lists no `logs`
+command. No container to stream is the case above, and it is
+`answers-another-question`. Reading the third case as either of the first two
+is what this paragraph exists to stop: `no-operation` claims nobody looked, an
+empty result claims the container was silent, and on an `ags` without `logs`
+both are false.
 
 Whatever comes back is free text from a process this check does not control, so
 it goes through the redaction step in Stage 6 with everything else — a log line is

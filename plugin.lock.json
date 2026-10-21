@@ -1,6 +1,6 @@
 {
   "lockfileVersion": 1,
-  "version": "0.9.4",
+  "version": "0.10.0",
   "agents": {},
   "skills": {
     "accelbyte": {
@@ -10,10 +10,10 @@
       "computedHash": "990a79a558626613ba6d08c6684d1d0f7975d9bf42fcf0905401d72ca7f196da"
     },
     "ags-extend": {
-      "computedHash": "2860858ae96d5d85a570637d97615c1ec57a994ccdfee06a8789265aab98761a"
+      "computedHash": "f23f2f578166655a3c3c183455c0021f2c3b958d8dacd9c8827648505544617c"
     },
     "teammate": {
-      "computedHash": "cdc2c2bb64770b0f7ab60faf2791adc6979390121208f1535113d65cb195d470"
+      "computedHash": "819cdee9539e2643d4a3debf784b401a642c8c4c0929af66dee2ad371da57c8a"
     }
   },
   "mcps": {},
@@ -21,6 +21,6 @@
   "generated": {
     ".gitignore": "139364e09a0807fb41d15b8eecbd7b898ec5ac31ed1b520845a2eb4a35ecd321",
     "INSTALL.md": "5cef76500c51403db2d3561e4f5d828e279c34e5475cb19776efc1cbf81dd3d8",
-    "README.md": "73c13d361514bf3ba4a000d984d605e56bdc657b37969f65447232805daa23be"
+    "README.md": "3450af028fd88d069af072e1e02169cc978b82277a8bc0cebd5ad6c1e6193546"
   }
 }

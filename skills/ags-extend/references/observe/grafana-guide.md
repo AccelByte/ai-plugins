@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-22
+last-verified: 2026-10-08
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/tool-utilities/grafana-cloud-observability/access-grafana-cloud/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
@@ -15,7 +15,7 @@ see-also:
 
 # Grafana Cloud for Extend Logs
 
-Deployed Extend apps send their logs and metrics to **Grafana Cloud**, provided by AccelByte as part of the Extend package. Use Grafana to view and search app logs (and metrics) — live log streaming from the CLI is not available in `ags extend` today (see `references/deploy/cli-commands.md#stream-app-logs`), so Grafana Cloud is the primary way to see what a deployed app is doing. This guide covers getting in, finding your app's logs, and querying them, plus the one gotcha that makes logs look "missing" when they aren't.
+Deployed Extend apps send their logs and metrics to **Grafana Cloud**, provided by AccelByte as part of the Extend package. Use Grafana to search app logs with LogQL (30 days of history), view metrics, and build dashboards. For recent and live lines straight from the container — including the previous container's output after a crash — `ags extend logs stream` or the Admin Portal's **Live app logs** card avoids Grafana's ingestion lag (see `references/deploy/cli-commands.md#stream-app-logs`). To download a file of past logs (up to 7 days per export), use **Download historical logs** on the app's **Logs** tab in the Admin Portal (see `references/deploy/cli-commands.md#logs-in-the-admin-portal`). This guide covers getting in, finding your app's logs, and querying them, plus the one gotcha that makes logs look "missing" when they aren't.
 
 ## Read this first: logs are not instant
 
@@ -50,7 +50,7 @@ Both tiers use the **same** managed Grafana Cloud instance — Public Cloud just
 
 **If "Open Grafana Cloud" is missing or greyed out on Public Cloud,** the Extend package isn't unlocked for that namespace — that's an entitlement/tier matter, not a bug. Contact AccelByte.
 
-> On Public Cloud, Grafana access is SSO-only and scoped to your own resources — there is no service-account token or API key, so the browser flow described here is the only way into Grafana. Live log streaming via the CLI is not available in `ags extend` today (see `cli-commands.md`), so this browser flow is also how you check live/recent app logs.
+> On Public Cloud, Grafana access is SSO-only and scoped to your own resources — there is no service-account token or API key, so the browser flow described here is the only way into Grafana. For live/recent app lines without Grafana, use `ags extend logs stream` (see `cli-commands.md`) or the Admin Portal's **Live app logs** card; for a file of past logs, the Admin Portal's **Download historical logs** card.
 
 ## Programmatic access: the Grafana MCP server
 

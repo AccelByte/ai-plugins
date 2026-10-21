@@ -3,7 +3,7 @@ name: teammate-resource-signals-extend-app
 description: The signals `extend-app-check` looks for on one Extend app — what each
   fires on, which read settles it, what it is worth, and the public page behind every
   claim about AccelByte. Read before Stage 3.
-last-verified: 2026-09-04
+last-verified: 2026-10-09
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-lifecycle/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-cpu-memory-replicas/
@@ -94,8 +94,7 @@ closed table can fire on. It is quoted under the finding it explains — the fai
 deployment, the app that is down — and the read is recorded either way, because a
 tool that never answered, a tool that answers `--help` without listing a `logs`
 command, and a container that printed nothing are three different facts — the
-middle one is `errored`, and `v0.0.14` is the first release that carries `logs
-stream`.
+middle one is `errored`, and the report tells the reader to update the AGS CLI.
 
 `resource-limits list` is per environment and states no permission of its own. A
 403 from it is recorded as `unauthorized` and the ceiling is reported as unknown;

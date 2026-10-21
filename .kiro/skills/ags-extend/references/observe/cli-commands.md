@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-22
+last-verified: 2026-10-09
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/
@@ -35,7 +35,22 @@ ags extend get-app-info \
 
 ## CLI: Stream App Logs
 
-**Not available in `ags extend` today.** The AGS CLI has no equivalent of the retired `extend-helper-cli logs stream --previous`/`--follow` (not yet built). Do not tell a reader to install `extend-helper-cli` to get this — instead use Grafana Cloud (below) for historical search, LogQL, metrics, and dashboards. See `references/deploy/cli-commands.md#stream-app-logs` for the full treatment. If the reader already has `extend-helper-cli` installed from before this migration, `extend-helper-cli logs stream --previous` still works against their existing install and is not disallowed — but this skill does not instruct a fresh install of it for this purpose.
+`ags extend logs stream` prints an app's recent container log lines, or follows them live. The installed-binary check is `references/deploy/cli-commands.md#presence-and-freshness-check`.
+
+```bash
+ags extend logs stream \
+  --namespace <my-game-namespace> \
+  --app <my-extend-app> \
+  --follow
+```
+
+Drop `--follow` to print recent lines and exit; add `--previous` to read the container instance that ran before the last restart (the crash text). Every flag, the output format, and the stream limit live in `references/deploy/cli-commands.md#stream-app-logs` — defer to it. Do not tell a reader to run or install `extend-helper-cli` to get logs.
+
+The same live stream is in the Admin Portal: the app's **Logs** tab → **Live app logs** card.
+
+## Admin Portal: Download Historical Logs
+
+For a file of past logs, use the **Download historical logs** card on the app's **Logs** tab in the Admin Portal, under **Live app logs**. Pick **From** and **To** (up to 7 days), click **Export**, then download the file from **Recent exports** when it is **Ready**. Each file can be downloaded once and is kept for 24 hours after you click **Export**. This is Admin Portal only — there is no `ags extend logs` command for it. Statuses and messages: `references/deploy/cli-commands.md#logs-in-the-admin-portal`.
 
 ## App Lifecycle States
 
@@ -52,7 +67,7 @@ See `signal-guide.md` for interpreting log patterns once an app is running.
 
 ## Grafana Cloud (Logs and Metrics)
 
-The CLI does **not** have `status` or `list` subcommands. Log and metric observability is through **Grafana Cloud**, provided by AccelByte as part of the Extend package. For the full walkthrough — access by deployment tier, how Grafana is organized, LogQL filters, and a "find the last error" recipe — see `grafana-guide.md`. The essentials:
+The CLI does **not** have `status` or `list` subcommands. LogQL log search (30 days of logs), metrics, and dashboards are through **Grafana Cloud**, provided by AccelByte as part of the Extend package. For the full walkthrough — access by deployment tier, how Grafana is organized, LogQL filters, and a "find the last error" recipe — see `grafana-guide.md`. The essentials:
 
 ### Access
 

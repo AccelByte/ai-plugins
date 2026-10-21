@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-23
+last-verified: 2026-10-19
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://github.com/AccelByte/accelbyte-ags-cli
@@ -14,7 +14,7 @@ see-also:
 
 # AGS Extend Observer
 
-Pull live signals for deployed Extend apps. Observability is split across two surfaces: the CLI's `get-app-info` (app status/metadata) and Grafana Cloud (logs and metrics). The CLI still does **not** have a `list` or per-app `status` subcommand, and it has no log-streaming command at all today. Read-only — never restarts, redeploys, or changes app state.
+Pull live signals for deployed Extend apps. Observability is split across these surfaces: the CLI's `get-app-info` (app status/metadata); live logs from `ags extend logs stream` or the Admin Portal's **Live app logs** card (recent and live container lines, including the previous container's crash text); the Admin Portal's **Download historical logs** card (a file of past logs, up to 7 days per export); and Grafana Cloud (LogQL log search, metrics, and dashboards). The CLI still does **not** have a `list` or per-app `status` subcommand. Read-only — never restarts, redeploys, or changes app state.
 
 ## Behavior Constraints
 
@@ -22,7 +22,7 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 
 - Read `references/deploy/cli-commands.md` and `references/observe/cli-commands.md` before quoting any CLI command, flag, or env var. Do not restate flags from memory — link instead.
 - Read `references/observe/signal-guide.md` for status meanings, log-pattern classification, and common fixes. Do not invent diagnostic advice.
-- The only CLI observability command is `ags extend get-app-info`. There is no `list`, no per-app `status` subcommand, and **no log-streaming command** — `ags extend` has no equivalent of the retired `extend-helper-cli logs stream` (not yet built). Do not tell a user to install `extend-helper-cli` to get this; Grafana Cloud is the only live/historical log surface today.
+- The CLI observability commands are `ags extend get-app-info` and `ags extend logs stream`. There is no `list` and no per-app `status` subcommand. Before `logs stream`, follow [Presence and freshness check](../references/deploy/cli-commands.md#presence-and-freshness-check).
 - Read `references/observe/grafana-guide.md` before coaching the user on opening Grafana, finding logs, or writing a log query. Logs are forwarded to Grafana **asynchronously** — an empty log view right after a deploy or a request is almost always ingestion lag (or too-narrow a time range / wrong filter), not broken logging. Never tell a user their logging is broken until they've widened the time range, confirmed lines still aren't arriving, and ruled out no-traffic.
 - Grafana can be read two ways: the browser flow, or a Grafana MCP server backed by a brokered service-account token. The token path is **Private Cloud only** — never offer it to a Public Cloud user, where the broker rejects the tenant by design, and don't assume BYOC behaves like Private Cloud. That path is owned by `/ags`: read `../../ags/references/observe/grafana-mcp.md` before describing the broker call or the MCP config, and don't restate either from memory.
 - Distinguish carefully between `Deploying`, `Degraded`, `Stopped`, and `Failed` — they imply different next actions. The signal guide has the mapping.
@@ -31,8 +31,9 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 
 <tool_usage_rules>
 
-- Use `Bash` for `ags extend get-app-info` and per-app discovery (`test -f Makefile`, `ls */Makefile`).
-- There is no log-streaming command to run from this subskill — logs live in Grafana Cloud only (browser, or the Grafana MCP server when configured). Don't attempt to shell out for logs.
+- Use `Bash` for `ags extend get-app-info`, `ags extend logs stream`, and per-app discovery (`test -f Makefile`, `ls */Makefile`).
+- Run `ags extend logs stream` yourself only without `--follow`, so the command ends on its own. Bound it with `--tail-lines` and summarize the result — never paste a raw log dump. A `--follow` stream never ends on its own; hand that command to the user to run in their own terminal.
+- LogQL search, metrics, and dashboards live in Grafana Cloud (browser, or the Grafana MCP server when configured). A file of past logs comes from the Admin Portal's **Download historical logs** card, not the CLI.
 - Use `Read` for `.env` files and reference files.
 - Use `Glob` to enumerate Extend app dirs (`*/Makefile` siblings) when invoked from a parent directory.
 - **Never** modify any file. This subskill is strictly observe-only.
@@ -44,7 +45,7 @@ Pull live signals for deployed Extend apps. Observability is split across two su
 
 <dependency_checks>
 
-Preconditions depend on the signal. App status and metadata come from the CLI; logs come only from Grafana. Check only what the requested signal needs — don't block a Grafana-only log question on a missing CLI, or a status question on a missing Grafana server.
+Preconditions depend on the signal. App status, metadata, and recent container log lines come from the CLI; searchable log history and metrics come from Grafana; a file of past logs comes from the Admin Portal. Check only what the requested signal needs — don't block a Grafana-only question on a missing CLI, or a status question on a missing Grafana server.
 
 For CLI signals (app status, image tag, scenario):
 
@@ -52,7 +53,7 @@ For CLI signals (app status, image tag, scenario):
 2. The CLI is authenticated. Either: `AGS_BASE_URL`, `AGS_CLIENT_ID`, `AGS_CLIENT_SECRET` are set in the user's environment (the CLI has no `.env` file support — its resolution order is flag → environment variable → its own config → interactive prompt); OR the user has run `ags auth login` (browser flow) or `ags auth login --grant client-credentials`. If neither, ask the user for `AGS_BASE_URL` and direct them to `references/deploy/cli-commands.md#authentication`.
 3. Namespace and app name are known — either from the app's local `.env` (if the user is in/near an app dir) or supplied inline by the user.
 
-For log signals: there is no CLI path — logs come from a configured Grafana MCP server (Private Cloud) or the user's browser. Say so plainly rather than implying a CLI fallback exists.
+For CLI log lines, apply the same `logs` check (`references/deploy/cli-commands.md#presence-and-freshness-check`). Until the binary lists `logs`, use the Admin Portal's **Live app logs** card for the live stream. Grafana is for search and metrics: a configured Grafana MCP server (Private Cloud) or the user's browser.
 
 No Docker dependency in either path.
 
@@ -68,18 +69,20 @@ Two possible output shapes:
 {app-name}  [running]  {scenario}  image-tag {tag}
 
   No CLI-side issues.
-  Logs/metrics: Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud)
+  Live logs: ags extend logs stream --follow (see references/deploy/cli-commands.md)
+  Past-log file: Admin Portal → app → Logs tab → Download historical logs
+  Search/metrics: Grafana Cloud (Admin Portal → app detail → Open Grafana Cloud)
 ```
 
-**App is unhealthy (any non-running status, or log lines from Grafana MCP / Grafana):**
+**App is unhealthy (any non-running status, or log lines from the CLI log stream / Grafana MCP / Grafana):**
 
 ```
 {app-name}  [{appStatus}]  {scenario}  image-tag {tag}
 
   appStatus from get-app-info: {appStatus}
 
-  (If log lines are available — from Grafana MCP, or pasted
-   by the user. Say which source they came from.)
+  (If log lines are available — from `ags extend logs stream`,
+   Grafana MCP, or pasted by the user. Say which source they came from.)
   Issues identified:
     {timestamp}  {error line}
     {timestamp}  {error line}
@@ -96,10 +99,10 @@ The CLI cannot enumerate apps, so there is no multi-app list shape. If the user 
 
 If the user asks to "follow", "tail", or "stream" logs:
 
-1. Say plainly that `ags extend` has no log-streaming command today (see `references/deploy/cli-commands.md#stream-app-logs`). Do not suggest installing `extend-helper-cli` to fill the gap.
-2. Point them at Grafana Explore instead (Admin Portal → app detail → Open Grafana Cloud → Explore with the Loki logs data source, scoped by the `app_name` label). Grafana itself supports live-tail.
-3. If a Grafana MCP server is already configured (Private Cloud), offer to query it directly (Step 3a) instead of sending them to the browser.
-4. Note: ingestion is asynchronous, so a freshly-deployed app's log view can start empty — have them wait 60–120s and widen the time range before concluding nothing is flowing. See `references/observe/grafana-guide.md`.
+1. If the installed `ags` has `logs stream` (`references/deploy/cli-commands.md#stream-app-logs`), give them the `ags extend logs stream --follow` command from that reference to run in their own terminal — it streams until Ctrl-C, so don't run it from here. Lines arrive directly from the container, with no Grafana ingestion lag. The Admin Portal's **Live app logs** card (app → **Logs** tab) is the same stream in the browser.
+2. If the check in `references/deploy/cli-commands.md#presence-and-freshness-check` finds no `logs` command, say so plainly. Send them to the Admin Portal's **Live app logs** card first (app → **Logs** tab) — it is the same stream, needs no install or update, and has no Grafana ingestion lag. Then tell them to update the AGS CLI to the latest release if they want it in the terminal. Use Grafana Explore (Admin Portal → app detail → Open Grafana Cloud → Explore with the Loki logs data source, scoped by the `app_name` label) only for search, metrics, or history.
+3. For a file of past logs, use the Admin Portal's **Download historical logs** card (app → **Logs** tab; up to 7 days per export, each file downloadable once within 24 hours after you click **Export**). For searchable history or metrics, use Grafana. If a Grafana MCP server is already configured (Private Cloud), offer to query it directly (Step 3a) instead of sending them to the browser.
+4. Note: Grafana ingestion is asynchronous, so a freshly-deployed app's Grafana log view can start empty — have them wait 60–120s and widen the time range before concluding nothing is flowing. See `references/observe/grafana-guide.md`.
 
 </user_updates_spec>
 
@@ -109,7 +112,7 @@ Several "empty" cases to handle explicitly, not silently:
 
 - **`get-app-info` returns "app not found"** → the app named in the invocation isn't registered in the namespace. Say: "`{name}` is not deployed to `{namespace}` (or the name doesn't match). Verify in the Admin Portal, or run `/ags-extend deploy` to push it."
 - **App dir exists locally but `get-app-info` returns 404** → it was never deployed or was removed. Say: "`{name}` exists in your repo but isn't deployed to `{namespace}`. Run `/ags-extend deploy` to push it."
-- **Grafana Cloud shows no logs for a Running app** → rule out Grafana causes in order: (1) **ingestion lag** — wait ~60–120s and refresh; (2) **time range too narrow**; (3) **filter doesn't match**; (4) **no traffic**; (5) only then suspect the app's logger config. There is no CLI log stream to cross-check against.
+- **Grafana Cloud shows no logs for a Running app** → rule out Grafana causes in order: (1) **ingestion lag** — wait ~60–120s and refresh; (2) **time range too narrow**; (3) **filter doesn't match**; (4) **no traffic**; (5) only then suspect the app's logger config. Cross-check with a bounded `ags extend logs stream` read (no `--follow`): lines there but not in Grafana point at ingestion lag, not the app.
 - **`get-app-info` returns zero or unexpected fields** → show the raw output and check freshness. Offer an upgrade when outdated or legacy/pre-version. Retry after an approved, verified upgrade before declaring the field or capability unsupported. Treat authentication and authorization failures separately.
 
 </empty_result_recovery>
@@ -153,19 +156,29 @@ Use the status to guide what comes next:
 
 | Status | Next in Step 3 |
 |---|---|
-| `running` | Healthy. If user wants logs, point at Grafana (there is no CLI log stream). |
-| `app-undeployed` / `stopped` | App isn't serving. Suggest `/ags-extend deploy`. |
-| `deployment failed` | Redeploy attempt is needed. Direct to `/ags-extend deploy`. Logs in Grafana Cloud may show why. |
+| `running` | Healthy. If user wants logs, use `logs stream` for recent/live lines, the Admin Portal for a past-log file, and Grafana for search (Step 3). |
+| `app-undeployed` / `stopped` | App isn't serving. Suggest `/ags-extend deploy`. There are no pods to stream (`app-stopped` → `HTTP 404`; `app-undeployed` → `HTTP 400` with `app is not streamable`; see the exit-3 table). For earlier logs, use **Download historical logs** or Grafana (Step 3). |
+| `deployment failed` | Redeploy attempt is needed. Direct to `/ags-extend deploy`. If a pod is still restarting, a `logs stream --previous` read may show why. If the stream exits `3`, read the status in `references/deploy/cli-commands.md#stream-app-logs`: `HTTP 404` is no running pods, `HTTP 400` with `app is not streamable` is a status that cannot be streamed. Either way, use **Download historical logs** or Grafana Cloud. |
 | `starting` / `stopping` / `removing` | Transitional. Wait and re-run `get-app-info`. |
 | `provisioning failed` / `provisioning timeout` | Infra-side. Surface the status and direct to AccelByte support if it persists. |
 
 If `get-app-info` returns "app not found": see `empty_result_recovery`.
 
-### Step 3 — Logs (Grafana Cloud)
+### Step 3 — Logs
 
-**Live / recent app logs.** `ags extend` has no log-streaming command (see `references/deploy/cli-commands.md#stream-app-logs` and `references/observe/cli-commands.md`). Do not tell the user to install `extend-helper-cli` to get this. Grafana Cloud is the only surface for logs, live or historical.
+**Recent and live app logs — the CLI.** `ags extend logs stream` reads the app's container output directly (`references/deploy/cli-commands.md#stream-app-logs` and `references/observe/cli-commands.md`). Confirm `logs` is listed first (`references/deploy/cli-commands.md#presence-and-freshness-check`).
 
-**Logs and metrics — Grafana Cloud.** Grafana holds all logs and metrics. There are two ways in:
+- For a one-off look, run it without `--follow`, bounded with `--tail-lines`, and summarize the lines against the signal guide.
+- After a crash or restart, add `--previous` to read the container instance that died. A pod that hasn't restarted prints no log lines, and the command still exits 0. On `ags` 0.5.2, `--format json` still emits `pod_done` with `reason` `error` for that pod. That event is the empty previous container, not a failed command (`references/deploy/cli-commands.md#stream-app-logs`).
+- For a live tail, hand the user the `--follow` command to run themselves.
+- Exit `3` means the server rejected the stream. Read the `HTTP <status>` in the message and use the table in `references/deploy/cli-commands.md#stream-app-logs`. Do not treat `HTTP 404` and `HTTP 400` with `app is not streamable` as the same status.
+- An app with no running pods can't be streamed, by the CLI or the **Live app logs** card, and `--previous` doesn't change that. Which status that is, and where earlier logs come from, is the same table.
+
+The Admin Portal's **Live app logs** card (app → **Logs** tab) is the same stream. Never tell the user to run or install `extend-helper-cli` to get logs.
+
+**A file of past logs — the Admin Portal.** The app's **Logs** tab has a **Download historical logs** card under **Live app logs**: pick **From** and **To** (up to 7 days), click **Export**, and download the file from **Recent exports** once it is **Ready**. Each file can be downloaded only once and is kept for 24 hours after you click **Export**. There is no CLI command for it. Statuses, the default quotas (3 preparing exports per namespace, 10 per user per UTC day), and which permission starts an export versus which one lists and downloads the file: `references/deploy/cli-commands.md#logs-in-the-admin-portal`.
+
+**Search and metrics — Grafana Cloud.** Grafana holds searchable log history (30 days), all metrics, and dashboards. There are two ways in:
 
 - **A Grafana MCP server is already connected** → query it yourself (Step 3a). The user never has to leave the conversation.
 - **Otherwise** → walk them through the browser flow (Step 3b). Offer the MCP setup only when they're on Private Cloud *and* reading logs repeatedly; for a single look it's slower than just opening Explore. Setup itself is `/ags install-mcp`.
@@ -206,7 +219,7 @@ Retention: logs 30 days, metrics 13 months. See references/observe/cli-commands.
 
 For the full walkthrough — access by deployment tier (Public vs Private Cloud), programmatic access via the Grafana MCP server, how Grafana is organized, LogQL filters, and a "find the last error in the last 30 minutes" recipe — read `references/observe/grafana-guide.md` and walk the user through the relevant steps inline. Don't tell them to open the reference file; relay the steps.
 
-If log lines are available (from the Grafana MCP server or pasted from Grafana), scan them against `references/observe/signal-guide.md`:
+If log lines are available (from `ags extend logs stream`, the Grafana MCP server, or pasted from Grafana), scan them against `references/observe/signal-guide.md`:
 
 - **Healthy signals** — record the most recent one and its timestamp.
 - **Warning signals** — list with timestamps.
@@ -222,7 +235,7 @@ Diagnosis for {app-name}:
     • {timestamp}  {pattern}
   Errors:              {count}
     • {timestamp}  {pattern}
-  Likely cause:        {from signal-guide.md, or "unclear — pull more via Grafana"}
+  Likely cause:        {from signal-guide.md, or "unclear — pull more via logs stream or Grafana"}
   Suggested next step: {concrete action tied to the cause}
 ```
 
@@ -234,7 +247,7 @@ Based on the diagnosis:
 
 | Finding | Suggestion |
 |---|---|
-| Healthy | "Looks good. For continuous visibility: Grafana Explore for logs/metrics (there's no CLI log stream)." |
+| Healthy | "Looks good. For a live tail: `ags extend logs stream --follow`. For a past-log file: Admin Portal → Logs → Download historical logs. For search and metrics: Grafana Explore." |
 | Errors with known fix (from signal-guide.md) | State the fix. If it requires redeploy, direct to `/ags-extend deploy`. |
 | Errors with no known pattern | "No matching pattern in signal-guide.md. Pull more via Grafana, or share the log with AccelByte support." |
 | `stopped` / `app-undeployed` | "App is not running. Run `/ags-extend deploy` to start it." |
@@ -252,13 +265,16 @@ Based on the diagnosis:
 | `get-app-info` returns `namespace not found` | Wrong namespace or typo. Verify against the Admin Portal. |
 | App named in invocation isn't deployed | See `empty_result_recovery`. |
 | `get-app-info` runs but JSON is incomplete | CLI version mismatch. Suggest `/ags-extend install-cli` to upgrade. Show the raw output. |
-| User wants logs (any status) | There's no CLI log stream — use Grafana (MCP or browser) for logs/metrics. |
+| User wants logs (any status) | `ags extend logs stream` for recent, live, or previous-container lines; the Admin Portal's **Download historical logs** card for a file of past logs (up to 7 days); Grafana (MCP or browser) for LogQL search and metrics. |
+| `ags extend logs stream` is rejected as an unknown subcommand | The installed `ags` has no `logs` subcommand. Say so, send them to the Admin Portal's **Live app logs** card first (same stream, no lag, nothing to install), and tell them to update the AGS CLI to the latest release (`/ags-extend install-cli`) for the terminal. Grafana only for search and metrics. Don't suggest `extend-helper-cli`. |
+| `ags extend logs stream` exits `3` | Read the `HTTP <status>` and follow `references/deploy/cli-commands.md#stream-app-logs`. `404` is a missing app or no running pods (`app-stopped`). `400` with `app is not streamable` is creating, undeployed, removing, removed, or remove timeout. Don't call every exit `3` a stream limit, and don't swap those two statuses. |
+| "You don't have permission to view these logs" (Portal) or `HTTP 403` from `logs stream` | Needs Extend app **read**. Listing **Recent exports** and downloading a file need **read** too. "You don't have permission to export logs" needs Extend app **create** to start the export. Don't swap them. |
 | Grafana MCP tools return 401 mid-session | The brokered token expired (~4h, no refresh). Say so, and point at `../../ags/references/observe/grafana-mcp.md`. Don't diagnose it as an app fault. |
 | User on Public Cloud asks to query Grafana programmatically | Not available on that tier — the broker rejects it by design, and there is no workaround. Use the browser flow in Step 3b. |
 | Token broker call returns `406 Not Acceptable` | Missing `Content-Type: application/json` and a `{}` body — but brokering isn't done here. Route to `/ags install-mcp`. |
 | User asks to set up the Grafana MCP server | Owned by `/ags` — hand off to `/ags install-mcp`. Don't broker a token or edit MCP config from this subskill. |
-| App status is `running` but user reports the feature broken | Likely a handler bug or downstream failure that the health check doesn't catch. Pull Grafana logs, then `/ags-extend doctor` for symptom-driven diagnosis. |
-| App stuck `starting` or `deployment failed` for >5 min | Show the `get-app-info` JSON output. Pull Grafana logs for startup errors. |
+| App status is `running` but user reports the feature broken | Likely a handler bug or downstream failure that the health check doesn't catch. Read recent lines with `logs stream` (or Grafana), then `/ags-extend doctor` for symptom-driven diagnosis. |
+| App stuck `starting` or `deployment failed` for >5 min | Show the `get-app-info` JSON output. Read startup errors with `logs stream` (add `--previous` if the container restarted), or Grafana. |
 | Logs suggest OOMKilled | Surface it prominently. Suggested fix: raise the memory limit in the AGS Admin Portal (app detail → resource configuration), then redeploy via `/ags-extend deploy` (see `references/init/resource-defaults.md` for hard limits). |
 | `connection refused` when CLI tries to reach AGS | The CLI can't reach `AGS_BASE_URL`. Check VPN / DNS / proxy, then verify `AGS_BASE_URL` is set correctly. |
 | Stack trace in logs is from a non-user package (grpc internals only) | Tell the user to look earlier in the log — the root cause is usually 10–30 lines before the stack dump. |
@@ -282,9 +298,11 @@ Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod). Reading .env�
 
        Diagnosis for matchmaking-override:
          Status (CLI):        running
-         Suggested next step: Logs / metrics — Grafana Cloud Explore
+         Suggested next step: Live tail — ags extend logs stream
+                              --namespace my-studio-dev
+                              --app matchmaking-override --follow
+                              Search / metrics — Grafana Cloud Explore
                               (Admin Portal → app detail → "Open Grafana Cloud").
-                              (ags extend has no log-streaming command today.)
 ```
 
 ### User asks to stream logs
@@ -292,15 +310,24 @@ Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod). Reading .env�
 ```
 User: /ags-extend observe — stream logs for matchmaking-override
 
-Skill: There's no log-streaming command in `ags extend` today. Logs live
-       in Grafana Cloud:
+Skill: [checks that `ags extend --help` lists `logs`]
 
-         1. Admin Portal → app detail → "Open Grafana Cloud".
-         2. Explore → Loki logs data source, filter by app_name=matchmaking-override.
-         3. Grafana's own Explore view supports live-tail.
+       Run this in your own terminal — it streams until you press Ctrl-C:
 
-       [If a Grafana MCP server is already configured (Private Cloud), query
-       it directly instead and relay the matching lines here.]
+         ags extend logs stream --namespace my-studio-dev \
+           --app matchmaking-override --follow
+
+       Or use the Live app logs card on the app's Logs tab in the Admin Portal.
+       Lines come straight from the container, so there's no Grafana lag.
+       For a file of older logs, use Download historical logs on the same tab
+       (up to 7 days per export). For LogQL search or metrics, use Grafana
+       Cloud (Admin Portal → app detail → "Open Grafana Cloud").
+
+       [If `ags extend --help` doesn't list `logs`, say so and send them to
+       the Live app logs card first — same stream, no lag, nothing to
+       install — then tell them to update the AGS CLI for the terminal. Use
+       Grafana Explore (or the Grafana MCP server on Private Cloud) only for
+       search, metrics, or history.]
 ```
 
 ### User pasted Grafana log lines suggesting a panic
@@ -333,8 +360,13 @@ Skill: [runs ags extend get-app-info --namespace my-studio-dev
 Skill: [runs get-app-info]
        appStatus: stopped
 
-       guild-service is stopped. Logs in Grafana Cloud may show why (there's
-       no CLI log stream — see references/observe/grafana-guide.md). If logs
+       guild-service is stopped, so it has no pods to stream from —
+       `ags extend logs stream` and the Live app logs card can't read it.
+       For the logs from before it stopped:
+         - Download historical logs on the app's Logs tab in the Admin
+           Portal (up to 7 days per export), or
+         - search Grafana Cloud (30 days; see references/observe/grafana-guide.md).
+       If logs
        show OOMKilled, raise the memory limit in the Admin Portal (app detail →
        resource configuration; see references/init/resource-defaults.md
        for hard limits) then /ags-extend deploy.
@@ -349,7 +381,8 @@ Skill: [runs get-app-info]
        Still transitioning. Fresh deploys usually reach `running` within
        1–2 minutes. Options:
          1. Wait another minute and re-run /ags-extend observe.
-         2. Check logs via Grafana Cloud (no CLI log stream exists).
+         2. Read startup output with a bounded `ags extend logs stream`
+            (add --previous if the container restarted), or Grafana Cloud.
          3. If stuck, re-run /ags-extend deploy to force a fresh rollout.
 ```
 

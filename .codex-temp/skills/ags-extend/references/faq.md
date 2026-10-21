@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-23
+last-verified: 2026-10-08
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
 see-also:
@@ -83,7 +83,7 @@ HTTP request bodies over 4.5 MB are rejected at the ingress. For large uploads (
 
 ### Log retention (30 days)
 
-Grafana Cloud log retention is 30 days. Live log streaming is not available in `ags extend` today (see `references/deploy/cli-commands.md#stream-app-logs`) — use Grafana Cloud (see `references/observe/grafana-guide.md`) for near-real-time viewing instead. For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
+Grafana Cloud log retention is 30 days. For live and recent lines straight from the container, use `ags extend logs stream` or the Admin Portal's **Live app logs** card (see `references/deploy/cli-commands.md#stream-app-logs`). For searchable history and metrics, use Grafana Cloud (see `references/observe/grafana-guide.md`). To download a file of past logs, use **Download historical logs** on the app's **Logs** tab in the Admin Portal — a range of up to 7 days per export, each file downloadable once within 24 hours after you click **Export** (Admin Portal only; no CLI command). For audit, compliance, or long-term post-mortem, forward logs to an external sink (whatever you already use — S3, Datadog, ELK). Architect that in from day one if you expect to need it.
 
 ### Metrics retention (13 months)
 

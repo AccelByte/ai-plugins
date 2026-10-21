@@ -4,7 +4,7 @@ description: The cause classes `why-did-it-die` names for one Extend app deploym
   that failed or went down — what each fires on, which read settles it, what it is
   worth, and the public page behind every claim about AccelByte. Read before the detect
   stage.
-last-verified: 2026-09-04
+last-verified: 2026-10-12
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-app-lifecycle/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/app-configuration/extend-usage-limits/
@@ -85,9 +85,10 @@ bump. So of the six cause classes below, none fires on the commonest way an app
 A run that meets an app the caller says went down, with a clean deployment
 ledger and a healthy `appStatus`, has met exactly this: it prints the timeline,
 names no cause, and says the restart itself is not recorded anywhere it can
-read — never that nothing happened. Where `extend-helper-cli` answers,
-`logs stream --previous` is the one read that still holds the dead container's
-output, and it is where such a run goes next.
+read — never that nothing happened. Where the installed `ags` lists `logs` in
+`ags extend --help` (if it doesn't, the reader updates the AGS CLI to the latest
+release), `ags extend logs stream --previous` is the one read that still holds
+the dead container's output, and it is where such a run goes next.
 
 **The deployment status vocabulary is the read operation's own, it is a plain
 string on the wire, and it is not closed.** The five the operation publishes are
@@ -115,8 +116,19 @@ behaves, so it grounds nothing and owes no page, and it is not a condition a
 closed table can fire on. It is quoted under the cause it explains, and the read is recorded either way, because a
 tool that never answered, a tool that answers `--help` without listing a `logs`
 command, and a container that printed nothing are three different facts — the
-middle one is `errored`, and `v0.0.14` is the first release that carries `logs
-stream`.
+middle one is `errored`, and the report tells the reader to update the AGS CLI.
+A fourth fact is an app with no container to stream.
+`HTTP 400` with `app is not streamable` is only `app-creating`,
+`app-undeployed`, `app-removing`, `app-removed`, and `app-remove-timeout`.
+Every other status is decided by whether a running pod exists: a missing app,
+`app-stopped`, and any status with no running pod — including `app-stopping`,
+`app-creation-failed`, `app-creation-timeout`, `app-stop-failed`, and
+`app-stop-timeout` — answer `HTTP 404`. A status this text does not name is
+read the same way and claims nothing further about the name. The read landed
+on a different question than what the container printed, so that row is
+`answers-another-question`, and the report says the app had no running
+container to read. A status that still has a running pod is a result, not
+this fact.
 
 ## Signals
 

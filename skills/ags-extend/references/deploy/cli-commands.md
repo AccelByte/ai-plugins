@@ -1,16 +1,20 @@
 ---
-last-verified: 2026-09-25
+last-verified: 2026-10-19
 authoritative: true
 note: This file is the SINGLE SOURCE OF TRUTH for `ags extend` command syntax inside
   this skill. Every other file in this bundle that mentions a CLI command, flag, or
   env var must defer to this file (cite-or-defer rule). Do not restate CLI flags from
   memory anywhere else — link here. The unedited binary `--help` output lives at `references/cli/help-output.md`
   (regen with `references/cli/scripts/capture-cli-help.sh`); this file is the skill-friendly
-  restatement of that artifact. Targets `ags` 0.5.1.
+  restatement of that artifact. Targets `ags` 0.5.2.
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli
+- https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.2/CHANGELOG.md
 - https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.1/CHANGELOG.md
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/view-extend-app-logs/
+- https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.2/crates/accelbyte-ags-cli/src/invocation/handlers/extend/logs/session.rs
 see-also:
 - '[help-output.md](../cli/help-output.md)'
 - '[common-errors.md](common-errors.md)'
@@ -77,7 +81,7 @@ ags --version
 ags -V
 ```
 
-Output on 0.5.1: `ags 0.5.1 (workflow protocol 1.0.0)` — the semver first, then the workflow-protocol version in parentheses. Parse the leading semver for freshness comparisons; the parenthetical is a separate, independently-versioned protocol number, not part of the CLI's own release version.
+Output on 0.5.2: `ags 0.5.2 (workflow protocol 1.0.0)` — the semver first, then the workflow-protocol version in parentheses. Parse the leading semver for freshness comparisons; the parenthetical is a separate, independently-versioned protocol number, not part of the CLI's own release version.
 
 **`-v` is not the version flag** — `-v` (lowercase) is short for `--verbose` (shows resolution trace and request/response details); the version short flag is `-V` (capital). Do not carry over the old `extend-helper-cli`-era assumption that bare `-v` prints the version.
 
@@ -91,6 +95,8 @@ ags --help       # successful fallback means legacy/pre-version
 ```
 
 Fetch the latest release metadata from `https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest`, remove a leading `v` from `tag_name`, and compare it semantically with the installed version. `ags auth status` remains the *login* status command; it does not report the CLI version.
+
+**Whether this binary has `logs stream`.** Run `ags extend --help`, or `ags extend logs stream --help`. `logs` must be listed. If it is not, tell the reader to update the AGS CLI to the latest release. Do not tell them to run or install `extend-helper-cli`. `stream` is the only `logs` subcommand. A file of past logs is the Admin Portal's **Download historical logs** card, under [Stream App Logs](#stream-app-logs).
 
 ## Verbosity (global)
 
@@ -200,7 +206,7 @@ Exit codes under `--wait`, per the [0.5.1 CHANGELOG](https://github.com/AccelByt
 
 A CI script can tell "wait longer" (`6`) from "stop" (`3`) without parsing the message.
 
-The "Exit codes" list in `ags --help` stops at `5` and does not mention `6` (see [help-output.md](../cli/help-output.md)). That is a gap in the help text, not a different behaviour: 0.5.1 does exit `6` on a `--wait` timeout.
+The "Exit codes" list in `ags --help` stops at `5` and does not mention `6` (see [help-output.md](../cli/help-output.md)). That is a gap in the help text, not a different behaviour: 0.5.2 still exits `6` on a `--wait` timeout. The codes were published in the [0.5.1 CHANGELOG](https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.1/CHANGELOG.md).
 
 `deploy-app` does not accept `--cpu`, `--memory`, `--min-replicas`, or `--max-replicas`. The deploy uses whatever resource configuration the app currently has (set via `create-app`'s `--json` payload initially, or via the Admin Portal afterward).
 
@@ -229,10 +235,105 @@ This is the canonical "what's running?" command — there is no `ags extend list
 
 ## Stream App Logs
 
-**Not available in `ags extend` today.** The AGS CLI has no equivalent of `extend-helper-cli logs stream --previous` (not yet built). Do not tell a reader to install `extend-helper-cli` to get this — instead:
+Minimum version: `ags` 0.5.2. [Migrate from extend-helper-cli](https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/) names that floor: `extend-helper-cli logs stream` is `ags extend logs stream` in 0.5.2 and later, and it has no `ags csm` address. `references/cli/help-output.md` is a 0.5.2 capture and lists `logs stream`. Confirm the installed binary lists `logs` before quoting this command: [Presence and freshness check](#presence-and-freshness-check).
 
-- Use Grafana Cloud for historical search, LogQL, metrics, and dashboards (see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`).
-- If the reader already has `extend-helper-cli` installed from before this migration, `extend-helper-cli logs stream --previous` still works against their existing install and is not disallowed — but this skill does not instruct a fresh install of it for this purpose.
+The reconnect rule for `502`–`504` below is `ags` 0.5.2: those statuses are retried only while `--follow` is reconnecting a stream that already started. The first connection exits `3`. The 10-stream default, the seat release (within about 5 seconds after a normal stop, up to 90 seconds when the server does not release the seat), the server pod ceiling, the viewer cap of 1,000 lines, and the export defaults (7 days, file kept 24 hours, 3 preparing exports per namespace, 10 exports per user per UTC day) were read from the service behind the Admin Portal log cards on 2026-10-19. They are not in the 0.5.2 `--help` text. [View Extend app logs](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/view-extend-app-logs/) is the customer walkthrough; the page is unlisted, so it is not in the docs sidebar. The migration page names the version and the flags, not these caps.
+
+```bash
+ags extend logs stream --namespace {namespace} --app {app-name}
+ags extend logs stream --namespace {namespace} --app {app-name} --follow
+ags extend logs stream --namespace {namespace} --app {app-name} --tail-lines 200 --previous
+```
+
+Without `--follow` it prints recent lines and exits. With `--follow` it keeps printing new lines until Ctrl-C; a dropped connection reconnects automatically, up to 5 times per run. The app needs at least one running pod.
+
+Flags:
+
+- `--namespace` (or `-n`) — also resolves from `AGS_NAMESPACE` or the profile.
+- `--app {app-name}` (or `-a`) — required.
+- `--follow` (or `-f`) — keep streaming new lines.
+- `--tail-lines {n}` (alias `--tail`) — recent lines to fetch per pod. Default `100`, minimum `1`.
+- `--pods {count}` — pods to stream from. Default `1`. Must be from `1` to `5`: the CLI only rejects values below `1`; the server rejects values above `5`.
+- `--since-seconds {seconds}` — only lines newer than this. Minimum `1`.
+- `--previous` — each pod's previous container instance (the crash text after a restart). On `ags` 0.5.2, a pod that has not restarted prints no log lines, and the command still exits `0`. `--help` says the server says why when that pod's stream finishes. In `--format json` that explanation is one object with `"event":"pod_done"`, `"reason":"error"`, and `"message"` set to the server text, for example `open log stream for pod <name>: previous terminated container "service" in pod "<name>" not found`. Exit stays `0`. That `reason` is the server explaining an empty previous container, not a failed command.
+
+Output:
+
+- Human mode: log lines on stdout as `pod/<pod-name> | container/service | <timestamp> <log line>`. Status lines on stderr, for example `∘ [+0s] connected, fetching recent lines from pods (Ctrl-C to stop)`.
+- `--format json`: one JSON object per line on stdout.
+- The global `--output` flag is rejected on this command. Use shell redirection (`> app.log`) instead.
+
+Concurrent stream limit: 10 live log streams per namespace by default, Admin Portal and CLI combined. A normal stop releases that seat when the server handler returns, within about 5 seconds. A stream that ends because the server process died, without that release, keeps the seat until a 90-second lease expires. When the limit is reached, the CLI exits `3`.
+
+**Exit `3` is not only the stream limit.** Exit `3` means the server rejected the stream, and the error message starts with `HTTP <status>`. Not signed in or session expired is `HTTP 401`, which exits `2`: that is the auth error in the Exit codes list of [help-output.md](../cli/help-output.md) (`2` = auth error), the same list every other `ags` command uses. Read the status before saying what went wrong:
+
+| Exit `3` with | Meaning | What to do |
+|---|---|---|
+| `HTTP 429` | The namespace already has its live log streams open (10 by default, Admin Portal and CLI combined). | Stop another stream in that namespace. A stream you stopped is free within about 5 seconds. One that died without a clean stop can hold its seat for 90 seconds; wait that long before retrying. |
+| `HTTP 404` | The app doesn't exist, or it has no running pods. Stopped is the usual case. Stopping, creation failed, creation timeout, stop failed, and stop timeout do the same when no pod is running, and so does any other status this table does not name. | Check the app name and status with `get-app-info`. There is no container to stream — get earlier logs from **Download historical logs** or Grafana Cloud. |
+| `HTTP 400` with `pods must be between 1 and 5` | An option is out of range — here `--pods` above `5`. | Fix the option and run it again. |
+| `HTTP 400` with `app is not streamable` | Only these statuses: creating, undeployed, removing, removed, or remove timeout. No other status returns this. | Same as `404`: there is no container to read. Deploy it, or get earlier logs from **Download historical logs** or Grafana Cloud. |
+| `HTTP 403` | The token can't read Extend apps in this namespace. | The CLI's own suggestion names the permission: `ADMIN:NAMESPACE:{namespace}:EXTEND:APP [READ]` (Extend app read). Ask a studio admin to grant it. |
+| `HTTP 5xx` | A server-side failure. On `ags` 0.5.2, `502`, `503`, and `504` are retried only while `--follow` is reconnecting a stream that already started. The first connection is not retried: those three statuses exit `3` immediately, including when `--follow` was set. Any other `5xx` exits `3` as well. | If the command already exited `3`, try again later. A `502`–`504` on the first connection is finished; the CLI is not retrying it. |
+
+**No running pods, and a status that cannot be streamed, are different responses.** Both the CLI and the **Live app logs** card read running pods, and `--previous` does not help either case: it reads the previous container of a pod that still exists. `HTTP 400` with `app is not streamable` is only `app-creating`, `app-undeployed`, `app-removing`, `app-removed`, and `app-remove-timeout`. Every other status is decided by pods. `app-stopped` has no running pods, so the server answers `HTTP 404`, and so do `app-stopping`, `app-creation-failed`, `app-creation-timeout`, `app-stop-failed`, and `app-stop-timeout` when none of their pods are running. A status this paragraph does not name follows that pod rule. For logs from before that, use **Download historical logs** in the Admin Portal (below) or Grafana Cloud.
+
+The log stream reads only current and previous container output. For a file of past logs, use **Download historical logs** in the Admin Portal (below) — there is no CLI command for it. For LogQL search, metrics, dashboards, and 30 days of log history, use Grafana Cloud (see `references/observe/cli-commands.md` and `references/observe/grafana-guide.md`). The historical download does not replace Grafana.
+
+### Logs in the Admin Portal
+
+On the Extend app's **Logs** tab.
+
+#### Live app logs
+
+The same live stream as `ags extend logs stream`. It can start while the app is **RUNNING**, **STARTING**, or **DOWN**.
+
+| Control | What it does |
+|---|---|
+| **Follow** | On by default. Keeps printing new lines. |
+| **Tail lines** | 50, 100, or 500. |
+| **Pods** | 1 to 5. |
+| **Previous containers** | The container instance from before the last restart. |
+| **Since** | **Last 1 minute** through **Last 24 hours**, or **No time filter**. |
+| **Filter** | A text box. Shows only lines whose text or pod name contains what was typed. **Copy** and **Download** still use every line the viewer holds. |
+| **Start stream** / **Stop stream** | Open or close the stream. |
+| **Copy** | Copies the lines the viewer holds. |
+| **Download** | Saves the lines the viewer holds, at most the latest 1,000. This is the viewer buffer, not a historical export. |
+| **Clear** | Empties the viewer. |
+| **Advanced Logs** | Opens Grafana Loki. |
+
+| Message | Meaning | What to do |
+|---|---|---|
+| **Logs aren't available for this app right now** | The status can't be streamed. Anything other than **RUNNING**, **STARTING**, or **DOWN**, for example stopped. | Get earlier logs from **Download historical logs** or Grafana. |
+| **No running pods available** | The status allows streaming, and no pod is running yet. This is the CLI's `HTTP 404`. | Wait for a pod, or use **Download historical logs** or Grafana. |
+| **Too many log streams** | The concurrent stream limit above. | Stop another stream. A normal stop frees its seat within about 5 seconds. An unclean drop can hold it for 90 seconds. |
+| **You don't have permission to view these logs** | Needs Extend app read permission. | Ask a studio admin for `ADMIN:NAMESPACE:{namespace}:EXTEND:APP [READ]`. |
+| **Invalid log options** | The server rejected the request. Rare, because the card limits the options. Also shown if the app stopped just as the stream started. | Check the app status and try again. |
+| **Couldn't stream logs** | Any other failure, such as a server error or a dropped connection that didn't reconnect. | Click **Retry**. If it persists, contact AccelByte support. **Download historical logs** and Grafana still work. |
+
+#### Download historical logs
+
+Under **Live app logs**. A log file for a past time range. Admin Portal only. There is no CLI command for it.
+
+Set **From** and **To** (default and maximum range: 7 days; **To** must be after **From**; neither can be in the future), then click **Export**. The job appears under **Recent exports**.
+
+| Status | Meaning |
+|---|---|
+| **Preparing** | The file is being built. Time spent here counts toward the 24 hours. |
+| **Ready** | Click **Download**. Each file can be downloaded only once. |
+| **Downloaded** | That copy was already taken. Export the same range again for a new copy. |
+| **Expired** | 24 hours have passed since **Export**. |
+| **Failed** | Export again. |
+
+By default, one namespace can have 3 exports in **Preparing** at the same time, and one user can start 10 exports per UTC day. The daily cap is that user's own exports. A teammate in the same namespace has a separate 10.
+
+| Message after **Export** | Meaning | What to do |
+|---|---|---|
+| **Too many exports in progress** | The namespace already has 3 exports in **Preparing** (the default). | Wait for one to finish. |
+| **Daily export limit reached** | This user has started 10 exports today (the default). | Try again after midnight UTC. Another person's exports do not spend this cap. |
+| **You don't have permission to export logs** | Starting an export needs Extend app **create**. | Ask for `ADMIN:NAMESPACE:{namespace}:EXTEND:APP [CREATE]`. |
+
+**Viewing** live logs, **seeing Recent exports**, and **downloading** a file need Extend app **read** (`ADMIN:NAMESPACE:{namespace}:EXTEND:APP [READ]`). **Starting** an export needs Extend app **create**. A person who can open the list may still be unable to click **Export**. A person who can start an export still needs **read** to see the list and download the file.
 
 ## Start / Stop
 
@@ -365,7 +466,7 @@ Useful flags (per `references/cli/help-output.md` — this release's `clone-temp
 These are the most common invented commands and flags. If you're tempted to write any of them, you're hallucinating — defer to this section.
 
 - `ags extend list` — no list command. Use `get-app-info` per app, or the Admin Portal to enumerate. (`list-images` is a real subcommand, but it lists container images for one app, not apps themselves.)
-- `ags extend logs` with no subcommand, or any `logs` subcommand at all — log streaming is not available in `ags extend` today (see "Stream App Logs" above). Invented siblings like `logs get` / `logs tail` do not exist either.
+- `ags extend logs` subcommands other than `stream` — `logs stream` is the only one (see "Stream App Logs" above). `logs export` / `logs get` / `logs tail` do not exist. A file of past logs comes from **Download historical logs** in the Admin Portal, not the CLI; LogQL search is Grafana Cloud.
 - `ags extend deploy` (without the `-app` suffix) — the command is `deploy-app`.
 - `--base-url {url}` on any `ags extend` command — the environment is chosen once at login time via `ags auth login`, not a per-command flag on `image-upload`/`deploy-app`/etc. (`--base-url` **is** a real flag, but only on `ags auth login` itself — see Authentication above — where it resolves before the `AGS_BASE_URL` environment variable.)
 - `--cpu` / `--memory` as flags on any command — they don't exist as flags at all on this release. `create-app`'s `--json` payload carries `cpu.requestCPU` / `memory.requestMemory` (see Create an Extend App above); post-create resource changes go through the Admin Portal or CSM API.
@@ -403,7 +504,7 @@ Envelope shape — assumed unchanged from `extend-helper-cli`'s envelope shape p
 
 On failure, `result` contains the error message and the process exits with code 1. `serverResponse` is omitted for commands with no server calls (`status`, `clone-template`).
 
-`--format json` is **not** supported on `docker-login`, `image-upload`, or `tunnel` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally. Log streaming itself is unavailable in `ags extend` at all (see "Stream App Logs" above), so there is no `logs stream --format json` case to consider here.
+`--format json` is **not** supported on `docker-login`, `image-upload`, or `tunnel` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally. `logs stream` has its own JSON behavior: one JSON object per line on stdout (see "Stream App Logs" above).
 
 Use `--format json` in any non-interactive context (CI/CD pipelines, scripted automation).
 

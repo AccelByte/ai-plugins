@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-09-24
+last-verified: 2026-10-16
 authoritative: true
-note: --help output captured from an installed `ags` binary (ags 0.5.1 (workflow protocol
+note: --help output captured from an installed `ags` binary (ags 0.5.2 (workflow protocol
   1.0.0)). This is the ground-truth grounding artifact every other CLI claim in this
   skill defers to.
 sources:
@@ -12,7 +12,7 @@ see-also:
 
 # `ags extend` — `--help` output (authoritative grounding artifact)
 
-Captured: 2026-09-24. Source: installed binary, `ags 0.5.1 (workflow protocol 1.0.0)`.
+Captured: 2026-10-16. Source: installed binary, `ags 0.5.2 (workflow protocol 1.0.0)`.
 
 This file is the output of `ags --help` (the global flags every command accepts) and of `ags extend --help` for every subcommand, and the ground truth for CLI syntax — `references/deploy/cli-commands.md` is its readable restatement.
 
@@ -130,6 +130,7 @@ Commands:
   app-ui               App UI commands
   security-assessment  Pen-testing engagement requests and reports for Extend apps
   remote-debug         Remote debug commands
+  logs                 Extend app log commands
 
 Options:
   -h, --help
@@ -1170,6 +1171,70 @@ Options:
 Global flags:
   -n, --namespace <namespace>  Game namespace
   -y, --yes                    Skip confirmation prompt
+
+Use 'ags --help' for all global flags.
+```
+
+## `ags extend logs`
+
+```
+Extend app log commands
+
+Usage:
+  extend logs <COMMAND>
+
+Commands:
+  stream  Stream logs from an Extend app
+
+Options:
+  -h, --help  Print help
+```
+
+## `ags extend logs stream`
+
+```
+Stream logs from an Extend app.
+
+Connects to the CSM log-streaming endpoint and prints each log
+line to stdout. Without --follow the command prints recent lines
+and exits; with --follow it keeps the connection open and prints
+new lines as they arrive.
+
+With --format json and --follow the output is one JSON object per
+line and never ends; stop it with Ctrl-C.
+
+Usage:
+  extend logs stream [OPTIONS] --app <app>
+
+Options:
+  -a, --app <app>
+          Extend app name
+
+  -f, --follow
+          Keep the connection open and print new lines as they arrive
+
+      --tail-lines <lines>
+          Number of recent lines to fetch per pod
+          
+          [default: 100]
+          [alias: --tail]
+
+      --pods <count>
+          Maximum number of pods to stream from
+          
+          [default: 1]
+
+      --since-seconds <seconds>
+          Only return logs newer than this many seconds
+
+      --previous
+          Logs of each pod's previous container instance. A pod whose container has not restarted prints no log lines; the server says why when that pod's stream finishes
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Global flags:
+  -n, --namespace <namespace>  Game namespace
 
 Use 'ags --help' for all global flags.
 ```
