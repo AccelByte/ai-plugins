@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-09-23
+last-verified: 2026-10-20
 sources:
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/
 - https://docs.accelbyte.io/gaming-services/modules/foundations/extend/extend-async-messaging/
@@ -98,7 +98,7 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 **`start-app` / `stop-app`** — `ags extend` subcommands to start or stop a deployed app without redeploying.
 
-**`tunnel`** — `ags extend` subcommand that provides local-port connectivity to a named SQL or NoSQL database resource. It does not discover resources or manage database clusters.
+**`database-tunnel`** — `ags extend` subcommand that provides local-port connectivity to a named NoSQL, SQL, or Key Value Store resource, in AGS CLI 0.5.3 and later. On 0.5.2 the command is `ags extend tunnel`. In 0.5.3, `ags extend tunnel` still runs this command and is hidden from `ags extend --help`; it will be removed in a later release. It does not discover resources or manage database clusters, and `database-tunnel` has no `--pod-name` flag.
 
 **Image registry** — AccelByte-hosted registry that `image-upload` targets. You don't manage it; the CLI does.
 
@@ -196,9 +196,9 @@ See `references/observe/signal-guide.md` for how to interpret each.
 
 **Task Scheduler add-on** (alpha) — AccelByte add-on that gives Service Extensions cron-based scheduled background jobs. Implements `OnJobTriggered` (bidirectional streaming). Schedules configured via Admin Portal → App Details → Task Scheduler tab. See `references/patches/ts-go.md`.
 
-**NoSQL Database add-on** (closed alpha) — AccelByte-managed Amazon DocumentDB (MongoDB-compatible) for Extend apps. Env vars: `DOCDB_HOST`, `DOCDB_DATABASE_NAME`, `DOCDB_USERNAME`, `DOCDB_PASSWORD`, `DOCDB_CA_CERT_FILE_PATH`. TLS required in production; `SetRetryWrites(false)` mandatory. Local dev uses plain MongoDB via docker-compose. Access via `ags extend tunnel`. See `references/patches/nosql-go.md`.
+**NoSQL Database add-on** (closed alpha) — AccelByte-managed Amazon DocumentDB (MongoDB-compatible) for Extend apps. Env vars: `DOCDB_HOST`, `DOCDB_DATABASE_NAME`, `DOCDB_USERNAME`, `DOCDB_PASSWORD`, `DOCDB_CA_CERT_FILE_PATH`. TLS required in production; `SetRetryWrites(false)` mandatory. Local dev uses plain MongoDB via docker-compose. Access via `ags extend database-tunnel`. See `references/patches/nosql-go.md`.
 
-**SQL Database add-on** (preview) — AccelByte-managed Amazon Aurora PostgreSQL-compatible database for Extend apps. Env vars: `SQLDB_HOST`, `SQLDB_DATABASE_NAME`, `SQLDB_USERNAME`, `SQLDB_PASSWORD`, `SQLDB_CA_CERT_FILE_PATH`. TLS required in production. Local dev uses plain PostgreSQL via docker-compose. Access via `ags extend tunnel`. See `references/patches/sql-go.md`.
+**SQL Database add-on** (preview) — AccelByte-managed Amazon Aurora PostgreSQL-compatible database for Extend apps. Env vars: `SQLDB_HOST`, `SQLDB_DATABASE_NAME`, `SQLDB_USERNAME`, `SQLDB_PASSWORD`, `SQLDB_CA_CERT_FILE_PATH`. TLS required in production. Local dev uses plain PostgreSQL via docker-compose. Access via `ags extend database-tunnel`. See `references/patches/sql-go.md`.
 
 ---
 

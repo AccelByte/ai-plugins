@@ -1,7 +1,7 @@
 ---
-last-verified: 2026-10-16
+last-verified: 2026-10-20
 authoritative: true
-note: --help output captured from an installed `ags` binary (ags 0.5.2 (workflow protocol
+note: --help output captured from an installed `ags` binary (ags 0.5.3 (workflow protocol
   1.0.0)). This is the ground-truth grounding artifact every other CLI claim in this
   skill defers to.
 sources:
@@ -12,7 +12,7 @@ see-also:
 
 # `ags extend` — `--help` output (authoritative grounding artifact)
 
-Captured: 2026-10-16. Source: installed binary, `ags 0.5.2 (workflow protocol 1.0.0)`.
+Captured: 2026-10-20. Source: installed binary, `ags 0.5.3 (workflow protocol 1.0.0)`.
 
 This file is the output of `ags --help` (the global flags every command accepts) and of `ags extend --help` for every subcommand, and the ground truth for CLI syntax — `references/deploy/cli-commands.md` is its readable restatement.
 
@@ -115,11 +115,11 @@ Usage:
 
 Commands:
   clone-template       Clone a starter template for Extend apps
-  docker-login         Log in to the Extend container registry
-  image-upload         Build and push a container image to the Extend registry
-  tunnel               Open a TCP tunnel to an Extend app pod
-  update-secret        Update or create a CSM app secret
-  update-var           Update or create a CSM app configuration variable
+  docker-login         Log in to the Extend app container registry
+  image-upload         Build and push an Extend app container image
+  database-tunnel      Connect to an Extend database from your machine
+  update-secret        Create or update an Extend app environment secret
+  update-var           Create or update an Extend app environment variable
   create-app           Create an Extend app (→ ags csm apps create)
   get-app-info         Show Extend app details (→ ags csm apps get)
   list-images          List container images for an Extend app (→ ags csm images list)
@@ -127,10 +127,10 @@ Commands:
   start-app            Start an Extend app (→ ags csm apps start)
   stop-app             Stop an Extend app (→ ags csm apps stop)
   delete-app           Delete an Extend app (→ ags csm apps delete)
-  app-ui               App UI commands
+  app-ui               Extend App UI commands
   security-assessment  Pen-testing engagement requests and reports for Extend apps
-  remote-debug         Remote debug commands
-  logs                 Extend app log commands
+  remote-debug         Remote Debug commands
+  logs                 Extend app logs
 
 Options:
   -h, --help
@@ -165,10 +165,10 @@ Options:
 ## `ags extend docker-login`
 
 ```
-Log in to the Extend container registry.
+Log in to the Extend app container registry.
 
-Fetches short-lived registry credentials from the Extend Helper
-Service and passes them to `docker login --password-stdin`.
+Gets short-lived credentials for one Extend app and runs
+`docker login`.
 
 With --print, writes the credentials to stdout instead of
 running Docker.
@@ -208,7 +208,7 @@ Use 'ags --help' for all global flags.
 ## `ags extend image-upload`
 
 ```
-Build and push a container image to the Extend registry
+Build and push an Extend app container image
 
 Usage:
   image-upload [OPTIONS] --app <app> --image-tag <tag>
@@ -219,7 +219,7 @@ Options:
   -f, --dockerfile <path>         Path to the Dockerfile [default: Dockerfile]
   -p, --platform <platform>       Target platform(s) [default: linux/amd64]
   -w, --work-dir <path>           Build context directory
-  -l, --login                     Authenticate to the registry before building
+  -l, --login                     Log in to the registry before building
       --retry-limit <n>           Number of retries on failure (0 = no retries) [default: 0]
       --retry-interval <seconds>  Base interval between retries in seconds [default: 1.0]
       --retry-rate <rate>         Exponential backoff rate multiplier [default: 2.0]
@@ -232,29 +232,25 @@ Global flags:
 Use 'ags --help' for all global flags.
 ```
 
-## `ags extend tunnel`
+## `ags extend database-tunnel`
 
 ```
-Open a TCP tunnel to an Extend app pod.
+Connect to an Extend database from your machine.
 
-Binds a local TCP port and bridges connections to the CSM v2
-tunnel endpoint via WebSocket. Each accepted connection resolves
-a fresh access token and opens its own WebSocket session.
-
-The tunnel runs until Ctrl-C.
+Opens a port on localhost and forwards it to a NoSQL, SQL, or
+Key Value Store database. Use the Resource Name shown on that
+database's page in the Admin Portal. The command keeps running
+until you press Ctrl-C.
 
 Usage:
-  extend tunnel [OPTIONS] --resource-name <name> --local-port <port>
+  extend database-tunnel --resource-name <name> --local-port <port>
 
 Options:
-      --resource-name <name>
-          Extend resource name to tunnel to
+  -r, --resource-name <name>
+          Resource Name from the database page in the Admin Portal
 
-      --local-port <port>
-          Local TCP port to bind (localhost only)
-
-      --pod-name <pod>
-          Target pod name (optional)
+  -p, --local-port <port>
+          Port on localhost for your database client
 
   -h, --help
           Print help (see a summary with '-h')
@@ -268,17 +264,15 @@ Use 'ags --help' for all global flags.
 ## `ags extend update-secret`
 
 ```
-Update or create a CSM app secret.
+Create or update an Extend app environment secret.
 
-Updates the secret named --key to --value if it exists. If it
-does not exist, pass --force to create it. --sensitive and
---description are merged with the existing record when not
-explicitly supplied: an unset --sensitive preserves the existing
-mask (or defaults to true on create), an unset --description
-preserves the existing description.
+Sets the secret named --key to --value when it already exists.
+Pass --force to create it when it does not. When --sensitive or
+--description is omitted, the current setting is kept. A new
+secret is masked unless you pass --sensitive false.
 
-Prefer --value-stdin over --value to avoid exposing the secret
-in shell history.
+Prefer --value-stdin over --value so the secret is not saved in
+shell history.
 
 Usage:
   extend update-secret [OPTIONS] --app <app> --key <key>
@@ -288,7 +282,7 @@ Options:
           Extend app name
 
       --key <key>
-          Secret name
+          Environment secret name
 
       --value <value>
           Secret value (insecure — visible in shell history)
@@ -297,15 +291,15 @@ Options:
           Read secret value from stdin
 
       --description <text>
-          Secret description (preserved from the existing record if not supplied)
+          Secret description (kept when omitted)
 
       --sensitive [<sensitive>]
-          Mask the secret's value (defaults to true; preserved from the existing record on update if not supplied; pass 'false' explicitly to remove masking)
+          Mask the value. Defaults to true. On update, the current setting is kept when omitted. Pass false to stop masking.
           
           [possible values: true, false]
 
       --force
-          Create the secret if --key does not name an existing one
+          Create the secret when --key does not exist yet
 
   -h, --help
           Print help (see a summary with '-h')
@@ -320,17 +314,15 @@ Use 'ags --help' for all global flags.
 ## `ags extend update-var`
 
 ```
-Update or create a CSM app configuration variable.
+Create or update an Extend app environment variable.
 
-Updates the variable named --key to --value if it exists. If it
-does not exist, pass --force to create it. --sensitive and
---description are merged with the existing record when not
-explicitly supplied: an unset --sensitive preserves the existing
-mask, an unset --description preserves the existing description.
-Pass --sensitive false explicitly to remove masking.
+Sets the variable named --key to --value when it already exists.
+Pass --force to create it when it does not. When --sensitive or
+--description is omitted, the current setting is kept. Pass
+--sensitive false to stop masking the value.
 
-Prefer --value-stdin over --value to avoid exposing the value
-in shell history.
+Prefer --value-stdin over --value so the value is not saved in
+shell history.
 
 Usage:
   extend update-var [OPTIONS] --app <app> --key <key>
@@ -340,7 +332,7 @@ Options:
           Extend app name
 
       --key <key>
-          Variable name
+          Environment variable name
 
       --value <value>
           Variable value (visible in shell history)
@@ -349,15 +341,15 @@ Options:
           Read variable value from stdin
 
       --description <text>
-          Variable description (preserved from the existing record if not supplied)
+          Variable description (kept when omitted)
 
       --sensitive [<sensitive>]
-          Mask the variable's value (defaults to false when creating; preserved from the existing record on update if not supplied; pass 'false' explicitly to remove masking)
+          Mask the value. Defaults to false when creating. On update, the current setting is kept when omitted. Pass false to stop masking.
           
           [possible values: true, false]
 
       --force
-          Create the variable if --key does not name an existing one
+          Create the variable when --key does not exist yet
 
   -h, --help
           Print help (see a summary with '-h')
@@ -771,15 +763,15 @@ Example:
 ## `ags extend app-ui`
 
 ```
-App UI commands
+Extend App UI commands
 
 Usage:
   extend app-ui <COMMAND>
 
 Commands:
-  create     Create an Extend app UI (→ ags csm app-ui create) (was: appui create)
-  setup-env  Set up the .env.local file for an App UI project
-  upload     Build and upload an App UI static-asset bundle
+  create     Create an Extend App UI (→ ags csm app-ui create) (was: appui create)
+  setup-env  Write .env.local for an Extend App UI
+  upload     Build and upload an Extend App UI
 
 Options:
   -h, --help  Print help
@@ -788,7 +780,7 @@ Options:
 ## `ags extend app-ui create`
 
 ```
-Create an Extend app UI
+Create an Extend App UI
 
 Creates a new App UI configuration. The App UI can be hosted by AccelByte (the default) or externally.
 
@@ -835,14 +827,14 @@ Example:
 ## `ags extend app-ui setup-env`
 
 ```
-Set up the .env.local file for an App UI project.
+Write .env.local for an Extend App UI.
 
-Reads the App UI record from CSM and writes the four VITE_AB_*
-environment variables into .env.local in the project directory.
+Reads the App UI's public client settings and writes the four
+VITE_AB_* variables into .env.local in the project directory.
 
-If .env.example exists, its contents are used as a template and
-only the managed keys are replaced or appended. Comments, blank
-lines, and unmanaged keys are preserved.
+If .env.example exists, it is used as the template and only those
+keys are replaced or appended. Comments, blank lines, and other
+keys are kept.
 
 Usage:
   extend app-ui setup-env [OPTIONS] --name <name>
@@ -866,11 +858,10 @@ Options:
 ## `ags extend app-ui upload`
 
 ```
-Build and upload an App UI static-asset bundle.
+Build and upload an Extend App UI.
 
-Runs the frontend build, archives the output directory into a zip,
-and uploads the archive to CSM. With --no-build, skips the build step
-and archives the existing build output directly.
+Runs the frontend build, archives the output, and uploads it.
+With --no-build, skips the build and archives the existing output.
 
 Usage:
   extend app-ui upload [OPTIONS] --name <name>
@@ -919,10 +910,10 @@ Usage:
   extend security-assessment <COMMAND>
 
 Commands:
-  list            List security-assessment engagements for a namespace (→ ags csm security-assessment list)
+  list            List security assessment sessions for a namespace (→ ags csm security-assessment list)
   list-endpoints  Discover an Extend app's testable endpoints and required permissions (→ ags csm security-assessment get-app-endpoints)
-  result          Download a completed security-assessment engagement's report
-  request         Request a security assessment (pen-testing engagement) for an Extend app
+  result          Download a completed security assessment report
+  request         Request a security assessment for an Extend app
 
 Options:
   -h, --help  Print help
@@ -931,10 +922,9 @@ Options:
 ## `ags extend security-assessment list`
 
 ```
-List security-assessment engagements for a namespace
+List security assessment sessions for a namespace
 
-Lists pen-testing requests submitted for Extend apps in this game namespace.
-This is a live proxy over ASA's engagement list, so status and findings always reflect ASA's current state.
+Lists the security assessment sessions for this game namespace, with each session's current status.
 
 Requires permission:
   READ on ADMIN:NAMESPACE:{namespace}:EXTEND:SECURITYASSESSMENT
@@ -965,10 +955,9 @@ Example:
 ```
 Discover an Extend app's testable endpoints and required permissions
 
-Returns the endpoint list of a Service Extension app's exposed API, with each endpoint's required permission auto-discovered from the app's OpenAPI spec (`x-required-permission`) or, as a fallback, gRPC server reflection.
-Used to populate the pen-testing request form.
-Rejected with `404 Not Found` when the app doesn't exist in this namespace.
-When the app is not running, or has no reachable OpenAPI spec, discovery is skipped and this still returns `200 OK`, with isAppRunning/hasAPISpec reflecting that state rather than erroring.
+Lists the endpoints on an Extend Service Extension app, and each endpoint's permission when it can be read from the app's API spec.
+
+Returns no endpoints to test when the app is stopped or its API spec cannot be reached. Fails when the app does not exist.
 
 Requires permission:
   READ on ADMIN:NAMESPACE:{namespace}:EXTEND:APP
@@ -1000,7 +989,7 @@ Example:
 ## `ags extend security-assessment result`
 
 ```
-Download a completed security-assessment engagement's report
+Download a completed security assessment report
 
 Usage:
   extend security-assessment result [OPTIONS] --app <app>
@@ -1009,7 +998,7 @@ Options:
   -a, --app <app>               Extend app name
       --report-format <pdf|md>  Report file format [default: pdf]
   -o, --report-output <path>    Local file path to write the report to (default: <app>-<engagementId>-report.<ext>)
-      --engagement-id <id>      Engagement id to fetch the report for, skipping the interactive picker
+      --engagement-id <id>      Engagement (session) id of the report to download, skipping the picker
   -h, --help                    Print help
 
 Global flags:
@@ -1021,19 +1010,21 @@ Use 'ags --help' for all global flags.
 ## `ags extend security-assessment request`
 
 ```
-Request a security assessment (pen-testing engagement) for an Extend app.
+Request a security assessment for an Extend app.
 
-Discovers the app's testable endpoints and, without --all-endpoints or
---operation-ids, prompts interactively through a checklist to choose which
-to include and to supply permissions where none was auto-discovered.
+Lists the app's testable endpoints. Without --all-endpoints or
+--operation-ids, prompts a checklist so you can choose which to
+include and fill in permissions that were not discovered
+automatically.
 
-Warns before submitting if any selected endpoint can modify or delete data.
+Warns before submitting if any selected endpoint can modify or
+delete data.
 
-With --wait, blocks after submitting until the engagement reaches a terminal
-state (COMPLETED or FAILED), polling every 10s up to --wait-limit seconds
-(default 1800) and printing the current status each poll (suppressed by
---quiet). A Ctrl-C during the wait only stops the local wait — the engagement
-keeps running; check its status later with
+With --wait, waits until the session reaches COMPLETED or FAILED,
+polling every 10s up to --wait-limit seconds (default 1800) and
+printing the current status each poll (hidden with --quiet).
+Ctrl-C stops only the local wait. The session keeps running;
+check it later with
 'ags extend security-assessment list --namespace <namespace>'.
 
 Usage:
@@ -1053,7 +1044,7 @@ Options:
           Permission override for one endpoint, repeatable
 
       --wait
-          Block until the engagement reaches a terminal state (COMPLETED or FAILED)
+          Wait until the session reaches COMPLETED or FAILED
 
       --wait-limit <SECONDS>
           Maximum seconds to wait before giving up (default 1800)
@@ -1072,15 +1063,15 @@ Use 'ags --help' for all global flags.
 ## `ags extend remote-debug`
 
 ```
-Remote debug commands
+Remote Debug commands
 
 Usage:
   extend remote-debug <COMMAND>
 
 Commands:
-  connect  Connect to an Extend remote debug session
-  enable   Enable remote debugging for an Extend app
-  disable  Disable remote debugging for an Extend app
+  connect  Connect Remote Debug to your machine
+  enable   Enable Remote Debug for an Extend app
+  disable  Disable Remote Debug for an Extend app
 
 Options:
   -h, --help  Print help
@@ -1089,13 +1080,13 @@ Options:
 ## `ags extend remote-debug connect`
 
 ```
-Connect to an Extend remote debug session.
+Connect Remote Debug to your machine.
 
-Resolves debug info from the CSM API, evaluates preconditions,
-and reconnects established sessions with exponential backoff.
-
-Requires the app to be running and debug mode to be enabled
-(see 'ags extend remote-debug enable').
+Routes the Extend app's live traffic to your local app so you
+can debug it without rebuilding or redeploying the image. The
+app must be running and Remote Debug must be enabled
+(see 'ags extend remote-debug enable'). The command keeps
+running until you press Ctrl-C.
 
 Usage:
   extend remote-debug connect [OPTIONS] --app <app>
@@ -1126,11 +1117,11 @@ Use 'ags --help' for all global flags.
 ## `ags extend remote-debug enable`
 
 ```
-Enable remote debugging for an Extend app.
+Enable Remote Debug for an Extend app.
 
-Emits a performance warning, checks whether the app is currently
-running, and prompts for confirmation when it is (because enabling
-debug mode restarts the app). Use --yes to skip the prompt.
+Warns that Remote Debug can slow the app down. If the app is
+running, asks you to confirm, because enabling Remote Debug
+restarts the app. Pass --yes to skip the prompt.
 
 Usage:
   extend remote-debug enable --app <app>
@@ -1152,11 +1143,10 @@ Use 'ags --help' for all global flags.
 ## `ags extend remote-debug disable`
 
 ```
-Disable remote debugging for an Extend app.
+Disable Remote Debug for an Extend app.
 
-Checks whether the app is currently running and prompts for
-confirmation when it is (because disabling debug mode restarts
-the app). Use --yes to skip the prompt.
+If the app is running, asks you to confirm, because disabling
+Remote Debug restarts the app. Pass --yes to skip the prompt.
 
 Usage:
   extend remote-debug disable --app <app>
@@ -1178,13 +1168,13 @@ Use 'ags --help' for all global flags.
 ## `ags extend logs`
 
 ```
-Extend app log commands
+Extend app logs
 
 Usage:
   extend logs <COMMAND>
 
 Commands:
-  stream  Stream logs from an Extend app
+  stream  Stream an Extend app's container logs
 
 Options:
   -h, --help  Print help
@@ -1193,15 +1183,14 @@ Options:
 ## `ags extend logs stream`
 
 ```
-Stream logs from an Extend app.
+Stream an Extend app's container logs.
 
-Connects to the CSM log-streaming endpoint and prints each log
-line to stdout. Without --follow the command prints recent lines
-and exits; with --follow it keeps the connection open and prints
-new lines as they arrive.
+Prints each log line. Without --follow, prints recent lines and
+exits. With --follow, keeps printing new lines until you press
+Ctrl-C.
 
-With --format json and --follow the output is one JSON object per
-line and never ends; stop it with Ctrl-C.
+With --format json and --follow, each line is one JSON object
+and the command does not exit on its own.
 
 Usage:
   extend logs stream [OPTIONS] --app <app>

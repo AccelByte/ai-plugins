@@ -1,14 +1,17 @@
 ---
-last-verified: 2026-10-19
+last-verified: 2026-10-20
 authoritative: true
 note: This file is the SINGLE SOURCE OF TRUTH for `ags extend` command syntax inside
   this skill. Every other file in this bundle that mentions a CLI command, flag, or
   env var must defer to this file (cite-or-defer rule). Do not restate CLI flags from
   memory anywhere else — link here. The unedited binary `--help` output lives at `references/cli/help-output.md`
   (regen with `references/cli/scripts/capture-cli-help.sh`); this file is the skill-friendly
-  restatement of that artifact. Targets `ags` 0.5.2.
+  restatement of that artifact. Targets `ags` 0.5.3. `logs stream` has been available
+  since 0.5.2. `database-tunnel` is the 0.5.3 name; on 0.5.2 the command is `ags extend
+  tunnel`.
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli
+- https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.3/CHANGELOG.md
 - https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.2/CHANGELOG.md
 - https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.1/CHANGELOG.md
 - https://docs.accelbyte.io/gaming-services/services/extend/
@@ -100,7 +103,7 @@ Fetch the latest release metadata from `https://api.github.com/repos/AccelByte/a
 
 ## Verbosity (global)
 
-**Most subcommands do NOT accept the old `--verbosity {0..6}` flag on this release.** `create-app`, `deploy-app`, `start-app`, `stop-app`, `delete-app`, `tunnel`, `clone-template`, `update-var`, and `update-secret` show no such flag at all in their `--help` output — do not add it to an example for any of them.
+**Most subcommands do NOT accept the old `--verbosity {0..6}` flag on this release.** `create-app`, `deploy-app`, `start-app`, `stop-app`, `delete-app`, `database-tunnel`, `clone-template`, `update-var`, and `update-secret` show no such flag at all in their `--help` output — do not add it to an example for any of them.
 
 Only `docker-login` and `app-ui upload` show a `--verbosity {level}` flag, and on both it is **accepted for backward compatibility, ignored** — it does nothing on this release.
 
@@ -137,7 +140,7 @@ The server returns the app's full resource configuration in the response (`CPU.c
 
 The commands that forward to CSM — `create-app`, `get-app-info`, `list-images`, `deploy-app`, `start-app`, `stop-app`, and `delete-app` — all default to the CSM **v5** contract and accept `--api-version {v2|v5}` (default `v5`) to pin one. `deploy-app`'s `--json` body is `CreateDeploymentV5Request`, whose only field is still the required `"imageTag"`.
 
-`update-secret` and `update-var` carry no CSM version at all and take no `--api-version` flag. `docker-login`, `image-upload`, `tunnel`, and `clone-template` take none either.
+`update-secret` and `update-var` carry no CSM version at all and take no `--api-version` flag. `docker-login`, `image-upload`, `database-tunnel`, and `clone-template` take none either.
 
 **`--cpu` and `--memory` are inputs only on `create-app`** — via its `--json` payload, not as flags on any command. They're not accepted in any form by `deploy-app`, `start-app`, or `stop-app`. To change CPU or memory on an *existing* app, use the AGS Admin Portal (app detail → resource configuration) or call CSM API directly. The CLI does not have an "update resources" subcommand today.
 
@@ -235,7 +238,7 @@ This is the canonical "what's running?" command — there is no `ags extend list
 
 ## Stream App Logs
 
-Minimum version: `ags` 0.5.2. [Migrate from extend-helper-cli](https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/) names that floor: `extend-helper-cli logs stream` is `ags extend logs stream` in 0.5.2 and later, and it has no `ags csm` address. `references/cli/help-output.md` is a 0.5.2 capture and lists `logs stream`. Confirm the installed binary lists `logs` before quoting this command: [Presence and freshness check](#presence-and-freshness-check).
+Minimum version: `ags` 0.5.2. [Migrate from extend-helper-cli](https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/) names that floor: `extend-helper-cli logs stream` is `ags extend logs stream` in 0.5.2 and later, and it has no `ags csm` address. `references/cli/help-output.md` is a 0.5.3 capture and lists `logs stream`. Confirm the installed binary lists `logs` before quoting this command: [Presence and freshness check](#presence-and-freshness-check).
 
 The reconnect rule for `502`–`504` below is `ags` 0.5.2: those statuses are retried only while `--follow` is reconnecting a stream that already started. The first connection exits `3`. The 10-stream default, the seat release (within about 5 seconds after a normal stop, up to 90 seconds when the server does not release the seat), the server pod ceiling, the viewer cap of 1,000 lines, and the export defaults (7 days, file kept 24 hours, 3 preparing exports per namespace, 10 exports per user per UTC day) were read from the service behind the Admin Portal log cards on 2026-10-19. They are not in the 0.5.2 `--help` text. [View Extend app logs](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/view-extend-app-logs/) is the customer walkthrough; the page is unlisted, so it is not in the docs sidebar. The migration page names the version and the flags, not these caps.
 
@@ -384,17 +387,17 @@ The trap to avoid: editing the deployed app's value by editing local `.env` and 
 ## Database Tunnel
 
 ```bash
-ags extend tunnel \
+ags extend database-tunnel \
   --namespace {namespace} \
   --resource-name {resource-name} \
   --local-port {local-port}
 ```
 
-Short flags: `-n` for `--namespace` only — `--resource-name` and `--local-port` have no short forms on this release. Verify against `ags extend tunnel --help` before quoting `-r`/`-p` short flags; the retired `extend-helper-cli` had them, but the current grounding artifact does not.
+`ags extend database-tunnel` is the command in AGS CLI 0.5.3 and later. On 0.5.2 the command is `ags extend tunnel`: it takes `--pod-name` and has no `-r` or `-p`. In 0.5.3, `ags extend tunnel` still runs this command and stays hidden from `ags extend --help`. It will be removed in a later release, so use `ags extend database-tunnel`.
 
-Optional: `--pod-name {pod}` — target a specific pod instead of letting the CLI pick one.
+Short flags on 0.5.3: `-n` for `--namespace`, `-r` for `--resource-name`, and `-p` for `--local-port`. There is no `--pod-name` on this command. Pod targeting belongs to `ags extend remote-debug connect`.
 
-`--resource-name` supports both SQL and NoSQL database resource names. Find the resource name in the matching SQL or NoSQL Database area in the Admin Portal, then connect your database client to `localhost:{local-port}`.
+`--resource-name` is the Resource Name on that database's page in the Admin Portal (NoSQL, SQL, or Key Value Store). Connect your database client to `localhost:{local-port}`.
 
 The tunnel provides connectivity to the named database resource only. It does not discover database resources or create, update, delete, or otherwise manage database clusters.
 
@@ -413,9 +416,9 @@ Minimum version for `--wait`: `ags` 0.5.1.
 
 Optional: `--wait` / `--wait-interval` / `--wait-limit`.
 
-## Security Assessment (pen-testing engagements)
+## Security assessment
 
-`ags extend security-assessment` requests a pen-testing engagement for an Extend app, tracks it, and downloads its report. It has four subcommands:
+`ags extend security-assessment` requests a security assessment for an Extend app, lists its sessions, and downloads the findings report. It has four subcommands:
 
 ```bash
 ags extend security-assessment list-endpoints --namespace {namespace} --app-name {app-name}
@@ -424,10 +427,10 @@ ags extend security-assessment list           --namespace {namespace}
 ags extend security-assessment result         --namespace {namespace} --app {app-name}
 ```
 
-- **`list-endpoints`** — discovers a Service Extension app's testable endpoints and the permission each one requires (from the app's OpenAPI spec's `x-required-permission`, falling back to gRPC server reflection). Takes `--app-name`, **not** `--app` — the only `security-assessment` subcommand that does. An app that doesn't exist returns `404`; an app that isn't running, or has no reachable OpenAPI spec, still returns `200` with discovery skipped. Canonical command: `ags csm security-assessment get-app-endpoints`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:APP`.
-- **`request`** — submits the engagement. Choose endpoints non-interactively with `--all-endpoints` or `--operation-ids {id1,id2,...}`; without either it walks an interactive checklist. `--permission {operationId}={RESOURCE} [ACTION]` (repeatable) supplies a permission where none was discovered. It warns before submitting if any selected endpoint can modify or delete data; the global `--yes` skips that confirmation and `--dry-run` previews without requesting. `--wait` blocks until the engagement is `COMPLETED` or `FAILED`, polling every 10s up to `--wait-limit {seconds}` (default 1800); Ctrl-C stops only the local wait, not the engagement.
-- **`list`** — lists the namespace's engagements, live from the assessment service, so status always reflects its current state. Canonical command: `ags csm security-assessment list`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:SECURITYASSESSMENT`.
-- **`result`** — downloads a completed engagement's report. `--report-format {pdf|md}` (default `pdf`), `--report-output {path}` (or `-o`; default `{app}-{engagementId}-report.{ext}`), and `--engagement-id {id}` to skip the interactive picker.
+- **`list-endpoints`** — lists the endpoints on an Extend Service Extension app, and each endpoint's permission when it can be read from the app's API spec. Takes `--app-name`, **not** `--app` — the only `security-assessment` subcommand that does. Fails when the app does not exist. Returns no endpoints to test when the app is stopped or its API spec cannot be reached. Canonical command: `ags csm security-assessment get-app-endpoints`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:APP`.
+- **`request`** — submits a security assessment session. Choose endpoints non-interactively with `--all-endpoints` or `--operation-ids {id1,id2,...}`; without either it walks an interactive checklist. `--permission {operationId}={RESOURCE} [ACTION]` (repeatable) supplies a permission where none was discovered. It warns before submitting if any selected endpoint can modify or delete data; the global `--yes` skips that confirmation and `--dry-run` previews without requesting. `--wait` waits until the session is `COMPLETED` or `FAILED`, polling every 10s up to `--wait-limit {seconds}` (default 1800); Ctrl-C stops only the local wait, not the session.
+- **`list`** — lists the security assessment sessions for the namespace, with each session's current status. Canonical command: `ags csm security-assessment list`. Requires `READ` on `ADMIN:NAMESPACE:{namespace}:EXTEND:SECURITYASSESSMENT`.
+- **`result`** — downloads a completed session's findings report. `--report-format {pdf|md}` (default `pdf`), `--report-output {path}` (or `-o`; default `{app}-{engagementId}-report.{ext}`), and `--engagement-id {id}` to skip the picker. `--engagement-id` is the session id.
 
 The `--help` output names no required permission for `request` or `result`, so don't state one.
 
@@ -504,7 +507,7 @@ Envelope shape — assumed unchanged from `extend-helper-cli`'s envelope shape p
 
 On failure, `result` contains the error message and the process exits with code 1. `serverResponse` is omitted for commands with no server calls (`status`, `clone-template`).
 
-`--format json` is **not** supported on `docker-login`, `image-upload`, or `tunnel` (their output is inherently streaming). Passing the flag on those commands prints a warning to stderr and the command runs normally. `logs stream` has its own JSON behavior: one JSON object per line on stdout (see "Stream App Logs" above).
+`--format json` is **not** a single result envelope on `docker-login`, `image-upload`, or `database-tunnel` (their output is inherently streaming). On `docker-login` and `image-upload`, passing the flag prints a warning to stderr and the command runs normally. On `database-tunnel`, `--format json` switches the session events on stderr to JSON. `ags extend logs stream --format json` writes one JSON object per line (see "Stream App Logs" above).
 
 Use `--format json` in any non-interactive context (CI/CD pipelines, scripted automation).
 

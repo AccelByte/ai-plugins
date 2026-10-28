@@ -164,7 +164,7 @@ curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global
 
 Set `DOCDB_CA_CERT_FILE_PATH` to the path of the downloaded file. Leave it out of `.env.template` and set it in the deployment environment.
 
-For local testing against a real DocumentDB cluster, use TCP tunneling via `ags extend tunnel` (see `references/deploy/cli-commands.md`) and modify the TLS connection string accordingly.
+For local testing against a real DocumentDB cluster, use TCP tunneling via `ags extend database-tunnel` (see `references/deploy/cli-commands.md`) and modify the TLS connection string accordingly.
 
 ### 5. Update `docker-compose.yaml`
 

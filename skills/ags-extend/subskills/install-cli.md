@@ -10,7 +10,7 @@ see-also:
 
 # Extend CLI Installer (pointer)
 
-Extend no longer has its own CLI. Run `/ags install-cli` — it installs the single `ags` binary that also drives `ags extend` (Extend app lifecycle: `create-app`, `deploy-app`, `image-upload`, `docker-login`, `update-var`, `update-secret`, `tunnel`, `clone-template`, and more — see `references/deploy/cli-commands.md`).
+Extend no longer has its own CLI. Run `/ags install-cli` — it installs the single `ags` binary that also drives `ags extend` (Extend app lifecycle: `create-app`, `deploy-app`, `image-upload`, `docker-login`, `update-var`, `update-secret`, `database-tunnel`, `clone-template`, and more — see `references/deploy/cli-commands.md`).
 
 Two things a reader migrating from the retired `extend-helper-cli` needs to know that `/ags install-cli` doesn't cover, because they only matter to a migrating reader:
 
