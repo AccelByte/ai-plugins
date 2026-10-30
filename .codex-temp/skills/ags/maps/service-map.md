@@ -18,5 +18,5 @@ This map connects product language, AGS CLI groups, and backend service names. I
 | Store and entitlements | `platform`, commerce APIs | Platform, Entitlement, Store | `/ags` |
 | Analytics | analytics APIs and event sinks | Analytics | `/ags` |
 | AccelByte Multiplayer Servers | AMS CLI and `amssim` | fleet-commander, AMS | `/ags` via `../capabilities/ams/router.md` |
-| Extend | Extend helper CLI | Extend | `/ags-extend` |
+| Extend | `extend` | Extend | `/ags-extend` |
 | ADT | ADT tooling | ADT | `/adt` |

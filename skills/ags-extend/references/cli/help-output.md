@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-10-20
+last-verified: 2026-10-26
 authoritative: true
 note: --help output captured from an installed `ags` binary (ags 0.5.3 (workflow protocol
   1.0.0)). This is the ground-truth grounding artifact every other CLI claim in this
@@ -12,7 +12,7 @@ see-also:
 
 # `ags extend` — `--help` output (authoritative grounding artifact)
 
-Captured: 2026-10-20. Source: installed binary, `ags 0.5.3 (workflow protocol 1.0.0)`.
+Captured: 2026-10-26. Source: installed binary, `ags 0.5.3 (workflow protocol 1.0.0)`.
 
 This file is the output of `ags --help` (the global flags every command accepts) and of `ags extend --help` for every subcommand, and the ground truth for CLI syntax — `references/deploy/cli-commands.md` is its readable restatement.
 

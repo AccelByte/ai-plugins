@@ -98,7 +98,7 @@ Terms are grouped by topic and listed in the order a developer usually encounter
 
 **`start-app` / `stop-app`** — `ags extend` subcommands to start or stop a deployed app without redeploying.
 
-**`database-tunnel`** — `ags extend` subcommand that provides local-port connectivity to a named NoSQL, SQL, or Key Value Store resource, in AGS CLI 0.5.3 and later. On 0.5.2 the command is `ags extend tunnel`. In 0.5.3, `ags extend tunnel` still runs this command and is hidden from `ags extend --help`; it will be removed in a later release. It does not discover resources or manage database clusters, and `database-tunnel` has no `--pod-name` flag.
+**`database-tunnel`** — `ags extend` subcommand that opens a localhost port to a named Extend database (SQL, NoSQL, or Key Value Store), in AGS CLI 0.5.3 and later. It does not discover resources or manage database clusters, and it has no `--pod-name` flag. On 0.5.2 the command is `ags extend tunnel`. On `ags` 0.5.3, `ags extend tunnel` still runs and is omitted from `ags extend --help`.
 
 **Image registry** — AccelByte-hosted registry that `image-upload` targets. You don't manage it; the CLI does.
 

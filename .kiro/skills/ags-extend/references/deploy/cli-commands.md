@@ -6,9 +6,10 @@ note: This file is the SINGLE SOURCE OF TRUTH for `ags extend` command syntax in
   env var must defer to this file (cite-or-defer rule). Do not restate CLI flags from
   memory anywhere else — link here. The unedited binary `--help` output lives at `references/cli/help-output.md`
   (regen with `references/cli/scripts/capture-cli-help.sh`); this file is the skill-friendly
-  restatement of that artifact. Targets `ags` 0.5.3. `logs stream` has been available
-  since 0.5.2. `database-tunnel` is the 0.5.3 name; on 0.5.2 the command is `ags extend
-  tunnel`.
+  restatement of that artifact. Command names and flags follow the `ags` 0.5.3 capture.
+  `database-tunnel` is the 0.5.3 name; on 0.5.2 the command is `ags extend tunnel`.
+  Runtime notes that name `ags` 0.5.2 were measured on that release and were not re-run
+  on 0.5.3.
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli
 - https://github.com/AccelByte/accelbyte-ags-cli/blob/v0.5.3/CHANGELOG.md
@@ -84,7 +85,7 @@ ags --version
 ags -V
 ```
 
-Output on 0.5.2: `ags 0.5.2 (workflow protocol 1.0.0)` — the semver first, then the workflow-protocol version in parentheses. Parse the leading semver for freshness comparisons; the parenthetical is a separate, independently-versioned protocol number, not part of the CLI's own release version.
+Output on 0.5.3: `ags 0.5.3 (workflow protocol 1.0.0)` — the semver first, then the workflow-protocol version in parentheses. Parse the leading semver for freshness comparisons; the parenthetical is a separate, independently-versioned protocol number, not part of the CLI's own release version.
 
 **`-v` is not the version flag** — `-v` (lowercase) is short for `--verbose` (shows resolution trace and request/response details); the version short flag is `-V` (capital). Do not carry over the old `extend-helper-cli`-era assumption that bare `-v` prints the version.
 
@@ -238,7 +239,7 @@ This is the canonical "what's running?" command — there is no `ags extend list
 
 ## Stream App Logs
 
-Minimum version: `ags` 0.5.2. [Migrate from extend-helper-cli](https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/) names that floor: `extend-helper-cli logs stream` is `ags extend logs stream` in 0.5.2 and later, and it has no `ags csm` address. `references/cli/help-output.md` is a 0.5.3 capture and lists `logs stream`. Confirm the installed binary lists `logs` before quoting this command: [Presence and freshness check](#presence-and-freshness-check).
+Minimum version: `ags` 0.5.2. [Migrate from extend-helper-cli](https://docs.accelbyte.io/gaming-services/modules/developer-tools/ags-cli/migration/from-extend-helper-cli/) names that floor: `extend-helper-cli logs stream` is `ags extend logs stream` in 0.5.2 and later, and it has no `ags csm` address. `references/cli/help-output.md` is a 0.5.3 capture (2026-10-26) and lists `logs stream`. Confirm the installed binary lists `logs` before quoting this command: [Presence and freshness check](#presence-and-freshness-check).
 
 The reconnect rule for `502`–`504` below is `ags` 0.5.2: those statuses are retried only while `--follow` is reconnecting a stream that already started. The first connection exits `3`. The 10-stream default, the seat release (within about 5 seconds after a normal stop, up to 90 seconds when the server does not release the seat), the server pod ceiling, the viewer cap of 1,000 lines, and the export defaults (7 days, file kept 24 hours, 3 preparing exports per namespace, 10 exports per user per UTC day) were read from the service behind the Admin Portal log cards on 2026-10-19. They are not in the 0.5.2 `--help` text. [View Extend app logs](https://docs.accelbyte.io/gaming-services/modules/foundations/extend/observability/view-extend-app-logs/) is the customer walkthrough; the page is unlisted, so it is not in the docs sidebar. The migration page names the version and the flags, not these caps.
 
@@ -393,11 +394,11 @@ ags extend database-tunnel \
   --local-port {local-port}
 ```
 
-`ags extend database-tunnel` is the command in AGS CLI 0.5.3 and later. On 0.5.2 the command is `ags extend tunnel`: it takes `--pod-name` and has no `-r` or `-p`. In 0.5.3, `ags extend tunnel` still runs this command and stays hidden from `ags extend --help`. It will be removed in a later release, so use `ags extend database-tunnel`.
+On `ags` 0.5.3, `--resource-name` is `-r` and `--local-port` is `-p`. `-n` is `--namespace`. The command has no `--pod-name` flag; pod targeting belongs to `ags extend remote-debug connect`. Confirm with `ags extend database-tunnel --help` before quoting flags; the capture is in `references/cli/help-output.md`.
 
-Short flags on 0.5.3: `-n` for `--namespace`, `-r` for `--resource-name`, and `-p` for `--local-port`. There is no `--pod-name` on this command. Pod targeting belongs to `ags extend remote-debug connect`.
+On 0.5.2 the command is `ags extend tunnel`: it takes `--pod-name` and has no `-r` or `-p`. On 0.5.3, `ags extend tunnel` still runs. `ags extend --help` does not list it. The `CHANGELOG.md` shipped with this 0.5.3 binary calls that name a hidden alias and says it will be removed in a later release, so scripts should use `database-tunnel`.
 
-`--resource-name` is the Resource Name on that database's page in the Admin Portal (NoSQL, SQL, or Key Value Store). Connect your database client to `localhost:{local-port}`.
+`--resource-name` is the Resource Name on that database's page in the Admin Portal. The 0.5.3 help names NoSQL, SQL, and Key Value Store. Connect the database client to `localhost:{local-port}`.
 
 The tunnel provides connectivity to the named database resource only. It does not discover database resources or create, update, delete, or otherwise manage database clusters.
 
@@ -507,7 +508,7 @@ Envelope shape — assumed unchanged from `extend-helper-cli`'s envelope shape p
 
 On failure, `result` contains the error message and the process exits with code 1. `serverResponse` is omitted for commands with no server calls (`status`, `clone-template`).
 
-`--format json` is **not** a single result envelope on `docker-login`, `image-upload`, or `database-tunnel` (their output is inherently streaming). On `docker-login` and `image-upload`, passing the flag prints a warning to stderr and the command runs normally. On `database-tunnel`, `--format json` switches the session events on stderr to JSON. `ags extend logs stream --format json` writes one JSON object per line (see "Stream App Logs" above).
+`--format json` is **not** a single result envelope on `docker-login`, `image-upload`, or `database-tunnel` (their output is inherently streaming). On the 0.5.2 checks, passing the flag to `docker-login` or `image-upload` printed a warning to stderr and the command ran normally; that warning was not re-run on 0.5.3. On `database-tunnel`, `--format json` switches the session events on stderr to JSON. `logs stream` has its own JSON behavior: one JSON object per line on stdout (see "Stream App Logs" above).
 
 Use `--format json` in any non-interactive context (CI/CD pipelines, scripted automation).
 
