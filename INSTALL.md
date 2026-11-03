@@ -190,16 +190,10 @@ Private Cloud: https://{environment_name}.accelbyte.io/mcp
 
 Use when generating or reviewing AccelByte Extend service code. Provides accurate SDK types, function signatures, and models for Go, Java, Python, and C# — prevents hallucinated API shapes in generated Extend code.
 
-Set the following environment variables:
-
-- `CONFIG_DIR`
-
 ```
-Requires Docker. Set `CONFIG_DIR` to your SDK language:
-- `config/go` (default)
-- `config/java`
-- `config/python`
-- `config/csharp`
+Hosted — no Docker and no sign-in. Replace `go` at the end of the URL with your Extend app's language: `go`, `java`, `python`, or `csharp`.
+Public Cloud:  https://prod.gamingservices.accelbyte.io/extend-mcp/{language}
+Private Cloud: https://{domain}/extend-mcp/{language}  ({domain} is your environment's own domain)
 ```
 
 ### Teammate Memory MCP Server

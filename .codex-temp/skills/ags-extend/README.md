@@ -1,7 +1,8 @@
 ---
-last-verified: 2026-09-22
+last-verified: 2026-11-02
 sources:
 - https://docs.accelbyte.io/gaming-services/services/extend/
+- https://docs.accelbyte.io/gaming-services/modules/foundations/extend/advanced-topics/extend-mcp-servers/
 see-also:
 - '[SKILL.md](SKILL.md)'
 - '[overview.md](references/overview.md)'
@@ -149,5 +150,5 @@ ags-extend/
 
 - `references/patches/` — structured prompts used by `wizard` to modify templates (e.g. NoSQL setup). Not diff files — written as prompts so they survive template churn.
 - `install-dep` detects runtimes but does not install them. If a runtime is missing it gives you the download link and skips that app.
-- `install-mcp` configures two MCP servers: `ags-api` (AGS API via Docker) and `ags-extend-sdk` (Extend SDK context via Docker). Supports Claude Code, Cursor, Windsurf, Kiro, and Codex.
+- `install-mcp` configures two MCP servers: `ags-api` (AGS API via Docker) and `ags-extend-sdk` (Extend SDK context from a hosted endpoint — no Docker). Supports Claude Code, Cursor, Windsurf, Kiro, and Codex.
 - `install-cli` does not install its own binary — it points to `/ags install-cli`, which installs the unified AGS CLI (`ags`) used for both `ags extend` commands and general AGS admin/observability.
