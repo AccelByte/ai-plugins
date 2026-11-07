@@ -136,7 +136,7 @@ Report:
 
 ```
 Prerequisites:
-  ✓ ags 0.5.1
+  ✓ ags <version>
   ✓ docker 25.0.3 (daemon running)
 ```
 
@@ -245,7 +245,7 @@ User: /ags-extend deploy
 Skill: In ./matchmaking-override (Makefile + Dockerfile + go.mod). Reading .env…
 
        Prerequisites:
-         ✓ ags 0.5.1
+         ✓ ags <version>
          ✓ docker 25.0.3 (daemon running)
 
        Project: vip-matchmaking

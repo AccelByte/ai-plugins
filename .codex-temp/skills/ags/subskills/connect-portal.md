@@ -363,7 +363,7 @@ Per `output_contract`.
 User: /ags connect-portal
 
 Skill: Confirming preconditions:
-       OK AGS CLI installed (ags 0.1.0)
+       OK AGS CLI installed (ags <version>)
        OK CLI authenticated (`ags auth status`)
        ? Namespace name?
 

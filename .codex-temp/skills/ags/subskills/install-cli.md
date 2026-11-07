@@ -157,7 +157,7 @@ Windows PowerShell:
 Invoke-RestMethod -Uri https://api.github.com/repos/AccelByte/accelbyte-ags-cli/releases/latest
 ```
 
-Capture the release `tag_name`, `html_url`, asset names, and `browser_download_url` values. Do not assume `v0.1.0` is still latest.
+Capture the release `tag_name`, `html_url`, asset names, and `browser_download_url` values. Do not assume any particular release is still latest.
 
 Normalize the installed version and release tag for comparison by removing a leading `v`; compare them as semantic versions, not as plain strings:
 
@@ -317,15 +317,15 @@ Before saying that the AGS CLI does not support a requested command or flag, use
 User: /ags install-cli
 
 Skill: Checking for existing install...
-       OK ags 0.5.1 already installed at /usr/local/bin/ags
-       OK latest official release is v0.5.1
+       OK ags <version> already installed at /usr/local/bin/ags
+       OK latest official release is v<version>
        OK auth status checked with `ags auth status`
 
        AGS CLI installed
 
          OS / arch:          darwin arm64
-         Installed version:  0.5.1
-         Latest version:     0.5.1
+         Installed version:  <version>
+         Latest version:     <version>
          Install path:       /usr/local/bin/ags
          Status:             current
          Authenticated:      yes
@@ -340,7 +340,7 @@ User: /ags install-cli
 
 Skill: Checking for existing install... not found.
        Detected: windows x86_64.
-       Latest release: v0.5.1
+       Latest release: v<version>
        Asset: accelbyte-ags-cli-x86_64-pc-windows-msvc.zip
 
        I will download the release archive, verify its .sha256 checksum,
@@ -361,8 +361,8 @@ User: n, later
 Skill: AGS CLI installed
 
          OS / arch:          windows x86_64
-         Installed version:  0.5.1
-         Latest version:     0.5.1
+         Installed version:  <version>
+         Latest version:     <version>
          Install path:       C:\Users\you\AppData\Local\AccelByte\ags-cli\bin\ags.exe
          Status:             current
          Authenticated:      no - run `ags auth login` to authenticate
@@ -387,8 +387,8 @@ Skill: You're in the right place - installing `ags` covers `ags extend`
        AGS CLI installed
 
          OS / arch:          darwin arm64
-         Installed version:  0.5.1
-         Latest version:     0.5.1
+         Installed version:  <version>
+         Latest version:     <version>
          Install path:       /usr/local/bin/ags
          Status:             current
          Authenticated:      yes

@@ -266,7 +266,7 @@ Skill: [runs wizard]
        ━━━ Stage 3/4: Install CLI ━━━
 
        [runs install-cli]
-       ✓ ags 0.5.1 installed to /usr/local/bin/
+       ✓ ags <version> installed to /usr/local/bin/
 
        ━━━ Stage 4/4: Install MCP (optional) ━━━
 
@@ -282,7 +282,7 @@ Skill: Skipping MCP setup. Run /ags-extend install-mcp anytime.
          Scaffold:          ./matchmaking-override/ (override, go)
          Integrations:      none
          Dependencies:      installed
-         AGS CLI:           installed (0.5.1)
+         AGS CLI:           installed (<version>)
          MCP integration:   declined
 
        Next:
