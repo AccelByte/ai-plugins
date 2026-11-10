@@ -5,7 +5,6 @@ description: 'Read-only walkthrough of an existing AGS namespace: which modules 
   wired. Use when the user wants to take stock of an existing setup before changing
   anything.'
 allowed-tools: Read Glob Bash
-model: sonnet
 last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/

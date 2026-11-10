@@ -5,7 +5,6 @@ description: Execute a registered AGS CLI workflow (e.g. competitive-multiplayer
   This is a thin CLI-execution wrapper, distinct from /ags matchmaking plan, which
   produces a player-facing game-integration plan rather than running CLI scaffolding.
 allowed-tools: Read Bash PowerShell Glob AskUserQuestion
-model: sonnet
 last-verified: 2026-06-26
 see-also:
 - '[workflows.md](../references/cli/workflows.md)'

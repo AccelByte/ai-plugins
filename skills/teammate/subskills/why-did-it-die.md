@@ -7,7 +7,6 @@ description: Use when the user asks why one thing that was running stopped — '
   the cause candidates it can ground, and hands over the log or artifact that settles
   the rest. Explains one thing that already stopped, and does not scan a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-10-19
 see-also:
 - '[ams-server.md](../references/resource-signals/ams-server.md)'

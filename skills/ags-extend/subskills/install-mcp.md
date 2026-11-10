@@ -106,6 +106,8 @@ If the user must run the server locally (for example, offline), point them to th
 
 Use this section only when the user is running Codex. Codex requires project-scoped TOML entries in `<project>/.codex/config.toml`; do not ask Codex users to merge `.mcp.json`, `.cursor/mcp.json`, or `.kiro/settings/mcp.json`.
 
+The Codex plugin already starts `ags-extend-sdk` at the Public Cloud `go` URL, so skip its table below unless the user needs another language or a Private Cloud domain. In that case name the table after the language, for example `[mcp_servers.ags_extend_sdk_java]`, so it cannot collide with the plugin's own server, and tell the user the plugin's `go` server keeps running beside it.
+
 For Codex, add or update only the needed MCP server tables:
 
 ```toml

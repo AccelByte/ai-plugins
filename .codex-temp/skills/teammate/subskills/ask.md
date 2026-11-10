@@ -4,7 +4,6 @@ description: Explain what the teammate can do and route to the right subskill. U
   for 'what can the teammate do', 'how does this work', 'what does this project already
   use', or when the intent isn't yet a concrete scan.
 allowed-tools: Read
-model: sonnet
 last-verified: 2026-09-04
 see-also:
 - '[health-check.md](health-check.md)'

@@ -5,7 +5,6 @@ description: Bootstrap or repair AGS namespace/IAM client/login-method config fo
   select IAM clients, enable required login methods when exposed, and write .env /
   engine config.
 allowed-tools: Read Write Edit Bash Glob
-model: sonnet
 last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/

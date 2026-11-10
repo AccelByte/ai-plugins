@@ -6,7 +6,6 @@ description: Add, update, or delete IAM/OAuth client permissions on an existing 
   a confirmation gate. For first-time namespace/client bootstrap use connect-portal
   instead.
 allowed-tools: Read Bash Glob
-model: sonnet
 last-verified: 2026-07-20
 sources:
 - https://docs.accelbyte.io/

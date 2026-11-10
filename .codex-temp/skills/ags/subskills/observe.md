@@ -4,7 +4,6 @@ description: Pull read-only signals from a deployed AGS namespace. Use when the 
   wants to understand live namespace state, IAM client activity, session state, command
   availability, auth health, or connectivity.
 allowed-tools: Read Bash Glob
-model: sonnet
 last-verified: 2026-08-17
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest

@@ -3,7 +3,6 @@ name: ags-install-sdk
 description: Detect the target engine/runtime and install the matching AGS SDK. Owns
   Unreal, Unity, Godot, Roblox, the TypeScript Web SDK, and custom-engine REST fallback.
 allowed-tools: Read Write Edit Bash Glob
-model: sonnet
 last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/

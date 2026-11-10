@@ -113,6 +113,7 @@ codex plugin marketplace add /path/to/accelbyte-ai-plugins
 
 - After registration, restart or reload Codex. The plugin appears in Codex's `/plugins` flow for the user to install or enable; activation is not silent.
 - Default to user scope (no extra flags) so the plugin is available across Codex workspaces. Use a project-scoped install only when the user explicitly requests it.
+- AGS Extend SDK MCP Server is bundled in `/path/to/accelbyte-ai-plugins/codex.mcp.json` (referenced by the plugin manifest's `mcpServers` field) and starts when the plugin loads.
 - Manual-install MCP servers (listed in the MCP Servers section below) are installed separately via an included skill, which writes project-scoped `<project>/.codex/config.toml` entries only for the MCP servers the current project needs. This avoids plugin activation failures when Docker, `uvx`, credentials, or local MCP checkouts are missing.
 
 ## 5. Kiro
@@ -175,6 +176,8 @@ npx skills add AccelByte/ai-plugins
 ## MCP Servers
 
 These MCP servers are intended to be installed via a skill included in this plugin. Use one of those skills to add only the MCP entries your project needs.
+
+In Codex, the plugin itself starts AGS Extend SDK MCP Server.
 
 ### AGS API MCP Server
 

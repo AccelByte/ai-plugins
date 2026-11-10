@@ -4,7 +4,6 @@ description: 'Checklist-driven AGS initializer: project check, SDK/plugin instal
   AGS CLI setup, optional engine SDK MCP setup, connect-portal with user-supplied
   base URL/namespace/client ID, optional AGS API MCP URL setup, and final summary.'
 allowed-tools: Read Write Edit Bash Glob
-model: sonnet
 last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/

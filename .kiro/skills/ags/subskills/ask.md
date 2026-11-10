@@ -5,7 +5,6 @@ description: Knowledge-base entrypoint for AccelByte Gaming Services. Use when t
   how it compares to EOS / PlayFab / DIY, what deployment models exist, what AGS does
   and doesn't include.
 allowed-tools: Read Glob Bash
-model: sonnet
 last-verified: 2026-09-23
 sources:
 - https://docs.accelbyte.io/

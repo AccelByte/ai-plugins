@@ -5,7 +5,6 @@ description: Decide whether `/ags` is the right skill, or whether the user shoul
   `/adt`), or talking to AccelByte sales. Use when the user asks 'should I add Extend
   / AMS / ADT / Access?' or 'is AGS even right for this?'
 allowed-tools: Read Glob
-model: sonnet
 last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/

@@ -1,18 +1,27 @@
 {
   "name": "accelbyte-ai-plugins",
-  "version": "0.10.6",
+  "version": "0.11.0",
   "description": "Public AI coding agents, skills, and MCP servers for AccelByte.",
-  "displayName": "accelbyte",
-  "shortDescription": "Public AI coding agents, skills, and MCP servers for AccelByte.",
   "author": {
     "name": "AccelByte",
     "url": "https://accelbyte.io"
   },
   "interface": {
-    "displayName": "accelbyte-ai-plugins",
-    "developerName": "AccelByte"
+    "displayName": "AccelByte",
+    "shortDescription": "AccelByte game backend skills",
+    "longDescription": "Build on AccelByte Gaming Services (AGS) with an assistant that knows the platform. Ask about player login, matchmaking, sessions, leaderboards, store and other AGS modules; scaffold, run and deploy Extend apps; and review an existing AccelByte integration for incomplete flows, deprecated APIs and auth-token safety. The bundled Extend SDK server lets the assistant look up real Extend SDK types and functions instead of guessing them.",
+    "developerName": "AccelByte",
+    "category": "Developer Tools",
+    "capabilities": ["Answer AGS integration questions", "Scaffold and deploy Extend apps", "Look up Extend SDK types and functions", "Review an existing AGS integration"],
+    "websiteURL": "https://accelbyte.io",
+    "supportURL": "https://accelbyte.io/contact-us",
+    "privacyPolicyURL": "https://accelbyte.io/privacy-policy",
+    "termsOfServiceURL": "https://accelbyte.io/terms-of-use",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
   },
   "homepage": "https://github.com/AccelByte/ai-plugins",
   "repository": "https://github.com/AccelByte/ai-plugins",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "mcpServers": "./codex.mcp.json"
 }

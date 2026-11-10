@@ -8,7 +8,6 @@ description: Use when the user asks whether one named Extend app is healthy — 
   CPU, memory and replicas should be. Answers about one named app, and does not scan
   a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-10-19
 see-also:
 - '[extend-app.md](../references/resource-signals/extend-app.md)'

@@ -4,7 +4,6 @@ description: Detect the game engine and route AGS UI generation to the engine-sp
   UI workflow. Supports Unreal through AccelByteUITools and Unity through the AccelByte
   Unity MCP server; Godot UI generation is not supported yet.
 allowed-tools: Read Write Edit Bash Glob
-model: sonnet
 last-verified: 2026-06-17
 sources:
 - https://github.com/AccelByte/unreal-sdk-mcp-server

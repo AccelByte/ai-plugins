@@ -2,7 +2,6 @@
 name: ags-extend
 description: "AccelByte Extend — custom server-side game logic on AGS. Use for choosing an Extend pattern (Override, Event Handler, Service Extension), scaffolding a service, deploying to AGS, running locally, testing, and debugging."
 allowed-tools: Bash Read Write Edit Glob
-model: sonnet
 ---
 
 # AGS Extend

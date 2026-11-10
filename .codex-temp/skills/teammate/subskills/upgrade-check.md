@@ -5,7 +5,6 @@ description: Use when the user is about to move the AccelByte Unity or Unreal SD
   actually calls between the version they have and the one they are moving to, and
   reports each break at file:line.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-08-15
 sources:
 - https://docs.accelbyte.io/gaming-services/getting-started/setup-game-sdk/unreal-sdk/

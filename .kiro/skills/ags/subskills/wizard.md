@@ -4,7 +4,6 @@ description: 'Checklist-driven AGS feature planner: verifies init prerequisites,
   the project, confirms game context with the user, suggests the next AGS-backed feature
   slice, iterates on an implementation plan, and writes an approved plan document.'
 allowed-tools: Read Write Glob Bash
-model: sonnet
 last-verified: 2026-05-09
 sources:
 - https://docs.accelbyte.io/

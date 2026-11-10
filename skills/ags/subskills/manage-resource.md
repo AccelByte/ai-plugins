@@ -7,7 +7,6 @@ description: Create, update, or delete a single AGS backend resource via the gen
   the exact command/body live, auto-fills what's known, and hands off to ui-execution.md
   for the fill-and-run step.
 allowed-tools: Read Bash PowerShell Glob AskUserQuestion
-model: sonnet
 last-verified: 2026-06-29
 see-also:
 - '[cli-commands.md](../references/observe/cli-commands.md)'

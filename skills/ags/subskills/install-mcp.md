@@ -3,7 +3,6 @@ name: ags-install-mcp
 description: Set up AGS-related MCP entries in the user's AI IDE. Handles the engine-neutral
   AGS API MCP URL workflow and routes engine SDK MCP requests to engine-specific references.
 allowed-tools: Read Edit Bash Glob
-model: sonnet
 last-verified: 2026-08-17
 sources:
 - https://github.com/AccelByte/ags-api-mcp-server

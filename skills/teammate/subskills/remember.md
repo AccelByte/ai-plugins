@@ -7,7 +7,6 @@ description: Use when the user hands the teammate a document to keep — a techn
   notes to memory'. Writes one record and stops; it does not scan, and it does not
   summarise the document.
 allowed-tools: Read AskUserQuestion
-model: sonnet
 last-verified: 2026-08-19
 see-also:
 - '[memory-contract.md](../references/memory-contract.md)'

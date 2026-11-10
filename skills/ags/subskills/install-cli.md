@@ -4,7 +4,6 @@ description: Install the AGS CLI for namespace and IAM management, and for the f
   Extend app lifecycle via `ags extend`. Required by `/ags connect-portal` (for IAM
   client provisioning), and by `/ags observe` (for read-only namespace queries).
 allowed-tools: Read Bash Glob
-model: sonnet
 last-verified: 2026-09-23
 sources:
 - https://github.com/AccelByte/accelbyte-ags-cli/releases/latest

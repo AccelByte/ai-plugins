@@ -5,7 +5,6 @@ description: 'Run a game / app locally against AGS and trace integration failure
   Use when something is broken during local dev and the user needs to narrow down
   whether it''s their code, the SDK, or AGS-side.'
 allowed-tools: Read Bash Glob Edit Write
-model: sonnet
 last-verified: 2026-06-24
 sources:
 - https://docs.accelbyte.io/

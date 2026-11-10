@@ -7,7 +7,6 @@ description: Use when the user asks whether one named AMS fleet is set up right 
   is misconfigured, what is failing, and what min, max and buffer should be. Answers
   about one named fleet, and does not scan a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-09-04
 see-also:
 - '[ams-fleet.md](../references/resource-signals/ams-fleet.md)'

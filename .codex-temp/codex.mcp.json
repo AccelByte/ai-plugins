@@ -1,4 +1,7 @@
 {
   "mcpServers": {
+    "ags_extend_sdk": {
+      "url": "https://prod.gamingservices.accelbyte.io/extend-mcp/go"
+    }
   }
 }

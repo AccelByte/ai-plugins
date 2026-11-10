@@ -5,7 +5,6 @@ description: Scan an AccelByte-integrated repo — map SDK call sites, run the i
   the live namespace when AGS credentials are present, ground every finding, and emit
   a cited Report as Markdown and single-file HTML.
 allowed-tools: Bash Edit Read Glob Grep ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-08-18
 see-also:
 - '[grounding-rules.md](../references/grounding-rules.md)'

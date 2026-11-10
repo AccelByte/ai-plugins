@@ -5,7 +5,6 @@ description: 'Module-by-module SDK wiring guide: auth, lobby, matchmaking, sessi
   is installed and verified, and the user wants to actually wire AGS into their game
   / app code.'
 allowed-tools: Read Write Edit Bash Glob
-model: sonnet
 last-verified: 2026-09-15
 sources:
 - https://docs.accelbyte.io/

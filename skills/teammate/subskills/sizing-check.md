@@ -7,7 +7,6 @@ description: Use when the user asks what one AMS fleet or one Extend app should 
   replica or an AMS fleet's buffer, and reports the inputs for the knobs that have
   no published arithmetic. Answers about one named thing, and does not scan a repository.
 allowed-tools: Read Glob Grep Bash ToolSearch TaskCreate TaskUpdate AskUserQuestion
-model: sonnet
 last-verified: 2026-09-04
 see-also:
 - '[sizing-sources.md](../references/sizing-sources.md)'
